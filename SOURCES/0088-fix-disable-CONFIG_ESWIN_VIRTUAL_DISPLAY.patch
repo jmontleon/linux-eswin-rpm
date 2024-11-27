@@ -1,0 +1,25 @@
+From 5bd22a45c21a7300cac540eeee8ee1ccabd05b08 Mon Sep 17 00:00:00 2001
+From: Han Gao <gaohan@iscas.ac.cn>
+Date: Thu, 13 Jun 2024 23:08:12 +0800
+Subject: [PATCH 088/215] fix: disable CONFIG_ESWIN_VIRTUAL_DISPLAY
+
+Signed-off-by: Han Gao <gaohan@iscas.ac.cn>
+---
+ arch/riscv/configs/win2030_defconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/riscv/configs/win2030_defconfig b/arch/riscv/configs/win2030_defconfig
+index f0c03fda4b3b..9a186bcd4be7 100644
+--- a/arch/riscv/configs/win2030_defconfig
++++ b/arch/riscv/configs/win2030_defconfig
+@@ -465,7 +465,6 @@ CONFIG_DRM_SIMPLE_BRIDGE=y
+ CONFIG_DRM_TOSHIBA_TC358768=m
+ CONFIG_DRM_SIMPLEDRM=m
+ CONFIG_DRM_ESWIN=y
+-CONFIG_ESWIN_VIRTUAL_DISPLAY=y
+ CONFIG_ESWIN_MMU=y
+ CONFIG_ESWIN_DW_HDMI=y
+ CONFIG_DW_HDMI_I2S_AUDIO=y
+-- 
+2.47.0
+

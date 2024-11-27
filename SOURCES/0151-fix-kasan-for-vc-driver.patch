@@ -1,0 +1,41 @@
+From 1ed5ed4fe3c926da402b1929caeae5e40904cebd Mon Sep 17 00:00:00 2001
+From: tangdaoyong <tangdaoyong@eswincomputing.com>
+Date: Wed, 14 Aug 2024 14:27:32 +0800
+Subject: [PATCH 151/215] fix:kasan for vc driver
+
+Changelogs:
+  1. fix kasan issue for vc driver.
+
+Signed-off-by: tangdaoyong <tangdaoyong@eswincomputing.com>
+---
+ drivers/staging/media/eswin/vdec/hantro_dec.c     | 1 +
+ drivers/staging/media/eswin/venc/vc8000e_driver.c | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/drivers/staging/media/eswin/vdec/hantro_dec.c b/drivers/staging/media/eswin/vdec/hantro_dec.c
+index 12d63a5ea985..88adf1bd86d6 100644
+--- a/drivers/staging/media/eswin/vdec/hantro_dec.c
++++ b/drivers/staging/media/eswin/vdec/hantro_dec.c
+@@ -4119,6 +4119,7 @@ static const struct dev_pm_ops eswin_vdec_dev_pm_ops = {
+ static const struct of_device_id eswin_vdec_match[] = {
+ 	{ .compatible = "eswin,video-decoder0", },
+ 	{ .compatible = "eswin,video-decoder1", },
++	{/* sentinel */},
+ };
+ 
+ static struct platform_driver eswin_vdec_driver = {
+diff --git a/drivers/staging/media/eswin/venc/vc8000e_driver.c b/drivers/staging/media/eswin/venc/vc8000e_driver.c
+index 09c4195a60af..008166eeb8cc 100644
+--- a/drivers/staging/media/eswin/venc/vc8000e_driver.c
++++ b/drivers/staging/media/eswin/venc/vc8000e_driver.c
+@@ -894,6 +894,7 @@ static const struct dev_pm_ops venc_pm_ops = {
+ static const struct of_device_id eswin_venc_match[] = {
+     { .compatible = "eswin,video-encoder0", },
+     { .compatible = "eswin,video-encoder1", },
++	{/* sentinel */},
+ };
+ 
+ static struct platform_driver eswin_venc_driver = {
+-- 
+2.47.0
+

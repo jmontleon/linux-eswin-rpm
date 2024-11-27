@@ -1,0 +1,230 @@
+From 2d47d54a77aa6db70bd92db0e79707ca12be2a6e Mon Sep 17 00:00:00 2001
+From: huangyifeng <huangyifeng@eswincomputing.com>
+Date: Thu, 1 Aug 2024 16:47:31 +0800
+Subject: [PATCH 137/215] feat:Introduce system suspend support
+
+Changelogs: eic770x support suspend to mem.
+
+When the SUSP SBI extension is present it implies that the standard
+"suspend to RAM" type is available. Wire it up to the generic
+platform suspend support, also applying the already present support
+for non-retentive CPU suspend. When the kernel is built with
+CONFIG_SUSPEND, one can do 'echo mem > /sys/power/state' to suspend.
+Resumption will occur when a platform-specific wake-up event arrives.
+
+(Based on the patch 20231012072148.7010-3-ajones@ventanamicro.com)
+
+Signed-off-by: huangyifeng <huangyifeng@eswincomputing.com>
+---
+ arch/riscv/Kconfig                            |  2 +-
+ arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts  |  4 +
+ arch/riscv/boot/dts/eswin/eic7700-evb.dts     |  4 +
+ .../boot/dts/eswin/hifive-premier-550.dts     |  4 +
+ arch/riscv/include/asm/sbi.h                  |  9 ++
+ drivers/iommu/eswin/eswin-win2030-sid.c       |  2 +-
+ drivers/soc/eswin/Makefile                    |  3 +-
+ drivers/soc/eswin/pm_eic770x.c                | 82 +++++++++++++++++++
+ 8 files changed, 107 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/soc/eswin/pm_eic770x.c
+
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index baefecd75016..1db237dc24cf 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -64,7 +64,7 @@ config RISCV
+ 	select CLINT_TIMER if !MMU
+ 	select CLONE_BACKWARDS
+ 	select COMMON_CLK
+-	select CPU_PM if CPU_IDLE || HIBERNATION
++	select CPU_PM if CPU_IDLE || HIBERNATION || SUSPEND
+ 	select EDAC_SUPPORT
+ 	select FRAME_POINTER if PERF_EVENTS || (FUNCTION_TRACER && !DYNAMIC_FTRACE)
+ 	select GENERIC_ARCH_TOPOLOGY
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+index c6927bc6814f..120fc44ae3f8 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+@@ -53,6 +53,10 @@ aliases {
+ 
+ 	chosen {
+ 		stdout-path = "serial0:115200n8";
++		opensbi_domain_config: domain-config {
++			compatible = "opensbi,domain,config";
++			system-suspend-test;
++		};
+ 	};
+ 
+ 	cpus {
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb.dts b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+index 0e10a72e31ec..5171c76ec825 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+@@ -52,6 +52,10 @@ aliases {
+ 
+ 	chosen {
+ 		stdout-path = "serial0:115200n8";
++		opensbi_domain_config: domain-config {
++			compatible = "opensbi,domain,config";
++			system-suspend-test;
++		};
+ 	};
+ 
+ 	cpus {
+diff --git a/arch/riscv/boot/dts/eswin/hifive-premier-550.dts b/arch/riscv/boot/dts/eswin/hifive-premier-550.dts
+index 5dd4d1e4380b..db6520a2e6de 100644
+--- a/arch/riscv/boot/dts/eswin/hifive-premier-550.dts
++++ b/arch/riscv/boot/dts/eswin/hifive-premier-550.dts
+@@ -50,6 +50,10 @@ aliases {
+ 
+ 	chosen {
+ 		stdout-path = "serial0:115200n8";
++		opensbi_domain_config: domain-config {
++			compatible = "opensbi,domain,config";
++			system-suspend-test;
++		};
+ 	};
+ 
+ 	cpus {
+diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+index 3ed853b8a8c8..8d261a317175 100644
+--- a/arch/riscv/include/asm/sbi.h
++++ b/arch/riscv/include/asm/sbi.h
+@@ -29,6 +29,7 @@ enum sbi_ext_id {
+ 	SBI_EXT_RFENCE = 0x52464E43,
+ 	SBI_EXT_HSM = 0x48534D,
+ 	SBI_EXT_SRST = 0x53525354,
++	SBI_EXT_SUSP = 0x53555350,
+ 	SBI_EXT_PMU = 0x504D55,
+ 
+ 	/* Experimentals extensions must lie within this range */
+@@ -113,6 +114,14 @@ enum sbi_srst_reset_reason {
+ 	SBI_SRST_RESET_REASON_SYS_FAILURE,
+ };
+ 
++enum sbi_ext_susp_fid {
++	SBI_EXT_SUSP_SYSTEM_SUSPEND = 0,
++};
++
++enum sbi_ext_susp_sleep_type {
++	SBI_SUSP_SLEEP_TYPE_SUSPEND_TO_RAM = 0,
++};
++
+ enum sbi_ext_pmu_fid {
+ 	SBI_EXT_PMU_NUM_COUNTERS = 0,
+ 	SBI_EXT_PMU_COUNTER_GET_INFO,
+diff --git a/drivers/iommu/eswin/eswin-win2030-sid.c b/drivers/iommu/eswin/eswin-win2030-sid.c
+index 6d8602c47805..8e89b75e71ea 100644
+--- a/drivers/iommu/eswin/eswin-win2030-sid.c
++++ b/drivers/iommu/eswin/eswin-win2030-sid.c
+@@ -754,7 +754,7 @@ int win2030_tbu_power(struct device *dev, bool is_powerUp)
+ 		pr_err("%s:%d, NUMA_NO_NODE\n", __func__, __LINE__);
+ 		return -EFAULT;
+ 	#else
+-		pr_info("%s:%d, NUMA_NO_NODE, single DIE\n", __func__, __LINE__);
++		pr_debug("%s:%d, NUMA_NO_NODE, single DIE\n", __func__, __LINE__);
+ 		nid = 0;
+ 	#endif
+ 	}
+diff --git a/drivers/soc/eswin/Makefile b/drivers/soc/eswin/Makefile
+index bc4e41370dc1..391ab603d23a 100644
+--- a/drivers/soc/eswin/Makefile
++++ b/drivers/soc/eswin/Makefile
+@@ -1,3 +1,4 @@
+ obj-$(CONFIG_ESWIN_KHANDLE) += eswin-khandle.o
+ obj-$(CONFIG_ESWIN_DSP_SUBSYS) += dsp_subsys.o
+-obj-y += ai_driver/
+\ No newline at end of file
++obj-y += ai_driver/
++obj-$(CONFIG_SUSPEND) += pm_eic770x.o
+\ No newline at end of file
+diff --git a/drivers/soc/eswin/pm_eic770x.c b/drivers/soc/eswin/pm_eic770x.c
+new file mode 100644
+index 000000000000..ac5aa4928b6c
+--- /dev/null
++++ b/drivers/soc/eswin/pm_eic770x.c
+@@ -0,0 +1,82 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Power Magagement Driver For ESWIN EIC770x SOC
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: HuangYiFeng<huangyifeng@eswincomputing.com>
++ */
++#include <linux/cpu.h>
++#include <linux/err.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/suspend.h>
++#include <asm/suspend.h>
++#include <asm/sbi.h>
++
++static int eic770x_system_suspend(unsigned long sleep_type,
++			      unsigned long resume_addr,
++			      unsigned long opaque)
++{
++	struct sbiret ret;
++
++	ret = sbi_ecall(SBI_EXT_SUSP, SBI_EXT_SUSP_SYSTEM_SUSPEND,
++			sleep_type, resume_addr, opaque, 0, 0, 0);
++	if (ret.error)
++		return sbi_err_map_linux_errno(ret.error);
++
++	return ret.value;
++}
++
++static int eic770x_system_suspend_enter(suspend_state_t state)
++{
++	int ret;
++
++	pr_info("[%s %d]:\n",__func__,__LINE__);
++	/*
++		/*
++		Add codes that need to be performed for pm_enter. such as:
++			1.map the wakeup irq to mailbox box irq
++			2.notify the lpcpu to enter self refresh
++
++		ret = eic770x_lpcpu_notify(data, PM_SUSPEND_MEM_ENTER);
++		if (ret) {
++			pr_err("[%s %d]:\n",__func__,__LINE__, ret);
++			return ret
++		}
++	*/
++	return cpu_suspend(SBI_SUSP_SLEEP_TYPE_SUSPEND_TO_RAM, eic770x_system_suspend);
++}
++
++static const struct platform_suspend_ops eic770x_system_suspend_ops = {
++	.valid = suspend_valid_only_mem,
++	.enter = eic770x_system_suspend_enter,
++};
++
++static int __init eic770x_system_suspend_init(void)
++{
++	pr_info("[%s %d]:\n",__func__,__LINE__);
++	if (!sbi_spec_is_0_1() && sbi_probe_extension(SBI_EXT_SUSP) > 0) {
++		pr_info("SBI SUSP extension detected\n");
++		if (IS_ENABLED(CONFIG_SUSPEND))
++			suspend_set_ops(&eic770x_system_suspend_ops);
++	}
++
++	return 0;
++}
++
++arch_initcall(eic770x_system_suspend_init);
+-- 
+2.47.0
+

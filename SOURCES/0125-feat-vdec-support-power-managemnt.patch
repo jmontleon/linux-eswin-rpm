@@ -1,0 +1,729 @@
+From 785889dc4158284a139701338bcb1fb88218ad0b Mon Sep 17 00:00:00 2001
+From: tangdaoyong <tangdaoyong@eswincomputing.com>
+Date: Thu, 18 Jul 2024 13:54:33 +0800
+Subject: [PATCH 125/215] feat:vdec support power managemnt
+
+Changelogs:
+  1. Add generic & runtime power management for vdec & jdec.
+
+Signed-off-by: tangdaoyong <tangdaoyong@eswincomputing.com>
+---
+ drivers/staging/media/eswin/vdec/dts_parser.c |   4 +-
+ drivers/staging/media/eswin/vdec/dts_parser.h |   3 +-
+ drivers/staging/media/eswin/vdec/hantro_dec.c | 194 +++++++++++++++---
+ .../staging/media/eswin/vdec/hantro_vcmd.c    |  89 +++++---
+ drivers/staging/media/eswin/vdec/hantrodec.h  |  10 +-
+ drivers/staging/media/eswin/vdec/subsys.c     |  42 ++++
+ drivers/staging/media/eswin/vdec/subsys.h     |   4 +
+ 7 files changed, 283 insertions(+), 63 deletions(-)
+
+diff --git a/drivers/staging/media/eswin/vdec/dts_parser.c b/drivers/staging/media/eswin/vdec/dts_parser.c
+index a423612727d0..8d96a39bf1c5 100644
+--- a/drivers/staging/media/eswin/vdec/dts_parser.c
++++ b/drivers/staging/media/eswin/vdec/dts_parser.c
+@@ -11,6 +11,7 @@
+ 
+ struct SubsysDesc subsys_array[VDEC_MAX_SUBSYS] = {0};
+ struct CoreDesc core_array[VDEC_MAX_CORE] = {0};
++u8 numa_id_array[4] = {0};
+ 
+ static int vdec_device_node_scan(unsigned char *compatible)
+ {
+@@ -60,7 +61,7 @@ int vdec_device_nodes_check(void)
+ 		index++; \
+ 	} while (0)
+ 
+-int vdec_trans_device_nodes(struct platform_device *pdev)
++int vdec_trans_device_nodes(struct platform_device *pdev, u8 numa_id)
+ {
+ 	extern unsigned int vcmd;
+ 	int jpeg = 0;
+@@ -125,6 +126,7 @@ int vdec_trans_device_nodes(struct platform_device *pdev)
+ 		if (jpeg && vcmd)
+ 			hw_type = HW_VC8000DJ;
+ 
++		numa_id_array[subsys_id] = numa_id;
+ 		VDEC_CORE_ARRAY_ASSIGN(core_index, subsys_id, hw_type, (base_addr + vdec_addr[0]), vdec_addr[1], child_irq);
+ 		subsys_id++;
+ 	}
+diff --git a/drivers/staging/media/eswin/vdec/dts_parser.h b/drivers/staging/media/eswin/vdec/dts_parser.h
+index 310cfcf8ccd1..d375b2e23cb9 100644
+--- a/drivers/staging/media/eswin/vdec/dts_parser.h
++++ b/drivers/staging/media/eswin/vdec/dts_parser.h
+@@ -8,6 +8,7 @@
+ int vdec_device_nodes_check(void);
+ extern struct SubsysDesc subsys_array[VDEC_MAX_SUBSYS];
+ extern struct CoreDesc core_array[VDEC_MAX_CORE];
+-extern int vdec_trans_device_nodes(struct platform_device *pdev);
++extern u8 numa_id_array[4];
++extern int vdec_trans_device_nodes(struct platform_device *pdev, u8 numa_id);
+ 
+ #endif /* __DTS_PARSER_H__ */
+diff --git a/drivers/staging/media/eswin/vdec/hantro_dec.c b/drivers/staging/media/eswin/vdec/hantro_dec.c
+index 54b1fbe6ad6f..12d63a5ea985 100644
+--- a/drivers/staging/media/eswin/vdec/hantro_dec.c
++++ b/drivers/staging/media/eswin/vdec/hantro_dec.c
+@@ -98,6 +98,7 @@
+ #include <linux/mfd/syscon.h>
+ #include <linux/eswin-win2030-sid-cfg.h>
+ #include <dt-bindings/memory/eswin-win2030-sid.h>
++#include <linux/pm_runtime.h>
+ 
+ #include "subsys.h"
+ #include "hantroaxife.h"
+@@ -410,6 +411,9 @@ static void ReleaseIO(void);
+ 
+ static void ResetAsic(hantrodec_t *dev);
+ 
++static int vdec_clk_enable(vdec_clk_rst_t *vcrt);
++static int vdec_pm_enable(struct platform_device *pdev);
++
+ #ifdef HANTRODEC_DEBUG
+ static void dump_regs(hantrodec_t *dev);
+ #endif
+@@ -2380,7 +2384,7 @@ static long hantrodec_ioctl(struct file *filp, unsigned int cmd,
+ 		size_t buf_size = 0;
+ 		void *cpu_vaddr = NULL;
+ 		struct heap_mem *hmem, *hmem_d1;
+-		struct dmabuf_priv *db_priv = (struct dmabuf_priv *)filp->private_data;
++		struct filp_priv *fp_priv = (struct filp_priv *)filp->private_data;
+ 
+ 		if (copy_from_user(&dbcfg, (void __user *)arg, sizeof(struct dmabuf_cfg)) != 0)
+ 			return -EFAULT;
+@@ -2389,14 +2393,16 @@ static long hantrodec_ioctl(struct file *filp, unsigned int cmd,
+ 
+ 		/* map the pha to dma addr(iova)*/
+ 		/* syscoherent <-> false, flush one time when import; sys,cma <-> true, no fush */
+-		hmem = common_dmabuf_heap_import_from_user(&db_priv->root, dbcfg.dmabuf_fd);
++		hmem = common_dmabuf_heap_import_from_user(&fp_priv->root, dbcfg.dmabuf_fd);
+ 		if(IS_ERR(hmem)) {
+ 			LOG_ERR("dmabuf-heap alloc from userspace failed\n");
+ 			return -ENOMEM;
+ 		}
++		//LOG_INFO("import dmabuf_fd = %d, hmem=%px, filp=%px, platformdev_d1=%px\n", dbcfg.dmabuf_fd, hmem, filp,
++		//	platformdev_d1);
+ 
+ 		if (platformdev_d1) {
+-			hmem_d1 = common_dmabuf_heap_import_from_user(&db_priv->root_d1, dbcfg.dmabuf_fd);
++			hmem_d1 = common_dmabuf_heap_import_from_user(&fp_priv->root_d1, dbcfg.dmabuf_fd);
+ 			if(IS_ERR(hmem_d1)) {
+ 				common_dmabuf_heap_release(hmem);
+ 				LOG_ERR("dmabuf-heap alloc from userspace failed for d1\n");
+@@ -2438,7 +2444,7 @@ static long hantrodec_ioctl(struct file *filp, unsigned int cmd,
+ 			common_dmabuf_heap_release(hmem);
+ 			if (platformdev_d1)
+ 				common_dmabuf_heap_release(hmem_d1);
+-			LOG_DBG("%s %d: copy_from_user failed, returned %li\n", __func__, __LINE__, tmp);
++			LOG_ERR("%s %d: copy_from_user failed, returned %li\n", __func__, __LINE__, tmp);
+ 			return -EFAULT;
+ 		}
+ 
+@@ -2447,7 +2453,7 @@ static long hantrodec_ioctl(struct file *filp, unsigned int cmd,
+ 	case HANTRODEC_IOC_DMA_HEAP_PUT_IOVA: {
+ 		struct heap_mem *hmem, *hmem_d1;
+ 		unsigned int dmabuf_fd;
+-		struct dmabuf_priv *db_priv = (struct dmabuf_priv *)filp->private_data;
++		struct filp_priv *fp_priv = (struct filp_priv *)filp->private_data;
+ 
+ 		if (copy_from_user(&dmabuf_fd, (void __user *)arg, sizeof(int)) != 0)
+ 			return -EFAULT;
+@@ -2455,20 +2461,22 @@ static long hantrodec_ioctl(struct file *filp, unsigned int cmd,
+ 		LOG_DBG("release dmabuf_fd = %d\n", dmabuf_fd);
+ 
+ 		/* find the heap_mem */
+-		hmem = common_dmabuf_lookup_heapobj_by_fd(&db_priv->root, dmabuf_fd);
++		hmem = common_dmabuf_lookup_heapobj_by_fd(&fp_priv->root, dmabuf_fd);
+ 		if (IS_ERR(hmem)) {
+-			LOG_ERR("cannot find dmabuf-heap for dmabuf_fd %d\n", dmabuf_fd);
++			LOG_ERR("cannot find dmabuf-heap for dmabuf_fd %d, %px\n", dmabuf_fd, hmem);
+ 			return -ENOMEM;
+ 		}
+ 
+ 		if (platformdev_d1) {
+-			hmem_d1 = common_dmabuf_lookup_heapobj_by_fd(&db_priv->root_d1, dmabuf_fd);
++			hmem_d1 = common_dmabuf_lookup_heapobj_by_fd(&fp_priv->root_d1, dmabuf_fd);
+ 			if (IS_ERR(hmem_d1)) {
+ 				LOG_ERR("cannot find dmabuf-heap for dmabuf_fd %d on d1\n", dmabuf_fd);
+ 				return -EFAULT;
+ 			}
+ 			common_dmabuf_heap_release(hmem_d1);
+ 		}
++		//LOG_INFO("release dmabuf_fd = %d, hmem=%px, filp=%px, platformdev_d1=%px\n", dmabuf_fd, hmem, filp,
++		//	platformdev_d1);
+ 		common_dmabuf_heap_release(hmem);
+ 
+ 		return 0;
+@@ -2535,22 +2543,24 @@ static int hantrodec_mmap(struct file *filp, struct vm_area_struct *vma)
+  */
+ static int hantrodec_open(struct inode *inode, struct file *filp)
+ {
+-#ifdef SUPPORT_DMA_HEAP
+-	struct dmabuf_priv *db_priv;
++	struct filp_priv *fp_priv;
+ 
+-	db_priv = kzalloc(sizeof(struct dmabuf_priv), GFP_KERNEL);
+-	if (!db_priv) {
++	fp_priv = kzalloc(sizeof(struct filp_priv), GFP_KERNEL);
++	if (!fp_priv) {
+ 		pr_err("%s: alloc failed\n", __func__);
+ 		return -ENOMEM;
+ 	}
+ 
+-	common_dmabuf_heap_import_init(&db_priv->root, &platformdev->dev);
++#ifdef SUPPORT_DMA_HEAP
++	common_dmabuf_heap_import_init(&fp_priv->root, &platformdev->dev);
+ 	if (platformdev_d1) {
+-		common_dmabuf_heap_import_init(&db_priv->root_d1, &platformdev_d1->dev);
++		common_dmabuf_heap_import_init(&fp_priv->root_d1, &platformdev_d1->dev);
+ 	}
+-
+-	filp->private_data = (void *)db_priv;
+ #endif
++	for (u32 core_id = 0; core_id < DEC_CORE_NUM; core_id ++) {
++		atomic_set(&(fp_priv->core_tasks[core_id]), 0);
++	}
++	filp->private_data = (void *)fp_priv;
+ 	LOG_DBG("dev opened\n");
+ 
+ 	if (vcmd)
+@@ -2571,9 +2581,7 @@ static int hantrodec_release(struct inode *inode,
+ {
+ 	int n;
+ 	hantrodec_t *dev = &hantrodec_data;
+-#ifdef SUPPORT_DMA_HEAP
+-	struct dmabuf_priv *db_priv = (struct dmabuf_priv *)filp->private_data;
+-#endif
++	struct filp_priv *fp_priv = (struct filp_priv *)filp->private_data;
+ 
+ 	LOG_DBG("closing ...\n");
+ 
+@@ -2601,12 +2609,18 @@ static int hantrodec_release(struct inode *inode,
+ 
+ end:
+ #ifdef SUPPORT_DMA_HEAP
+-	common_dmabuf_heap_import_uninit(&db_priv->root);
++	common_dmabuf_heap_import_uninit(&fp_priv->root);
+ 	if (platformdev_d1) {
+-		common_dmabuf_heap_import_uninit(&db_priv->root_d1);
++		common_dmabuf_heap_import_uninit(&fp_priv->root_d1);
+ 	}
+-	kfree(db_priv);
+ #endif
++	for (u32 core_id = 0; core_id < DEC_CORE_NUM; core_id ++) {
++		/** clear the tasks for pm*/
++		while (atomic_dec_return(&(fp_priv->core_tasks[core_id])) >= 0) {
++			vdec_pm_runtime_put(core_id);
++		}
++	}
++	kfree(fp_priv);
+ 
+ 	LOG_DBG("closed\n");
+ 	return 0;
+@@ -2810,8 +2824,8 @@ static int hantrodec_init(void)
+ 	hantrodec_data.async_queue_pp = NULL;
+ 
+ 	result = register_chrdev(hantrodec_major,
+-				 DEC_DEV_NAME,
+-	 &hantrodec_fops);
++				DEC_DEV_NAME,
++	 			&hantrodec_fops);
+ 	if (result < 0) {
+ 		LOG_ERR("unable to get major %d\n", hantrodec_major);
+ 		goto err;
+@@ -3703,6 +3717,12 @@ static int vdec_sys_clk_enable(vdec_clk_rst_t *vcrt)
+ 		LOG_INFO("VD set vd_clk to %ldHZ\n", rate);
+ 	}
+ 
++	return vdec_clk_enable(vcrt);
++}
++
++static int vdec_clk_enable(vdec_clk_rst_t *vcrt) {
++	int ret;
++
+ 	ret = clk_prepare_enable(vcrt->aclk);
+ 	if (ret) {
+ 		LOG_ERR("Video Decoder: failed to enable aclk: %d\n", ret);
+@@ -3873,6 +3893,10 @@ static int hantro_vdec_probe(struct platform_device *pdev)
+ 	int ret, vdec_dev_num = 0;
+ 	static int pdev_count = 0;
+ 	vdec_clk_rst_t *vcrt = devm_kzalloc(&pdev->dev, sizeof(vdec_clk_rst_t), GFP_KERNEL);
++	if (!vcrt) {
++		LOG_ERR("malloc drvdata failed\n");
++		return -ENOMEM;
++	}
+ 
+ 	// pr_info("[%s]build version: %s\n", DEC_DEV_NAME, ES_VDEC_GIT_VER);
+ 	vdec_dev_num = vdec_device_nodes_check();
+@@ -3921,7 +3945,7 @@ static int hantro_vdec_probe(struct platform_device *pdev)
+ 		d1_clk_reset_init();
+ 	}
+ 
+-	if (vdec_trans_device_nodes(pdev)) {
++	if (vdec_trans_device_nodes(pdev, numa_id)) {
+ 		LOG_ERR("Translates video decoder dts to subsys failed");
+ 		return -1;
+ 	}
+@@ -3951,17 +3975,36 @@ static int hantro_vdec_probe(struct platform_device *pdev)
+ 		LOG_NOTICE("load driver %s failed\n", DEC_DEV_NAME);
+ 	} else {
+ 		LOG_NOTICE("module inserted. Major = %d\n", hantrodec_major);
++
++		if (platformdev && vdec_pm_enable(platformdev) < 0) {
++			LOG_WARN("enable pm for vdec-die0 failed\n");
++		}
++		if (platformdev_d1 && vdec_pm_enable(platformdev_d1) < 0) {
++			LOG_WARN("enable pm for vdec-die1 failed\n");
++		}
+ 	}
+ 	return ret;
+ }
+ 
++static int vdec_pm_enable(struct platform_device *pdev) {
++	/* The code below assumes runtime PM to be disabled. */
++	WARN_ON(pm_runtime_enabled(&pdev->dev));
++	pm_runtime_set_autosuspend_delay(&pdev->dev, 1000);
++	pm_runtime_use_autosuspend(&pdev->dev);
++	pm_runtime_set_active(&pdev->dev);
++	pm_runtime_enable(&pdev->dev);
++
++	return 0;
++}
++
+ static int hantro_vdec_remove(struct platform_device *pdev)
+ {
+ #ifdef SUPPORT_DMA_HEAP
+ 	int ret;
+-	vdec_clk_rst_t *vcrt;
+ #endif
++	vdec_clk_rst_t *vcrt;
+ 
++	pm_runtime_disable(&pdev->dev);
+ 	hantrodec_cleanup();
+ #ifdef SUPPORT_DMA_HEAP
+ 	ret = win2030_tbu_power(&pdev->dev, false);
+@@ -3969,14 +4012,110 @@ static int hantro_vdec_remove(struct platform_device *pdev)
+ 		LOG_ERR("vdec tbu power down failed\n");
+ 		return -1;
+ 	}
++#endif
+ 	vcrt = platform_get_drvdata(pdev);
+ 	vdec_hardware_reset(vcrt);
+ 	vdec_clk_disable(vcrt);
+-#endif
+ 
+ 	return 0;
+ }
+ 
++static int eswin_vdec_runtime_suspend(struct device *dev) {
++	vdec_clk_rst_t *vcrt = NULL;
++	int ret = -1;
++
++	vcrt = dev_get_drvdata(dev);
++	if (vcrt) {
++		ret = win2030_tbu_power(dev, false);
++		if (ret != 0) {
++			LOG_ERR("tbu power up failed, %d\n", __LINE__);
++			return -1;
++		}
++		ret = vdec_clk_disable(vcrt);
++	}
++	return ret;
++}
++
++static int eswin_vdec_runtime_resume(struct device *dev) {
++	vdec_clk_rst_t *vcrt = NULL;
++	int ret = -1;
++
++	vcrt = dev_get_drvdata(dev);
++	if (vcrt) {
++		ret = vdec_clk_enable(vcrt);
++		if (ret) {
++			LOG_ERR("enable sys clk failed, %d\n", __LINE__);
++			return ret;
++		}
++
++		ret = win2030_tbu_power(dev, true);
++		if (ret != 0) {
++			LOG_ERR("tbu power down failed, %d\n", __LINE__);
++			return -1;
++		}
++	}
++	return ret;
++}
++
++/** <TODO> the jd & vd should be seperated as two devices*/
++int vdec_wait_device_idle(struct platform_device *pdev) {
++	int ret;
++
++	if (pdev == platformdev) {
++		ret = hantrovcmd_wait_core_idle(0, msecs_to_jiffies(500));
++		if (ret <= 0) {
++			return ret;
++		}
++		ret = hantrovcmd_wait_core_idle(1, msecs_to_jiffies(500));
++		return ret;
++	}
++	else if (pdev == platformdev_d1) {
++		ret = hantrovcmd_wait_core_idle(2, msecs_to_jiffies(500));
++		if (ret <= 0) {
++			return ret;
++		}
++		ret = hantrovcmd_wait_core_idle(3, msecs_to_jiffies(500));
++		return ret;
++	}
++
++	LOG_ERR("Unknown platform device = %p\n", pdev);
++	return 1;
++}
++
++static int eswin_vdec_suspend(struct device *dev) {
++	int ret = 0;
++	struct platform_device *pdev = NULL;
++
++	if (!pm_runtime_status_suspended(dev)) {
++		pdev = container_of(dev, struct platform_device, dev);
++		ret = vdec_wait_device_idle(pdev);
++		if (!ret) {
++			LOG_ERR("Timeout for vdec_suspend\n");
++			return -ETIMEDOUT;
++		} else if (ret < 0) {
++			LOG_ERR("Interrupt triggered while vdec_suspend\n");
++			return -ERESTARTSYS;
++		}
++
++		ret = eswin_vdec_runtime_suspend(dev);
++	}
++	return ret;
++}
++
++static int eswin_vdec_resume(struct device *dev) {
++	int ret = 0;
++
++	if (!pm_runtime_status_suspended(dev)) {
++		ret = eswin_vdec_runtime_resume(dev);
++	}
++	return ret;
++}
++
++static const struct dev_pm_ops eswin_vdec_dev_pm_ops = {
++	LATE_SYSTEM_SLEEP_PM_OPS(eswin_vdec_suspend, eswin_vdec_resume)
++	RUNTIME_PM_OPS(eswin_vdec_runtime_suspend, eswin_vdec_runtime_resume, NULL)
++};
++
+ static const struct of_device_id eswin_vdec_match[] = {
+ 	{ .compatible = "eswin,video-decoder0", },
+ 	{ .compatible = "eswin,video-decoder1", },
+@@ -3988,6 +4127,7 @@ static struct platform_driver eswin_vdec_driver = {
+ 	.driver = {
+ 		.name   = DEC_DEV_NAME,
+ 		.of_match_table = eswin_vdec_match,
++		.pm = &eswin_vdec_dev_pm_ops,
+ 	},
+ };
+ 
+diff --git a/drivers/staging/media/eswin/vdec/hantro_vcmd.c b/drivers/staging/media/eswin/vdec/hantro_vcmd.c
+index 76a411fdbde2..3e07e4a1f5cb 100644
+--- a/drivers/staging/media/eswin/vdec/hantro_vcmd.c
++++ b/drivers/staging/media/eswin/vdec/hantro_vcmd.c
+@@ -781,6 +781,7 @@ static int vcmd_type_core_num[MAX_VCMD_TYPE];
+ 
+ #define WORKING_STATE_IDLE 0
+ #define WORKING_STATE_WORKING 1
++#define WORKING_STATE_STALL 2
+ #define CMDBUF_EXE_STATUS_OK 0
+ #define CMDBUF_EXE_STATUS_CMDERR 1
+ #define CMDBUF_EXE_STATUS_BUSERR 2
+@@ -1583,14 +1584,13 @@ static long release_cmdbuf(struct file *filp, u16 cmdbuf_id)
+ 
+ 	unsigned long flags;
+ 	struct hantrovcmd_dev *dev = NULL;
+-#ifdef SUPPORT_DMA_HEAP
+-	struct dmabuf_priv *db_priv = NULL;
++	struct filp_priv *fp_priv = NULL;
+ 	if (!filp || !filp->private_data) {
+ 		LOG_ERR("invalid filp\n");
+ 		return -1;
+ 	}
+-	db_priv = (struct dmabuf_priv *)filp->private_data;
+-#endif
++	fp_priv = (struct filp_priv *)filp->private_data;
++
+ 	/*get cmdbuf object according to cmdbuf_id*/
+ 	new_cmdbuf_node = global_cmdbuf_node[cmdbuf_id];
+ 	if (!new_cmdbuf_node) {
+@@ -1623,11 +1623,11 @@ static long release_cmdbuf(struct file *filp, u16 cmdbuf_id)
+ 			if (new_cmdbuf_node) {
+ 				//free node
+ #ifdef SUPPORT_DMA_HEAP
+-				spin_lock_irqsave(&db_priv->vcmdlock, flags);
++				spin_lock_irqsave(&fp_priv->vcmdlock, flags);
+ #endif
+ 				global_cmdbuf_node[cmdbuf_obj->cmdbuf_id] = NULL;
+ #ifdef SUPPORT_DMA_HEAP
+-				spin_unlock_irqrestore(&db_priv->vcmdlock, flags);
++				spin_unlock_irqrestore(&fp_priv->vcmdlock, flags);
+ #endif
+ 				if (cmdbuf_obj->process_manager_obj) {
+ 					spin_lock_irqsave(&cmdbuf_obj->process_manager_obj->spinlock,
+@@ -1648,6 +1648,11 @@ static long release_cmdbuf(struct file *filp, u16 cmdbuf_id)
+ 	}
+ 	//spin_unlock_irqrestore(dev->spinlock, flags);
+ 	up(&vcmd_reserve_cmdbuf_sem[module_type]);
++	/** release for the pm*/
++	if (atomic_dec_return(&(fp_priv->core_tasks[dev->core_id])) >= 0) {
++		vdec_pm_runtime_put(dev->core_id);
++	}
++
+ 	return 0;
+ }
+ 
+@@ -1797,8 +1802,12 @@ static long link_and_run_cmdbuf(struct file *filp,
+ 
+ 	dev = &hantrovcmd_data[cmdbuf_obj->core_id];
+ 	input_para->core_id = cmdbuf_obj->core_id;
+-	LOG_TRACE("Vdec Allocate cmd buffer [%d] to core [%d]\n", cmdbuf_id,
+-		input_para->core_id);
++	LOG_TRACE("Vdec Allocate cmd buffer [%d] to core [%d]\n", cmdbuf_id, input_para->core_id);
++	if (filp) {
++		struct filp_priv *fp_priv = (struct filp_priv *)filp->private_data;
++		vdec_pm_runtime_sync(dev->core_id);
++		atomic_inc(&(fp_priv->core_tasks[dev->core_id]));
++	}
+ 	//set ddr address for vcmd registers copy.
+ 	if (dev->hw_version_id > HW_ID_1_0_C) {
+ 		//read vcmd executing register into ddr memory.
+@@ -1906,12 +1915,12 @@ static int check_mc_cmdbuf_irq(struct file *filp, struct cmdbuf_obj *cmdbuf_obj,
+ 	struct hantrovcmd_dev *dev = NULL;
+ #ifdef SUPPORT_DMA_HEAP
+ 	unsigned long flags = 0;
+-	struct dmabuf_priv *db_priv = NULL;
++	struct filp_priv *fp_priv = NULL;
+ 	if (!filp || !filp->private_data) {
+ 		LOG_ERR("check mc: invalid filp\n");
+ 		return 0;
+ 	}
+-	db_priv = (struct dmabuf_priv *)filp->private_data;
++	fp_priv = (struct filp_priv *)filp->private_data;
+ #endif
+ 
+ 	for (k = 0; k < TOTAL_DISCRETE_CMDBUF_NUM; k++) {
+@@ -1921,12 +1930,12 @@ static int check_mc_cmdbuf_irq(struct file *filp, struct cmdbuf_obj *cmdbuf_obj,
+ 		}
+ 
+ #ifdef SUPPORT_DMA_HEAP
+-		spin_lock_irqsave(&db_priv->vcmdlock, flags);
++		spin_lock_irqsave(&fp_priv->vcmdlock, flags);
+ #endif
+ 		new_cmdbuf_node = global_cmdbuf_node[k];
+ 		if (!new_cmdbuf_node) {
+ #ifdef SUPPORT_DMA_HEAP
+-			spin_unlock_irqrestore(&db_priv->vcmdlock, flags);
++			spin_unlock_irqrestore(&fp_priv->vcmdlock, flags);
+ #endif
+ 			continue;
+ 		}
+@@ -1934,7 +1943,7 @@ static int check_mc_cmdbuf_irq(struct file *filp, struct cmdbuf_obj *cmdbuf_obj,
+ 		cmdbuf_obj = (struct cmdbuf_obj *)new_cmdbuf_node->data;
+ 		if (!cmdbuf_obj || cmdbuf_obj->filp != filp) {
+ #ifdef SUPPORT_DMA_HEAP
+-			spin_unlock_irqrestore(&db_priv->vcmdlock, flags);
++			spin_unlock_irqrestore(&fp_priv->vcmdlock, flags);
+ #endif
+ 			continue;
+ 		}
+@@ -1945,13 +1954,13 @@ static int check_mc_cmdbuf_irq(struct file *filp, struct cmdbuf_obj *cmdbuf_obj,
+ 				*irq_status_ret = cmdbuf_obj->cmdbuf_id;
+ 				cmdbuf_obj->waited = 1;
+ #ifdef SUPPORT_DMA_HEAP
+-				spin_unlock_irqrestore(&db_priv->vcmdlock, flags);
++				spin_unlock_irqrestore(&fp_priv->vcmdlock, flags);
+ #endif
+ 				return 1;
+ 			}
+ 		}
+ #ifdef SUPPORT_DMA_HEAP
+-		spin_unlock_irqrestore(&db_priv->vcmdlock, flags);
++		spin_unlock_irqrestore(&fp_priv->vcmdlock, flags);
+ #endif
+ 	}
+ 
+@@ -2616,13 +2625,11 @@ int hantrovcmd_open(struct inode *inode, struct file *filp)
+ 	bi_list_node *process_manager_node;
+ 	unsigned long flags;
+ 	struct process_manager_obj *process_manager_obj = NULL;
+-#ifdef SUPPORT_DMA_HEAP
+-	struct dmabuf_priv *db_priv = (struct dmabuf_priv *)filp->private_data;
+-	spin_lock_init(&db_priv->vcmdlock);
+-	db_priv->dev = (void *)dev;
+-#else
+-	filp->private_data = (void *)dev;
+-#endif
++	struct filp_priv *fp_priv = (struct filp_priv *)filp->private_data;
++
++	spin_lock_init(&fp_priv->vcmdlock);
++	fp_priv->dev = (void *)dev;
++
+ 	process_manager_node = create_process_manager_node();
+ 	if (!process_manager_node) {
+ 		pr_err("%d: create_process_manager_node failed\n", __LINE__);
+@@ -2642,9 +2649,7 @@ int hantrovcmd_open(struct inode *inode, struct file *filp)
+ 
+ int hantrovcmd_release(struct inode *inode, struct file *filp)
+ {
+-#ifdef SUPPORT_DMA_HEAP
+-	struct dmabuf_priv *db_priv = NULL;
+-#endif
++	struct filp_priv *fp_priv = NULL;
+ 	struct hantrovcmd_dev *dev = NULL;
+ 	u32 core_id = 0;
+ 	u32 release_cmdbuf_num = 0;
+@@ -2664,12 +2669,8 @@ int hantrovcmd_release(struct inode *inode, struct file *filp)
+ 		return EFAULT;
+ 	}
+ 
+-#ifdef SUPPORT_DMA_HEAP
+-	db_priv = (struct dmabuf_priv *)filp->private_data;
+-	dev = (struct hantrovcmd_dev *)db_priv->dev;
+-#else
+-	dev = (struct hantrovcmd_dev *)filp->private_data;
+-#endif
++	fp_priv = (struct filp_priv *)filp->private_data;
++	dev = (struct hantrovcmd_dev *)fp_priv->dev;
+ 
+ 	if (down_interruptible(&vcmd_reserve_cmdbuf_sem[dev->vcmd_core_cfg.sub_module_type]))
+ 		return -ERESTARTSYS;
+@@ -4982,3 +4983,29 @@ static void printk_vcmd_register_debug(const void *hwregs, char *info)
+ 	}
+ #endif
+ }
++
++static int check_dev_idle(struct hantrovcmd_dev *dev) {
++	int idle = 0;
++
++	u8 vcmd_state = vcmd_get_register_value((const void *)dev->hwregs,
++						dev->reg_mirror, HWIF_VCMD_WORK_STATE);
++	if (WORKING_STATE_STALL != vcmd_state && WORKING_STATE_WORKING != vcmd_state) {
++        idle = 1;
++    } else {
++        // LOG_WARN("check_dev_idle, vcmd_state = %u\n", vcmd_state);
++    }
++    LOG_WARN("check_dev_idle, vcmd_state = %u\n", vcmd_state);
++	return idle;
++}
++
++int hantrovcmd_wait_core_idle(u32 core_id, long timeout) {
++	struct hantrovcmd_dev *dev = NULL;
++
++	if (core_id >= total_vcmd_core_num) {
++		LOG_ERR("invalid core_id = %u, vcmd_core_num = %u\n", core_id, total_vcmd_core_num);
++		return -ERESTARTSYS;
++	}
++
++	dev = &hantrovcmd_data[core_id];
++	return wait_event_interruptible_timeout(*dev->wait_queue, check_dev_idle(dev), timeout);
++}
+diff --git a/drivers/staging/media/eswin/vdec/hantrodec.h b/drivers/staging/media/eswin/vdec/hantrodec.h
+index e9f356be4f07..9991f4e2ed8e 100644
+--- a/drivers/staging/media/eswin/vdec/hantrodec.h
++++ b/drivers/staging/media/eswin/vdec/hantrodec.h
+@@ -153,18 +153,22 @@ struct dmabuf_split {
+ 	unsigned int offset; /* offset of the buffer corresponding to dmabuf_fd */
+ 	unsigned int length; /* size of the splitted buffer start from offset */
+ };
++#endif
++
++#define DEC_CORE_NUM        (4)
+ 
+ #ifdef __KERNEL__
+-struct dmabuf_priv {
++struct filp_priv {
++#ifdef SUPPORT_DMA_HEAP
+ 	struct heap_root root;
+ 	struct heap_root root_d1;
++#endif
+ 	void *dev;
+ 	spinlock_t vcmdlock;
++	atomic_t core_tasks[DEC_CORE_NUM];  /** for task count of 4 cores*/
+ };
+ #endif
+ 
+-#endif
+-
+ /* Use 'k' as magic number */
+ #define HANTRODEC_IOC_MAGIC 'k'
+ 
+diff --git a/drivers/staging/media/eswin/vdec/subsys.c b/drivers/staging/media/eswin/vdec/subsys.c
+index 0f68ed405bce..7b8b2a50975c 100644
+--- a/drivers/staging/media/eswin/vdec/subsys.c
++++ b/drivers/staging/media/eswin/vdec/subsys.c
+@@ -56,6 +56,8 @@
+ 
+ #include "subsys.h"
+ #include "dts_parser.h"
++#include <linux/pm_runtime.h>
++#include <linux/platform_device.h>
+ 
+ #define LOG_TAG DEC_DEV_NAME ":subs"
+ #include "vc_drv_log.h"
+@@ -210,3 +212,43 @@ void CheckSubsysCoreArray(struct subsys_config *subsys, int *vcmd)
+ 				i, multicorebase[i], iosize[i]);
+ 	}
+ }
++
++struct platform_device *vdec_get_platform_device(u32 core_id)
++{
++	struct platform_device *pdev = NULL;
++	u32 core_num = 4;
++	u8 numa_id;
++
++	if (core_id >= core_num) {
++		LOG_ERR("invalid core_id = %u, core_num = %u\n", core_id, core_num);
++		return NULL;
++	}
++	numa_id = numa_id_array[core_id];
++
++	if (0 == numa_id)
++		pdev = platformdev;
++	else if (1 == numa_id)
++		pdev = platformdev_d1;
++
++	return pdev;
++}
++
++int vdec_pm_runtime_sync(u32 core_id) {
++	struct platform_device *pdev = vdec_get_platform_device(core_id);
++
++	if (!pdev) {
++		LOG_ERR("get platform device failed for pm sync, core_id = %u\n", core_id);
++	}
++
++	return pm_runtime_get_sync(&pdev->dev);
++}
++
++int vdec_pm_runtime_put(u32 core_id) {
++	struct platform_device *pdev = vdec_get_platform_device(core_id);
++
++	if (!pdev) {
++		LOG_ERR("get platform device failed for pm put, numa_id = %u\n", core_id);
++	}
++
++	return pm_runtime_put(&pdev->dev);
++}
+diff --git a/drivers/staging/media/eswin/vdec/subsys.h b/drivers/staging/media/eswin/vdec/subsys.h
+index 39b68c6c1bbd..17a82a6169b0 100644
+--- a/drivers/staging/media/eswin/vdec/subsys.h
++++ b/drivers/staging/media/eswin/vdec/subsys.h
+@@ -173,6 +173,10 @@ int hantrovcmd_mmap(struct file *filp, struct vm_area_struct *vma);
+ int hantrovcmd_init(void);
+ void hantrovcmd_cleanup(void);
+ 
++int hantrovcmd_wait_core_idle(u32 core_id, long timeout);
++struct platform_device *vdec_get_platform_device(u32 core_id);
++int vdec_pm_runtime_sync(u32 core_id);
++int vdec_pm_runtime_put(u32 core_id);
+ /******************************************************************************/
+ /* MMU */
+ /******************************************************************************/
+-- 
+2.47.0
+

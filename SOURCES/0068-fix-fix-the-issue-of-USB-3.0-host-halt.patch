@@ -1,0 +1,73 @@
+From b0e5a8483f79617e65ef8e6508c314829cf014ad Mon Sep 17 00:00:00 2001
+From: liangshuang <liangshuang@eswincomputing.com>
+Date: Wed, 10 Jul 2024 09:56:00 +0800
+Subject: [PATCH 068/215] fix:fix the issue of USB 3.0 host halt.
+
+Changelogs:
+disable parkmod of fix the issue of failed copying large files under USB 3.0.
+
+Signed-off-by: liangshuang <liangshuang@eswincomputing.com>
+---
+ arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi | 10 ++--------
+ arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi | 10 ++--------
+ 2 files changed, 4 insertions(+), 16 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index 0879dcca2527..79a64e2abaf3 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -1933,10 +1933,7 @@ d0_usbdrd_dwc3_0: dwc3@50480000 {
+ 				snps,dis-u2-freeclk-exists-quirk;
+ 				snps,dis_u2_susphy_quirk;
+ 				snps,dis-del-phy-power-chg-quirk;
+-				snps,tx-ipgap-linecheck-dis-quirk;
+-				snps,xhci-slow-suspend-quirk;
+-				snps,xhci-trb-ent-quirk;
+-				snps,usb3-warm-reset-on-resume-quirk;
++				snps,parkmode-disable-ss-quirk;
+ 				status = "disabled";
+ 				numa-node-id = <0>;
+ 				tbus = <WIN2030_TBUID_USB>;
+@@ -1973,10 +1970,7 @@ d0_usbdrd_dwc3_1: dwc3@50490000 {
+ 				snps,dis-u2-freeclk-exists-quirk;
+ 				snps,dis_u2_susphy_quirk;
+ 				snps,dis-del-phy-power-chg-quirk;
+-				snps,tx-ipgap-linecheck-dis-quirk;
+-				snps,xhci-slow-suspend-quirk;
+-				snps,xhci-trb-ent-quirk;
+-				snps,usb3-warm-reset-on-resume-quirk;
++				snps,parkmode-disable-ss-quirk;
+ 				status = "disabled";
+ 				numa-node-id = <0>;
+ 				tbus = <WIN2030_TBUID_USB>;
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index 1417c6298a3c..aff6298f851e 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -1931,10 +1931,7 @@ d1_usbdrd_dwc3_0: dwc3@70480000 {
+ 				snps,dis-u2-freeclk-exists-quirk;
+ 				snps,dis_u2_susphy_quirk;
+ 				snps,dis-del-phy-power-chg-quirk;
+-				snps,tx-ipgap-linecheck-dis-quirk;
+-				snps,xhci-slow-suspend-quirk;
+-				snps,xhci-trb-ent-quirk;
+-				snps,usb3-warm-reset-on-resume-quirk;
++				snps,parkmode-disable-ss-quirk;
+ 				status = "disabled";
+ 				numa-node-id = <1>;
+ 				tbus = <WIN2030_TBUID_USB>;
+@@ -1971,10 +1968,7 @@ d1_usbdrd_dwc3_1: dwc3@70490000 {
+ 				snps,dis-u2-freeclk-exists-quirk;
+ 				snps,dis_u2_susphy_quirk;
+ 				snps,dis-del-phy-power-chg-quirk;
+-				snps,tx-ipgap-linecheck-dis-quirk;
+-				snps,xhci-slow-suspend-quirk;
+-				snps,xhci-trb-ent-quirk;
+-				snps,usb3-warm-reset-on-resume-quirk;
++				snps,parkmode-disable-ss-quirk;
+ 				status = "disabled";
+ 				numa-node-id = <1>;
+ 				tbus = <WIN2030_TBUID_USB>;
+-- 
+2.47.0
+

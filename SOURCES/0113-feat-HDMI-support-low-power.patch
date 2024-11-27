@@ -1,0 +1,474 @@
+From 1666f45d5ab884d594dc1b30ac07093a3edf9447 Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Thu, 18 Jul 2024 16:38:30 +0800
+Subject: [PATCH 113/215] feat:HDMI support low power.
+
+Changelogs:
+	HDMI support low power.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ .../dts/eswin/eswin-win2030-die0-soc.dtsi     |   6 +-
+ .../dts/eswin/eswin-win2030-die1-soc.dtsi     |   6 +-
+ .../boot/dts/eswin/hifive-premier-550.dts     |   1 -
+ drivers/gpu/drm/eswin/dw-hdmi.c               |  27 ++-
+ drivers/gpu/drm/eswin/eswin_dw_hdmi.c         | 180 +-----------------
+ 5 files changed, 26 insertions(+), 194 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index 3b2961f29389..8cc13e04a2d4 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -1857,9 +1857,9 @@ dw_hdmi: hdmi@502a0000 {
+ 			//pinctrl-0 = <&hdmi_i2c_xfer>;
+ 			interrupt-parent = <&plic0>;
+ 			interrupts = <274>;
+-			clocks = <&d0_clock WIN2030_CLK_VO_CFG_CLK>, <&d0_clock WIN2030_CLK_VO_PIXEL_CLK>,
+-				   <&d0_clock WIN2030_CLK_VO_CEC_CLK>, <&d0_clock WIN2030_CLK_VO_CR_CLK>;
+-			clock-names = "iahb", "vpll", "cec", "isfr";
++			clocks = <&d0_clock WIN2030_CLK_VO_CFG_CLK>, <&d0_clock WIN2030_CLK_VO_CEC_CLK>,
++					 <&d0_clock WIN2030_CLK_VO_CR_CLK>;
++			clock-names = "iahb", "cec", "isfr";
+ 			//power-domains = <&power WIN2030_PD_HDCP>;
+ 			reg-io-width = <4>;
+ 			ddc-i2c-scl-high-time-ns = <4708>;
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index 005cd8fc4c35..92cddf1e756f 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -1729,9 +1729,9 @@ d1_dw_hdmi: hdmi@702a0000 {
+             //pinctrl-0 = <&hdmi_i2c_xfer>;
+             interrupt-parent = <&plic1>;
+             interrupts = <274>;
+-            clocks = <&d1_clock WIN2030_CLK_VO_CFG_CLK>, <&d1_clock WIN2030_CLK_VO_PIXEL_CLK>,
+-                   <&d1_clock WIN2030_CLK_VO_CEC_CLK>, <&d1_clock WIN2030_CLK_VO_CR_CLK>;
+-            clock-names = "iahb", "vpll", "cec", "isfr";
++            clocks = <&d1_clock WIN2030_CLK_VO_CFG_CLK>, <&d1_clock WIN2030_CLK_VO_CEC_CLK>,
++					 <&d1_clock WIN2030_CLK_VO_CR_CLK>;
++            clock-names = "iahb", "cec", "isfr";
+             //power-domains = <&power WIN2030_PD_HDCP>;
+             reg-io-width = <4>;
+             ddc-i2c-scl-high-time-ns = <4708>;
+diff --git a/arch/riscv/boot/dts/eswin/hifive-premier-550.dts b/arch/riscv/boot/dts/eswin/hifive-premier-550.dts
+index 11ecf0bb3cd2..163938a2a393 100644
+--- a/arch/riscv/boot/dts/eswin/hifive-premier-550.dts
++++ b/arch/riscv/boot/dts/eswin/hifive-premier-550.dts
+@@ -310,7 +310,6 @@ &dsi_panel {
+ 
+ &dw_hdmi {
+ 	status = "okay";
+-	eswin-plat = <1>;
+ 	ports {
+ 		port@2 {
+ 			reg = <2>;
+diff --git a/drivers/gpu/drm/eswin/dw-hdmi.c b/drivers/gpu/drm/eswin/dw-hdmi.c
+index 7123022dfd0c..552b80ccacdb 100644
+--- a/drivers/gpu/drm/eswin/dw-hdmi.c
++++ b/drivers/gpu/drm/eswin/dw-hdmi.c
+@@ -51,6 +51,8 @@
+ 
+ #define HDMI14_MAX_TMDSCLK 340000000
+ 
++#define HDMI_CEC_CLK 32768
++
+ static bool hpd_flag = false;
+ 
+ static const u16 csc_coeff_default[3][4] = {
+@@ -2066,7 +2068,6 @@ static void hdmi_config_AVI(struct dw_hdmi *hdmi,
+ 			frame.extended_colorimetry =
+ 					HDMI_EXTENDED_COLORIMETRY_XV_YCC_709;
+ 			break;
+-
+ 		case V4L2_YCBCR_ENC_BT2020:
+ 			if (hdmi->hdmi_data.enc_in_encoding ==
+ 			    V4L2_YCBCR_ENC_BT2020)
+@@ -2076,7 +2077,6 @@ static void hdmi_config_AVI(struct dw_hdmi *hdmi,
+ 			frame.extended_colorimetry =
+ 				HDMI_EXTENDED_COLORIMETRY_BT2020;
+ 			break;
+-
+ 		default: /* Carries no data */
+ 			frame.colorimetry = HDMI_COLORIMETRY_ITU_601;
+ 			frame.extended_colorimetry =
+@@ -4248,6 +4248,12 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+ 				ret);
+ 			goto err_iahb;
+ 		}
++
++		ret = clk_set_rate(hdmi->cec_clk, HDMI_CEC_CLK);
++		if (ret) {
++			dev_err(hdmi->dev, "Cannot set CEC clock rate, error:%d\n", ret);
++			goto err_iahb;
++		}
+ 	}
+ 
+ 	/* hdmi prstn reset */
+@@ -4256,7 +4262,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+ 	if (IS_ERR_OR_NULL(hdmi->rst_hdmi_prstn)) {
+ 		dev_err(hdmi->dev, "Failed to get hdmi prstn reset handle\n");
+ 		ret = -EFAULT;
+-		goto err_iahb;
++		goto err_cec;
+ 	}
+ 
+ 	/* hdmi phyctl reset */
+@@ -4265,7 +4271,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+ 	if (IS_ERR_OR_NULL(hdmi->rst_hdmi_phyrstn)) {
+ 		dev_err(hdmi->dev, "Failed to get hdmi phyrstn reset handle\n");
+ 		ret = -EFAULT;
+-		goto err_iahb;
++		goto err_cec;
+ 	}
+ 
+ 	/* hdmi rstn reset */
+@@ -4274,7 +4280,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+ 	if (IS_ERR_OR_NULL(hdmi->rst_hdmi_rstn)) {
+ 		dev_err(hdmi->dev, "Failed to get hdmi rstn reset handle\n");
+ 		ret = -EFAULT;
+-		goto err_iahb;
++		goto err_cec;
+ 	}
+ 
+ 	if (hdmi->rst_hdmi_prstn) {
+@@ -4303,12 +4309,12 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+ 		dev_err(dev, "Unsupported HDMI controller (%04x:%02x:%02x)\n",
+ 			hdmi->version, prod_id0, prod_id1);
+ 		ret = -ENODEV;
+-		goto err_iahb;
++		goto err_cec;
+ 	}
+ 
+ 	ret = dw_hdmi_detect_phy(hdmi);
+ 	if (ret < 0)
+-		goto err_iahb;
++		goto err_cec;
+ 
+ 	dev_info(dev, "Detected HDMI TX controller v%x.%03x %s HDCP (%s)\n",
+ 		 hdmi->version >> 12, hdmi->version & 0xfff,
+@@ -4321,14 +4327,14 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+ 		ret = irq;
+-		goto err_iahb;
++		goto err_cec;
+ 	}
+ 
+ 	ret = devm_request_threaded_irq(dev, irq, dw_hdmi_hardirq,
+ 					dw_hdmi_irq, IRQF_SHARED,
+ 					dev_name(dev), hdmi);
+ 	if (ret)
+-		goto err_iahb;
++		goto err_cec;
+ 
+ 	/*
+ 	 * To prevent overflows in HDMI_IH_FC_STAT2, set the clk regenerator
+@@ -4452,9 +4458,10 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+ 
+ 	return hdmi;
+ 
++err_cec:
++	clk_disable_unprepare(hdmi->cec_clk);
+ err_iahb:
+ 	clk_disable_unprepare(hdmi->iahb_clk);
+-	clk_disable_unprepare(hdmi->cec_clk);
+ err_isfr:
+ 	clk_disable_unprepare(hdmi->isfr_clk);
+ err_res:
+diff --git a/drivers/gpu/drm/eswin/eswin_dw_hdmi.c b/drivers/gpu/drm/eswin/eswin_dw_hdmi.c
+index 36efffa7d47a..1412036bdc31 100644
+--- a/drivers/gpu/drm/eswin/eswin_dw_hdmi.c
++++ b/drivers/gpu/drm/eswin/eswin_dw_hdmi.c
+@@ -57,12 +57,8 @@ enum dw_hdmi_eswin_color_depth {
+ struct eswin_hdmi {
+ 	struct device *dev;
+ 	struct regmap *regmap;
+-	struct drm_encoder encoder;
+-	struct clk *vpll_clk;
+-	struct clk *hclk_vio;
+-	struct clk *dclk;
+ 	struct dw_hdmi *hdmi;
+-	struct phy *phy;
++	struct drm_encoder encoder;
+ 	u8 id;
+ 	unsigned long bus_format;
+ 	unsigned long output_bus_format;
+@@ -201,101 +197,6 @@ static struct dw_hdmi_phy_config eswin_phy_config[] = {
+ 	{ ~0UL, 0x0000, 0x0000, 0x0000 }
+ };
+ 
+-static int eswin_hdmi_update_phy_table(struct eswin_hdmi *hdmi, u32 *config,
+-				       int phy_table_size)
+-{
+-	int i;
+-
+-	if (phy_table_size > ARRAY_SIZE(eswin_phy_config)) {
+-		dev_err(hdmi->dev, "phy table array number is out of range\n");
+-		return -E2BIG;
+-	}
+-
+-	for (i = 0; i < phy_table_size; i++) {
+-		if (config[i * 4] != 0)
+-			eswin_phy_config[i].mpixelclock = (u64)config[i * 4];
+-		else
+-			eswin_phy_config[i].mpixelclock = ~0UL;
+-		eswin_phy_config[i].sym_ctr = (u16)config[i * 4 + 1];
+-		eswin_phy_config[i].term = (u16)config[i * 4 + 2];
+-		eswin_phy_config[i].vlev_ctr = (u16)config[i * 4 + 3];
+-	}
+-
+-	return 0;
+-}
+-
+-static int eswin_hdmi_parse_dt(struct eswin_hdmi *hdmi)
+-{
+-	struct device_node *np = hdmi->dev->of_node;
+-	int ret, val, phy_table_size;
+-	u32 *phy_config;
+-
+-	hdmi->vpll_clk = devm_clk_get(hdmi->dev, "vpll");
+-	if (PTR_ERR(hdmi->vpll_clk) == -ENOENT) {
+-		hdmi->vpll_clk = NULL;
+-	} else if (PTR_ERR(hdmi->vpll_clk) == -EPROBE_DEFER) {
+-		return -EPROBE_DEFER;
+-	} else if (IS_ERR(hdmi->vpll_clk)) {
+-		DRM_DEV_ERROR(hdmi->dev, "failed to get vpll clock\n");
+-		return PTR_ERR(hdmi->vpll_clk);
+-	}
+-
+-	hdmi->hclk_vio = devm_clk_get(hdmi->dev, "hclk_vio");
+-	if (PTR_ERR(hdmi->hclk_vio) == -ENOENT) {
+-		hdmi->hclk_vio = NULL;
+-	} else if (PTR_ERR(hdmi->hclk_vio) == -EPROBE_DEFER) {
+-		return -EPROBE_DEFER;
+-	} else if (IS_ERR(hdmi->hclk_vio)) {
+-		dev_err(hdmi->dev, "failed to get hclk_vio clock\n");
+-		return PTR_ERR(hdmi->hclk_vio);
+-	}
+-	hdmi->dclk = devm_clk_get(hdmi->dev, "dclk");
+-	if (PTR_ERR(hdmi->dclk) == -ENOENT) {
+-		hdmi->dclk = NULL;
+-	} else if (PTR_ERR(hdmi->dclk) == -EPROBE_DEFER) {
+-		return -EPROBE_DEFER;
+-	} else if (IS_ERR(hdmi->dclk)) {
+-		dev_err(hdmi->dev, "failed to get dclk\n");
+-		return PTR_ERR(hdmi->dclk);
+-	}
+-
+-	ret = clk_prepare_enable(hdmi->vpll_clk);
+-	if (ret) {
+-		dev_err(hdmi->dev, "Failed to enable HDMI vpll: %d\n", ret);
+-		return ret;
+-	}
+-
+-	ret = clk_prepare_enable(hdmi->hclk_vio);
+-	if (ret) {
+-		dev_err(hdmi->dev, "Failed to eanble HDMI hclk_vio: %d\n", ret);
+-		return ret;
+-	}
+-
+-	if (of_get_property(np, "eswin,phy-table", &val)) {
+-		phy_config = kmalloc(val, GFP_KERNEL);
+-		if (!phy_config) {
+-			/* use default table when kmalloc failed. */
+-			dev_err(hdmi->dev, "kmalloc phy table failed\n");
+-
+-			return -ENOMEM;
+-		}
+-		phy_table_size = val / 16;
+-		of_property_read_u32_array(np, "eswin,phy-table", phy_config,
+-					   val / sizeof(u32));
+-		ret = eswin_hdmi_update_phy_table(hdmi, phy_config,
+-						  phy_table_size);
+-		if (ret) {
+-			kfree(phy_config);
+-			return ret;
+-		}
+-		kfree(phy_config);
+-	} else {
+-		dev_dbg(hdmi->dev, "use default hdmi phy table\n");
+-	}
+-
+-	return 0;
+-}
+-
+ static enum drm_mode_status
+ dw_hdmi_eswin_mode_valid(struct dw_hdmi *hdmi, void *data,
+ 			 const struct drm_display_info *info,
+@@ -316,19 +217,6 @@ dw_hdmi_eswin_mode_valid(struct dw_hdmi *hdmi, void *data,
+ 	return (valid) ? MODE_OK : MODE_BAD;
+ }
+ 
+-static void dw_hdmi_eswin_encoder_disable(struct drm_encoder *encoder)
+-{
+-	struct eswin_hdmi *hdmi = to_eswin_hdmi(encoder);
+-
+-	/*
+-     * when plug out hdmi it will be switch cvbs and then phy bus width
+-     * must be set as 8
+-     */
+-	if (hdmi->phy)
+-		phy_set_bus_width(hdmi->phy, 8);
+-	clk_disable_unprepare(hdmi->dclk);
+-}
+-
+ static bool
+ dw_hdmi_eswin_encoder_mode_fixup(struct drm_encoder *encoder,
+ 				 const struct drm_display_mode *mode,
+@@ -337,35 +225,6 @@ dw_hdmi_eswin_encoder_mode_fixup(struct drm_encoder *encoder,
+ 	return true;
+ }
+ 
+-static void dw_hdmi_eswin_encoder_mode_set(struct drm_encoder *encoder,
+-					   struct drm_display_mode *mode,
+-					   struct drm_display_mode *adj_mode)
+-{
+-	struct eswin_hdmi *hdmi = to_eswin_hdmi(encoder);
+-
+-	clk_set_rate(hdmi->vpll_clk, adj_mode->clock * 1000);
+-}
+-
+-static void dw_hdmi_eswin_encoder_enable(struct drm_encoder *encoder)
+-{
+-	struct eswin_hdmi *hdmi = to_eswin_hdmi(encoder);
+-	struct drm_crtc *crtc = encoder->crtc;
+-
+-	if (WARN_ON(!crtc || !crtc->state))
+-		return;
+-
+-	if (hdmi->phy)
+-		phy_set_bus_width(hdmi->phy, hdmi->phy_bus_width);
+-
+-	clk_set_rate(hdmi->vpll_clk,
+-		     crtc->state->adjusted_mode.crtc_clock * 1000);
+-
+-	clk_set_rate(hdmi->dclk, crtc->state->adjusted_mode.crtc_clock * 1000);
+-	clk_prepare_enable(hdmi->dclk);
+-
+-	DRM_DEV_DEBUG(hdmi->dev, "dc output to hdmi\n");
+-}
+-
+ static void dw_hdmi_eswin_select_output(struct drm_connector_state *conn_state,
+ 					struct drm_crtc_state *crtc_state,
+ 					struct eswin_hdmi *hdmi,
+@@ -561,8 +420,6 @@ dw_hdmi_eswin_encoder_atomic_check(struct drm_encoder *encoder,
+ 	}
+ 
+ 	hdmi->phy_bus_width = bus_width;
+-	if (hdmi->phy)
+-		phy_set_bus_width(hdmi->phy, bus_width);
+ 
+ 	s->encoder_type = DRM_MODE_ENCODER_TMDS;
+ 
+@@ -864,7 +721,7 @@ static int dw_hdmi_eswin_set_property(struct drm_connector *connector,
+ 			hdmi->video_enable = val;
+ 		}
+ 	} else {
+-		DRM_ERROR("don't support set %s property\n", property->name);
++		DRM_DEBUG("don't support set %s property\n", property->name);
+ 		return 0;
+ 	}
+ 	return 0;
+@@ -950,9 +807,6 @@ static const struct dw_hdmi_property_ops dw_hdmi_eswin_property_ops = {
+ static const struct drm_encoder_helper_funcs
+ 	dw_hdmi_eswin_encoder_helper_funcs = {
+ 		.mode_fixup = dw_hdmi_eswin_encoder_mode_fixup,
+-		.mode_set = dw_hdmi_eswin_encoder_mode_set,
+-		.enable = dw_hdmi_eswin_encoder_enable,
+-		.disable = dw_hdmi_eswin_encoder_disable,
+ 		.atomic_check = dw_hdmi_eswin_encoder_atomic_check,
+ 	};
+ 
+@@ -980,7 +834,7 @@ static int dw_hdmi_eswin_bind(struct device *dev, struct device *master,
+ 	struct drm_device *drm = data;
+ 	struct drm_encoder *encoder;
+ 	struct eswin_hdmi *hdmi;
+-	int ret;
++	int ret = 0;
+ 
+ 	if (!pdev->dev.of_node)
+ 		return -ENODEV;
+@@ -1010,19 +864,6 @@ static int dw_hdmi_eswin_bind(struct device *dev, struct device *master,
+ 	if (encoder->possible_crtcs == 0)
+ 		return -EPROBE_DEFER;
+ 
+-	ret = eswin_hdmi_parse_dt(hdmi);
+-	if (ret) {
+-		DRM_DEV_ERROR(hdmi->dev, "Unable to parse OF data\n");
+-		return ret;
+-	}
+-
+-	ret = clk_prepare_enable(hdmi->vpll_clk);
+-	if (ret) {
+-		DRM_DEV_ERROR(hdmi->dev, "Failed to enable HDMI vpll: %d\n",
+-			      ret);
+-		return ret;
+-	}
+-
+ 	plat_data->phy_data = hdmi;
+ 	plat_data->get_input_bus_format = dw_hdmi_eswin_get_input_bus_format;
+ 	plat_data->get_output_bus_format = dw_hdmi_eswin_get_output_bus_format;
+@@ -1030,14 +871,6 @@ static int dw_hdmi_eswin_bind(struct device *dev, struct device *master,
+ 	plat_data->get_enc_out_encoding = dw_hdmi_eswin_get_enc_out_encoding;
+ 	plat_data->property_ops = &dw_hdmi_eswin_property_ops;
+ 
+-	hdmi->phy = devm_phy_optional_get(dev, "hdmi");
+-	if (IS_ERR(hdmi->phy)) {
+-		ret = PTR_ERR(hdmi->phy);
+-		if (ret != -EPROBE_DEFER)
+-			DRM_DEV_ERROR(hdmi->dev, "failed to get phy\n");
+-		return ret;
+-	}
+-
+ 	drm_encoder_helper_add(encoder, &dw_hdmi_eswin_encoder_helper_funcs);
+ 	drm_simple_encoder_init(drm, encoder, DRM_MODE_ENCODER_TMDS);
+ 
+@@ -1052,7 +885,6 @@ static int dw_hdmi_eswin_bind(struct device *dev, struct device *master,
+ 	if (IS_ERR(hdmi->hdmi)) {
+ 		ret = PTR_ERR(hdmi->hdmi);
+ 		drm_encoder_cleanup(encoder);
+-		clk_disable_unprepare(hdmi->vpll_clk);
+ 	}
+ 
+ 	return ret;
+@@ -1064,7 +896,6 @@ static void dw_hdmi_eswin_unbind(struct device *dev, struct device *master,
+ 	struct eswin_hdmi *hdmi = dev_get_drvdata(dev);
+ 
+ 	dw_hdmi_unbind(hdmi->hdmi);
+-	clk_disable_unprepare(hdmi->vpll_clk);
+ }
+ 
+ static const struct component_ops dw_hdmi_eswin_ops = {
+@@ -1074,8 +905,6 @@ static const struct component_ops dw_hdmi_eswin_ops = {
+ 
+ static int dw_hdmi_eswin_probe(struct platform_device *pdev)
+ {
+-	pm_runtime_enable(&pdev->dev);
+-	pm_runtime_get_sync(&pdev->dev);
+ 	return component_add(&pdev->dev, &dw_hdmi_eswin_ops);
+ }
+ 
+@@ -1084,13 +913,11 @@ static void dw_hdmi_eswin_shutdown(struct platform_device *pdev)
+ 	struct eswin_hdmi *hdmi = dev_get_drvdata(&pdev->dev);
+ 
+ 	dw_hdmi_suspend(hdmi->hdmi);
+-	pm_runtime_put_sync(&pdev->dev);
+ }
+ 
+ static int dw_hdmi_eswin_remove(struct platform_device *pdev)
+ {
+ 	component_del(&pdev->dev, &dw_hdmi_eswin_ops);
+-	pm_runtime_disable(&pdev->dev);
+ 	return 0;
+ }
+ 
+@@ -1099,7 +926,6 @@ static int __maybe_unused dw_hdmi_eswin_suspend(struct device *dev)
+ 	struct eswin_hdmi *hdmi = dev_get_drvdata(dev);
+ 
+ 	dw_hdmi_suspend(hdmi->hdmi);
+-	pm_runtime_put_sync(dev);
+ 
+ 	return 0;
+ }
+-- 
+2.47.0
+

@@ -1,0 +1,38 @@
+From 01c292627b3e6988c9fa8e86b5941ba82491e102 Mon Sep 17 00:00:00 2001
+From: liusheng <liusheng@eswincomputing.com>
+Date: Wed, 24 Jul 2024 16:08:13 +0800
+Subject: [PATCH 118/215] fix:put power on if the interrupt came
+
+Changelogs:
+1. interrupt came when the clock disable, so set power on
+to handle interrupt.
+
+Signed-off-by: liusheng <liusheng@eswincomputing.com>
+---
+ .../hae/hal/os/linux/kernel/gc_hal_kernel_device.c     | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/staging/media/eswin/hae/hal/os/linux/kernel/gc_hal_kernel_device.c b/drivers/staging/media/eswin/hae/hal/os/linux/kernel/gc_hal_kernel_device.c
+index 9e8f6bcbbfd7..21e9513d8347 100644
+--- a/drivers/staging/media/eswin/hae/hal/os/linux/kernel/gc_hal_kernel_device.c
++++ b/drivers/staging/media/eswin/hae/hal/os/linux/kernel/gc_hal_kernel_device.c
+@@ -2267,6 +2267,16 @@ isrRoutine(int irq, void *ctxt)
+         return IRQ_HANDLED;
+     }
+ 
++    /* interrupt came when the clock disable, so set power on to handle interrupt */
++    if(status == gcvSTATUS_GENERIC_IO){
++        gckHARDWARE_SetPowerState(kernel->hardware, gcvPOWER_ON_AUTO);
++        status = gckHARDWARE_Interrupt(kernel->hardware);
++        if (gcmIS_SUCCESS(status)) {
++            up(kernel->sema);
++            return IRQ_HANDLED;
++        }
++    }
++
+     return IRQ_NONE;
+ }
+ 
+-- 
+2.47.0
+

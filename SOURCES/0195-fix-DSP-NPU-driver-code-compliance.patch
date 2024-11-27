@@ -1,0 +1,3364 @@
+From e7cdf2a34b2d8f2e07bf3f4b45ed9d8466cd1838 Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Tue, 22 Oct 2024 11:22:48 +0800
+Subject: [PATCH 195/215] fix:DSP & NPU driver code compliance.
+
+Changelogs:
+	1.Revise Chinese comments.
+	2.Modify the file license format.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ .../ai_driver/common/devices/cdma_regs.h      | 27 ++++--
+ .../ai_driver/common/devices/conv_regs.h      | 27 ++++--
+ .../eswin/ai_driver/common/devices/drp_regs.h | 91 ++++++++++++-------
+ .../ai_driver/common/devices/edma_regs.h      | 27 ++++--
+ .../ai_driver/common/devices/mailbox_regs.h   | 27 ++++--
+ .../ai_driver/common/devices/npu_base_regs.h  | 27 ++++--
+ .../eswin/ai_driver/common/devices/pdp_regs.h | 27 ++++--
+ .../eswin/ai_driver/common/devices/pec_reg.h  | 27 ++++--
+ .../ai_driver/common/devices/rubik_regs.h     | 27 ++++--
+ .../eswin/ai_driver/common/devices/sdp_regs.h | 27 ++++--
+ .../eswin/ai_driver/common/devices/sys_regs.h | 27 ++++--
+ .../eswin/ai_driver/common/dla_interface.h    | 64 ++++++++-----
+ .../eswin/ai_driver/common/es_dsp_internal.h  | 27 ++++--
+ .../eswin/ai_driver/common/es_dsp_op_types.h  | 27 ++++--
+ .../soc/eswin/ai_driver/common/es_dsp_types.h | 27 ++++--
+ .../soc/eswin/ai_driver/common/es_nn_common.h | 27 ++++--
+ drivers/soc/eswin/ai_driver/common/es_type.h  | 21 +++++
+ .../soc/eswin/ai_driver/common/hetero_arch.h  | 27 ++++--
+ .../eswin/ai_driver/common/hetero_common.h    | 27 ++++--
+ .../soc/eswin/ai_driver/common/hetero_env.h   | 27 ++++--
+ .../soc/eswin/ai_driver/common/hetero_host.h  | 27 ++++--
+ .../soc/eswin/ai_driver/common/hetero_ioctl.h | 27 ++++--
+ .../soc/eswin/ai_driver/common/hetero_ipc.h   | 27 ++++--
+ .../soc/eswin/ai_driver/common/hetero_perf.h  | 27 ++++--
+ .../eswin/ai_driver/common/hetero_processor.h | 35 ++++---
+ .../soc/eswin/ai_driver/common/hetero_types.h | 27 ++++--
+ drivers/soc/eswin/ai_driver/common/md5.h      | 27 ++++--
+ .../soc/eswin/ai_driver/dsp/dsp_firmware.c    | 27 ++++--
+ .../soc/eswin/ai_driver/dsp/dsp_firmware.h    | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_hw.h      | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h   | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c   | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h   | 27 ++++--
+ .../soc/eswin/ai_driver/dsp/dsp_ioctl_if.h    | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_log.c     | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_log.h     | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_main.c    | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_main.h    | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_perf.h    | 27 ++++--
+ .../soc/eswin/ai_driver/dsp/dsp_platform.c    | 27 ++++--
+ .../soc/eswin/ai_driver/dsp/dsp_platform.h    | 27 ++++--
+ .../eswin/ai_driver/dsp/dsp_platform_sim.c    | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_proc.c    | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_proc.h    | 27 ++++--
+ drivers/soc/eswin/ai_driver/dsp/dsp_sram.c    | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/common.c      | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/common.h      | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/conv.c        | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/conv.h        | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/debug.c       | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/debug.h       | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/dla_buffer.c  | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/dla_buffer.h  | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/dla_driver.c  | 22 +++++
+ drivers/soc/eswin/ai_driver/npu/dla_driver.h  | 27 ++++--
+ .../eswin/ai_driver/npu/dla_engine_internal.h | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/dla_log.c     | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/dla_log.h     | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/dsp.c         | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/dsp.h         | 22 +++++
+ drivers/soc/eswin/ai_driver/npu/edma.c        | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/edma.h        | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/engine.c      | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/event.c       | 27 ++++--
+ .../eswin/ai_driver/npu/include/dla_engine.h  | 27 ++++--
+ .../eswin/ai_driver/npu/include/npu_top_csr.h | 27 ++++--
+ .../ai_driver/npu/include/nvdla_interface.h   | 27 ++++--
+ .../eswin/ai_driver/npu/include/nvdla_linux.h | 27 ++++--
+ .../eswin/ai_driver/npu/internal_interface.h  | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/npu_e31.c     | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/npu_frame.c   | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/npu_main.c    | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/npu_spram.c   | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/npu_spram.h   | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/nvdla_hw.c    | 27 ++++--
+ .../soc/eswin/ai_driver/npu/nvdla_lowlevel.h  | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/nvdla_proc.c  | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/nvdla_proc.h  | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/nvdla_sim.c   | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/parse_dep.c   | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/pdp.c         | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/post_drp.h    | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/rubik.c       | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/scheduler.c   | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/sdp.c         | 27 ++++--
+ drivers/soc/eswin/ai_driver/npu/sdp.h         | 27 ++++--
+ .../soc/eswin/ai_driver/npu/user_context.c    | 27 ++++--
+ 88 files changed, 1908 insertions(+), 561 deletions(-)
+
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h b/drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h
+index 331d0b00d920..62023dd7c49f 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __CDMA_REGS_H__
+ #define __CDMA_REGS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/conv_regs.h b/drivers/soc/eswin/ai_driver/common/devices/conv_regs.h
+index f72902ce1ac3..81c4f141e75a 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/conv_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/conv_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __CONV_REGS_H__
+ #define __CONV_REGS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h b/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h
+index 53fa23982c19..5dc253d33b23 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __DRP_REGS_H__
+ #define __DRP_REGS_H__
+@@ -60,74 +75,82 @@ typedef enum {
+ #define DRP_WR_D_OP_STATUS 0x4
+ 
+ #define DRP_WR_D_CTRL 0x8
++
+ /**
+- * @brief N2方向的步进值，n2_stride=N1*N0*E3*E2*E1*M2*M1*F0*M0，用于PE写DRP地址计算.
+- *
++ * @brief The step value in the N2 direction, n2_stride = N1 * N0 * E3 * E2 * E1 * M2 * M1 * F0 * M0,
++ *        is used for calculating the DRP address written by the PE.
+  */
+ #define DRP_WR_D_N2_STRIDE 0x10
++
+ /**
+- * @brief 任务0，G2方向的步进值，g2_stride=N2*N1*E3*E2*E1*M2*M1*F0*M0*GF*GMF，用于PE写DRP地址计算。配置减1
+- *
++ * @brief For Task 0, the step value in the G2 direction, g2_stride = N2 * N1 * E3 * E2 * E1 * M2 * M1 * F0 * M0 * GF * GMF,
++ *        is used for calculating the DRP address written by the PE. Configuration decrement by 1.
+  */
+ #define DRP_WR_D_G2_STRIDE 0x14
++
+ /**
+- * @brief E3方向的步进值，e3_stride=E2*E1*M2*M1*F0*M0，用于PE写DRP地址计算
+- *
++ * @brief The step value in the E3 direction, e3_stride = E2 * E1 * M2 * M1 * F0 * M0,
++ *        is used for calculating the DRP address written by the PE.
+  */
+ #define DRP_WR_D_E3_STRIDE 0x18
++
+ /**
+- * @brief M2方向的步进值，m2_stride=M1*F0*M0，用于PE写DRP地址计算
+- *
++ * @brief The step value in the M2 direction, m2_stride = M1 * F0 * M0,
++ *        is used for calculating the DRP address written by the PE.
+  */
+ #define DRP_WR_D_M2_STRIDE 0x1C
++
+ /**
+- * @brief M方向的步进值，m_stride=F0*M0，用于PE写DRP地址计算
+- *
++ * @brief The step value in the M direction, m_stride = F0 * M0,
++ *        is used for calculating the DRP address written by the PE.
+  */
+ #define DRP_WR_D_M_STRIDE 0x20
++
+ /**
+- * @brief G3阈值，用于PE写DRP地址计算
+- *
++ * @brief G3 threshold, used for calculating the DRP address written by the PE.
+  */
+ #define DRP_WR_D_G3_THRESHOLD 0x24
++
+ /**
+- * @brief N3阈值，用于PE写DRP地址计算
+- *
++ * @brief N3 threshold, used for calculating the DRP address written by the PE.
+  */
+ #define DRP_WR_D_N3_THRESHOLD 0x28
++
+ /**
+- * @brief M3阈值，用于PE写DRP地址计算
+- *
++ * @brief M3 threshold, used for calculating the DRP address written by the PE.
+  */
+ #define DRP_WR_D_M3_THRESHOLD 0x2C
++
+ /**
+- * @brief E4阈值，用于PE写DRP地址计算
+- *
++ * @brief E4 threshold, used for calculating the DRP address written by the PE.
+  */
+ #define DRP_WR_D_E4_THRESHOLD 0x30
++
+ /**
+- * @brief F3阈值，用于PE写DRP地址计算
+- *
++ * @brief F3 threshold, used for calculating the DRP address written by the PE.
+  */
+ #define DRP_WR_D_F3_THRESHOLD 0x34
++
+ /**
+- * @brief 写入lsram/ddr的基地址低32bit
+- *
++ * @brief The lower 32 bits of the base address for writing to LSRAM/DDR.
+  */
+ #define DRP_WR_D_BA_L 0x38
++
+ /**
+- * @brief 写入lsram/ddr的基地址高32bit
+- *
++ * @brief The high 32 bits of the base address for writing to LSRAM/DDR.
+  */
+ #define DRP_WR_D_BA_H 0x3C
++
+ /**
+- * @brief 参与task计算的PE数量，用于last_pkt统计，当收到的last_pkt脉冲数等于pe_num则认为所有PE均完成当前ofmap cube的计算
+- *
++ * @brief The number of PE participating in the task computation, used for last_pkt statistics.
++ *        When the number of received last_pkt pulses equals pe_num,
++ *        it indicates that all PE have completed the computation of the current ofmap cube.
+  */
+ #define DRP_WR_D_PE_NUM 0x80
++
+ /**
+- * @brief task一个glb level loop输出的ofmap的大小，用与glb level loop的基地址计算
+- *
++ * @brief The size of the ofmap output by one GLB level loop,
++ *        used in the calculation of the base address for the GLB level loop.
+  */
+ #define DRP_WR_D_SIZE_GLB 0x94
+ 
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/edma_regs.h b/drivers/soc/eswin/ai_driver/common/devices/edma_regs.h
+index 507fb815e8ad..5ae6332ae6a2 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/edma_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/edma_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __EDMA_REGS_H__
+ #define __EDMA_REGS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h b/drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h
+index e656352821f6..a247096e8029 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __MAILBOX_REGS_H__
+ #define __MAILBOX_REGS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h b/drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h
+index 15894d65d304..6ff00201ec7d 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __NPU_BASE_REGS_H__
+ #define __NPU_BASE_REGS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h b/drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h
+index c75e777e3708..62f45518e294 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __PDP_REGS_H__
+ #define __PDP_REGS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h b/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h
+index 9fa0052b6aaa..16394963331c 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ /*generated by gen_register_table.py  author wubo */
+ #ifndef __PEC_REG_S__
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h b/drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h
+index a41463b080f4..9fc21d991d9d 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __RUBIK_REGS_H__
+ #define __RUBIK_REGS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h b/drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h
+index 3d782efa8ad7..28d8ee717b44 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __SDP_REGS_H__
+ #define __SDP_REGS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/sys_regs.h b/drivers/soc/eswin/ai_driver/common/devices/sys_regs.h
+index 568df49362bb..185589b5b2ed 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/sys_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/sys_regs.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __SYSTEM_REGS_H__
+ #define __SYSTEM_REGS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/dla_interface.h b/drivers/soc/eswin/ai_driver/common/dla_interface.h
+index 82ed5865926d..fcabd9f85765 100644
+--- a/drivers/soc/eswin/ai_driver/common/dla_interface.h
++++ b/drivers/soc/eswin/ai_driver/common/dla_interface.h
+@@ -1,9 +1,25 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
++
+ #ifndef _DLA_INTERFACE_H_
+ #define _DLA_INTERFACE_H_
+ 
+@@ -289,32 +305,36 @@ struct post_drp_op_desc {
+ 
+     // represent the write out data stride for SRAM level ofmap
+     /*
+-     * SRAM level ofmap的 G 方向的步进值，若数据类型为int8，则 g_stride_sram = N*E*M*F
+-     * 否则  g_stride_sram = 2*N*E*M*F， 用于DRP写数据到LSRAM的地址计算
++     * The step value in the G direction at the SRAM level for OFMAP: if the data type is int8,
++     * then g_stride_sram = N * E * M * F; otherwise, g_stride_sram = 2 * N * E * M * F,
++     * used for calculating the address when writing data to LSRAM via DRP.
+      */
+     uint32_t g_stride_lsram;
+ 
+     /*
+-     * SRAM level ofmap的 N 方向的步进值，若数据类型为int8，则 n_stride_sram = E*M*F
+-     * 否则  n_stride_sram = 2*E*M*F， 用于DRP写数据到LSRAM的地址计算
++     * The step value in the N direction at the SRAM level for OFMAP: if the data type is int8,
++     * then n_stride_sram = E * M * F; otherwise, n_stride_sram = 2 * E * M * F,
++     * used for calculating the address when writing data to LSRAM via DRP.
+      */
+     uint32_t n_stride_lsram;
+ 
+     /*
+-     * SRAM level ofmap的 H 方向的步进值，若数据类型为int8，则 h_stride = F*C0*C''*C'''
+-     * 否则  h_stride = 2*F*C0*C''*C'''， 用于DRP写数据到LSRAM的地址计算
++     * The step value in the H direction at the SRAM level for OFMAP: if the data type is int8, 
++     * then h_stride = F * C0 * C'' * C'''; otherwise, h_stride = 2 * F * C0 * C'' * C''',
++     * used for calculating the address when writing data to LSRAM via DRP.
+      */
+     uint32_t h_stride;
+ 
+     /*
+-     * SRAM level ofmap的 C' 方向的步进值，若数据类型为int8，则 c_stride = E*F*C0*C''*C'''
+-     * 否则  c_stride = 2*E*F*C0*C''*C'''， 用于DRP写数据到LSRAM的地址计算
++     * The step value in the C' direction at the SRAM level for OFMAP: if the data type is int8, 
++     * then c_stride = E * F * C0 * C'' * C'''; otherwise, c_stride = 2 * E * F * C0 * C'' * C''',
++     * used for calculating the address when writing data to LSRAM via DRP.
+      */
+     uint32_t c_stride;
+ 
+     /*
+-     * 用于 C 方向在 W 方向扩展的地址计算， 若数据类型为int8，则 w_ext_stride = C''*C0
+-     * 否则 h_ext_stride = 2*C''*C0
++     * The address calculation for extension in the W direction based on the C direction: if the data type is int8,
++     * then w_ext_stride = C'' * C0; otherwise, w_ext_stride = 2 * C'' * C0.
+      */
+     uint32_t w_stride;
+ 
+@@ -325,9 +345,9 @@ struct post_drp_op_desc {
+     uint32_t f;  /* the whole layer F */
+     uint32_t c0; /* the next layer input c0 */
+ 
+-    // DRP 输出 reshape 数据存放的基地址高32bit
++    // The high 32 bits of the base address for storing the reshap data output by DRP.
+     uint32_t base_addr_ofmap_h;
+-    // DRP 输出 reshape 数据存放的基地址低32bit
++    // The low 32 bits of the base address for storing the reshap data output by DRP
+     uint32_t base_addr_ofmap_l;
+ 
+     // 0 - int8; 1 - int16/fp16
+@@ -336,12 +356,12 @@ struct post_drp_op_desc {
+     // 1 : int8 -> int16; otherwise, 0
+     uint32_t surface_double;
+ 
+-    // For PDP, PDP的split num相同;
++    // For PDP, The split num of PDP is the same.;
+     // For SDP, split_num = F3, F is the ofm's W
+     uint32_t split_num;
+-    uint16_t f_lst; /* F 切分的最后一个分段宽度 */
+-    uint16_t f_mid; /* F 切分的中间分段宽度 */
+-    uint16_t f_fst; /* F 切分的第一个分段宽度 */
++    uint16_t f_lst; /* The width of the last segment when F is split. */
++    uint16_t f_mid; /* The width of the intermediate segment when F is split. */
++    uint16_t f_fst; /* The width of the first segment when F is split. */
+     uint16_t Reserved;
+ 
+     uint16_t e4_all; /* original E */
+diff --git a/drivers/soc/eswin/ai_driver/common/es_dsp_internal.h b/drivers/soc/eswin/ai_driver/common/es_dsp_internal.h
+index 2ecbd0e0a0dd..1454935a34d8 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_dsp_internal.h
++++ b/drivers/soc/eswin/ai_driver/common/es_dsp_internal.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __ESWIN_DSP_INTERNAL_H__
+ #define __ESWIN_DSP_INTERNAL_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h b/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
+index 6e0ce6b31c63..ccbb41bb2de7 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
++++ b/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __ESWIN_DSP_OP_TYPES_H__
+ #define __ESWIN_DSP_OP_TYPES_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/es_dsp_types.h b/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
+index 646ea5e3ac55..7b9c84c14ed3 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
++++ b/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __ESWIN_DSP_TYPES_H__
+ #define __ESWIN_DSP_TYPES_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/es_nn_common.h b/drivers/soc/eswin/ai_driver/common/es_nn_common.h
+index 7ea0b4c7502e..9a618fb4bc0a 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_nn_common.h
++++ b/drivers/soc/eswin/ai_driver/common/es_nn_common.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef _ES_NN_COMMONN_H_
+ #define _ES_NN_COMMONN_H_
+diff --git a/drivers/soc/eswin/ai_driver/common/es_type.h b/drivers/soc/eswin/ai_driver/common/es_type.h
+index ab30d1383ff6..330eeb5b87cc 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_type.h
++++ b/drivers/soc/eswin/ai_driver/common/es_type.h
+@@ -1,3 +1,24 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __ES_TYPE_H__
+ #define __ES_TYPE_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_arch.h b/drivers/soc/eswin/ai_driver/common/hetero_arch.h
+index 31c2b75375db..70b55b9d4977 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_arch.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_arch.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __HETERO_UTILS_H__
+ #define __HETERO_UTILS_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_common.h b/drivers/soc/eswin/ai_driver/common/hetero_common.h
+index 1bf7568415f8..2119c2e02401 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_common.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_common.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __HETERO_COMMON_H__
+ #define __HETERO_COMMON_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_env.h b/drivers/soc/eswin/ai_driver/common/hetero_env.h
+index 107f4ad8e928..eac954fa37de 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_env.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_env.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __HETERO_ENV_H__
+ #define __HETERO_ENV_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_host.h b/drivers/soc/eswin/ai_driver/common/hetero_host.h
+index ca3902116229..ad790176c55a 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_host.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_host.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __HETERO_HOST_H__
+ #define __HETERO_HOST_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h b/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h
+index 442be18ca88a..94f41117952b 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __HETERO_IOCTL_H_
+ #define __HETERO_IOCTL_H_
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_ipc.h b/drivers/soc/eswin/ai_driver/common/hetero_ipc.h
+index 1a1bf833e668..ed0e2c5b2e4e 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_ipc.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_ipc.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef _HETERO_IPC_H_
+ #define _HETERO_IPC_H_
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_perf.h b/drivers/soc/eswin/ai_driver/common/hetero_perf.h
+index 5b5212e4034a..afda052cd119 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_perf.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_perf.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __HETERO_PERF_H__
+ #define __HETERO_PERF_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_processor.h b/drivers/soc/eswin/ai_driver/common/hetero_processor.h
+index da3b9d3afbdf..333d804fe174 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_processor.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_processor.h
+@@ -1,16 +1,25 @@
+-// Copyright (c) 2023 ESWIN Authors. All Rights Reserved.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
++
+ #ifndef ESWIN_COMMON_HETERO_PROCESSOR_H_
+ #define ESWIN_COMMON_HETERO_PROCESSOR_H_
+ #include "dla_interface.h"
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_types.h b/drivers/soc/eswin/ai_driver/common/hetero_types.h
+index 50e8423d264e..89ac2ce05f56 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_types.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_types.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __HETERO_TYPES_H__
+ #define __HETERO_TYPES_H__
+diff --git a/drivers/soc/eswin/ai_driver/common/md5.h b/drivers/soc/eswin/ai_driver/common/md5.h
+index 108f9c740437..c78ab427c1dd 100644
+--- a/drivers/soc/eswin/ai_driver/common/md5.h
++++ b/drivers/soc/eswin/ai_driver/common/md5.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2024 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef MD5_H
+ #define MD5_H
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.c b/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.c
+index d901a770f566..ead266d8c016 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/dma-mapping.h>
+ #include <linux/elf.h>
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.h b/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.h
+index 240ddf0f966d..494c8f1c9beb 100755
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef DSP_FIRMWARE_H
+ #define DSP_FIRMWARE_H
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_hw.h b/drivers/soc/eswin/ai_driver/dsp/dsp_hw.h
+index 302c48a5234d..63446d205d28 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_hw.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_hw.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __DSP_HW_H__
+ #define __DSP_HW_H__
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h b/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h
+index 00b8539b1d47..1e81181e4a2d 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef ESWIN_COMMON_DSP_HW_IF_H_
+ #define ESWIN_COMMON_DSP_HW_IF_H_
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
+index c42c9ec251c7..371d6f738f21 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/fs.h>
+ #include <linux/compat.h>
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h
+index 59a21dcd13ce..cdf8b255d11f 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef _DSP_IOCTL_DEFS_H
+ #define _DSP_IOCTL_DEFS_H
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl_if.h b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl_if.h
+index e7ad49893492..33bd46dd61e7 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl_if.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl_if.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef ESWIN_COMMON_DSP_IOCTL_IF_H_
+ #define ESWIN_COMMON_DSP_IOCTL_IF_H_
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_log.c b/drivers/soc/eswin/ai_driver/dsp/dsp_log.c
+index 4ade1bc6d6db..b59cb359501f 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_log.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_log.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/module.h>
+ #include "dsp_log.h"
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_log.h b/drivers/soc/eswin/ai_driver/dsp/dsp_log.h
+index ba9dd92d26f8..8ccdaf549931 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_log.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_log.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h b/drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h
+index 6694b8b52ce3..9cfed6fdaf12 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef ESWIN_DSP_COMMON_MAILBOX_H_
+ #define ESWIN_DSP_COMMON_MAILBOX_H_
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+index 117aedc5e33d..77546cff84d3 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/version.h>
+ #include <linux/atomic.h>
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_main.h b/drivers/soc/eswin/ai_driver/dsp/dsp_main.h
+index d71d1ac3ecaa..3fbc261016d4 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_main.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_main.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __DSP_MAIN_H__
+ #define __DSP_MAIN_H__
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_perf.h b/drivers/soc/eswin/ai_driver/dsp/dsp_perf.h
+index eb1988839543..f3cd75147591 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_perf.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_perf.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __ESWIN_DSP_PERF_H__
+ #define __ESWIN_DSP_PERF_H__
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+index 9732a204a4e6..2e96a24e6899 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
+index e0b3bf847d3f..6790660e3af7 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __DSP_PLATFORM_INTF_H_
+ #define __DSP_PLATFORM_INTF_H_
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c
+index 8c36e90e20f6..42a3788e4d41 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c
+index 27e39de0ccb0..f234f3cf9842 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/fs.h>
+ #include <linux/proc_fs.h>
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.h b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.h
+index 5fd60ec9e009..94e9158de9fd 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __DSP_PROC_H_
+ #define __DSP_PROC_H_
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c b/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c
+index 46bc9b79ca1f..df4f8abf1c2a 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2024 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/dma-buf.h>
+ #include "dsp_dma_buf.h"
+diff --git a/drivers/soc/eswin/ai_driver/npu/common.c b/drivers/soc/eswin/ai_driver/npu/common.c
+index 8089e861907d..a294bb196dc0 100644
+--- a/drivers/soc/eswin/ai_driver/npu/common.c
++++ b/drivers/soc/eswin/ai_driver/npu/common.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <opendla.h>
+ #include <dla_err.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/common.h b/drivers/soc/eswin/ai_driver/npu/common.h
+index 0c73e1ed235c..08d5dad54b35 100644
+--- a/drivers/soc/eswin/ai_driver/npu/common.h
++++ b/drivers/soc/eswin/ai_driver/npu/common.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2024 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __FIRMWARE_COMMON_H_
+ #define __FIRMWARE_COMMON_H_
+diff --git a/drivers/soc/eswin/ai_driver/npu/conv.c b/drivers/soc/eswin/ai_driver/npu/conv.c
+index 69dd91f79f07..fb00776642fb 100644
+--- a/drivers/soc/eswin/ai_driver/npu/conv.c
++++ b/drivers/soc/eswin/ai_driver/npu/conv.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <asm/errno.h>
+ #include <linux/slab.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/conv.h b/drivers/soc/eswin/ai_driver/npu/conv.h
+index 11643f5d8770..a290b7696526 100644
+--- a/drivers/soc/eswin/ai_driver/npu/conv.h
++++ b/drivers/soc/eswin/ai_driver/npu/conv.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __CONV_H__
+ #define __CONV_H__
+diff --git a/drivers/soc/eswin/ai_driver/npu/debug.c b/drivers/soc/eswin/ai_driver/npu/debug.c
+index 1393e345c2f5..45ebb8328bbb 100644
+--- a/drivers/soc/eswin/ai_driver/npu/debug.c
++++ b/drivers/soc/eswin/ai_driver/npu/debug.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/shmem_fs.h>
+ #include <linux/pipe_fs_i.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/debug.h b/drivers/soc/eswin/ai_driver/npu/debug.h
+index 7d85d754ed2d..a62586a85034 100644
+--- a/drivers/soc/eswin/ai_driver/npu/debug.h
++++ b/drivers/soc/eswin/ai_driver/npu/debug.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __DEBUG_H__
+ #define __DEBUG_H__
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_buffer.c b/drivers/soc/eswin/ai_driver/npu/dla_buffer.c
+index 32090ca1ac64..7f12c6e36ed6 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_buffer.c
++++ b/drivers/soc/eswin/ai_driver/npu/dla_buffer.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include "dla_driver.h"
+ #include "dla_engine.h"
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_buffer.h b/drivers/soc/eswin/ai_driver/npu/dla_buffer.h
+index 68424d415be8..6deddea6d2db 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_buffer.h
++++ b/drivers/soc/eswin/ai_driver/npu/dla_buffer.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef DLA_BUFFER_H
+ #define DLA_BUFFER_H
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_driver.c b/drivers/soc/eswin/ai_driver/npu/dla_driver.c
+index b2eb069aa0fa..6a18ffe3572a 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_driver.c
++++ b/drivers/soc/eswin/ai_driver/npu/dla_driver.c
+@@ -1,3 +1,25 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
++
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/of_irq.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_driver.h b/drivers/soc/eswin/ai_driver/npu/dla_driver.h
+index e732c99a91f8..9ab56b2ec0e5 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_driver.h
++++ b/drivers/soc/eswin/ai_driver/npu/dla_driver.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef DLA_DRIVER_H
+ #define DLA_DRIVER_H
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_engine_internal.h b/drivers/soc/eswin/ai_driver/npu/dla_engine_internal.h
+index 1ab86ecaa78c..455f6da4ccb0 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_engine_internal.h
++++ b/drivers/soc/eswin/ai_driver/npu/dla_engine_internal.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __DLA_ENGINE_INTERNAL_H_
+ #define __DLA_ENGINE_INTERNAL_H_
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_log.c b/drivers/soc/eswin/ai_driver/npu/dla_log.c
+index d12729d8600f..b723cf5368f0 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_log.c
++++ b/drivers/soc/eswin/ai_driver/npu/dla_log.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/printk.h>
+ #include <linux/module.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_log.h b/drivers/soc/eswin/ai_driver/npu/dla_log.h
+index d1be7e55e9b6..b9c5a368a0ea 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_log.h
++++ b/drivers/soc/eswin/ai_driver/npu/dla_log.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef DLA_LOG_H
+ #define DLA_LOG_H
+diff --git a/drivers/soc/eswin/ai_driver/npu/dsp.c b/drivers/soc/eswin/ai_driver/npu/dsp.c
+index 60c66db71704..c8334fcc9dc4 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dsp.c
++++ b/drivers/soc/eswin/ai_driver/npu/dsp.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2024 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <opendla.h>
+ #include <dla_err.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/dsp.h b/drivers/soc/eswin/ai_driver/npu/dsp.h
+index 0601e922481e..4d370fac875b 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dsp.h
++++ b/drivers/soc/eswin/ai_driver/npu/dsp.h
+@@ -1,3 +1,25 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
++
+ #ifndef _NPU_DSP_H_
+ #define _NPU_DSP_H_
+ #include "internal_interface.h"
+diff --git a/drivers/soc/eswin/ai_driver/npu/edma.c b/drivers/soc/eswin/ai_driver/npu/edma.c
+index f8638dad0dff..cc3e365dee4f 100644
+--- a/drivers/soc/eswin/ai_driver/npu/edma.c
++++ b/drivers/soc/eswin/ai_driver/npu/edma.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <opendla.h>
+ #include <dla_log.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/edma.h b/drivers/soc/eswin/ai_driver/npu/edma.h
+index 6f5301811ffe..69abc05cc361 100644
+--- a/drivers/soc/eswin/ai_driver/npu/edma.h
++++ b/drivers/soc/eswin/ai_driver/npu/edma.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __EDMA_H_
+ #define __EDMA_H_
+diff --git a/drivers/soc/eswin/ai_driver/npu/engine.c b/drivers/soc/eswin/ai_driver/npu/engine.c
+index 49cad9c3e451..53805e20d485 100644
+--- a/drivers/soc/eswin/ai_driver/npu/engine.c
++++ b/drivers/soc/eswin/ai_driver/npu/engine.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <opendla.h>
+ #include <linux/slab.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/event.c b/drivers/soc/eswin/ai_driver/npu/event.c
+index 59847508c74d..11cd3f2be059 100644
+--- a/drivers/soc/eswin/ai_driver/npu/event.c
++++ b/drivers/soc/eswin/ai_driver/npu/event.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/slab.h>
+ #include <opendla.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/include/dla_engine.h b/drivers/soc/eswin/ai_driver/npu/include/dla_engine.h
+index 544e216d7981..8a8cca1c7cd8 100644
+--- a/drivers/soc/eswin/ai_driver/npu/include/dla_engine.h
++++ b/drivers/soc/eswin/ai_driver/npu/include/dla_engine.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef DLA_ENGINE_H
+ #define DLA_ENGINE_H
+diff --git a/drivers/soc/eswin/ai_driver/npu/include/npu_top_csr.h b/drivers/soc/eswin/ai_driver/npu/include/npu_top_csr.h
+index 13391ad7f551..a3daffbdc12e 100644
+--- a/drivers/soc/eswin/ai_driver/npu/include/npu_top_csr.h
++++ b/drivers/soc/eswin/ai_driver/npu/include/npu_top_csr.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ /*
+  * npu_top_csr
+diff --git a/drivers/soc/eswin/ai_driver/npu/include/nvdla_interface.h b/drivers/soc/eswin/ai_driver/npu/include/nvdla_interface.h
+index c93fa38366fd..16aedf2056db 100644
+--- a/drivers/soc/eswin/ai_driver/npu/include/nvdla_interface.h
++++ b/drivers/soc/eswin/ai_driver/npu/include/nvdla_interface.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef NVDLA_INTERFACE_H
+ #define NVDLA_INTERFACE_H
+diff --git a/drivers/soc/eswin/ai_driver/npu/include/nvdla_linux.h b/drivers/soc/eswin/ai_driver/npu/include/nvdla_linux.h
+index b69353d66d8c..ef11f3a642f0 100644
+--- a/drivers/soc/eswin/ai_driver/npu/include/nvdla_linux.h
++++ b/drivers/soc/eswin/ai_driver/npu/include/nvdla_linux.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef NVDLA_LINUX_H
+ #define NVDLA_LINUX_H
+diff --git a/drivers/soc/eswin/ai_driver/npu/internal_interface.h b/drivers/soc/eswin/ai_driver/npu/internal_interface.h
+index f5a4dfba861b..149805f15838 100644
+--- a/drivers/soc/eswin/ai_driver/npu/internal_interface.h
++++ b/drivers/soc/eswin/ai_driver/npu/internal_interface.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __INTERNAL_INTERFACE__
+ #define __INTERNAL_INTERFACE__
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_e31.c b/drivers/soc/eswin/ai_driver/npu/npu_e31.c
+index c44cef95d451..67484cba570f 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_e31.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_e31.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2024 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/platform_device.h>
+ #include <linux/fs.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_frame.c b/drivers/soc/eswin/ai_driver/npu/npu_frame.c
+index b5434913324c..e006710be1cb 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_frame.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_frame.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2024 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_main.c b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+index 6830563337cc..3ffeb5001ed9 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_main.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_spram.c b/drivers/soc/eswin/ai_driver/npu/npu_spram.c
+index 2592597fabc5..3a5ba558a54b 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_spram.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_spram.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_spram.h b/drivers/soc/eswin/ai_driver/npu/npu_spram.h
+index 6bf9e2c369c4..fa4203a43951 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_spram.h
++++ b/drivers/soc/eswin/ai_driver/npu/npu_spram.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef NPU_SPRAM_H
+ #define NPU_SPRAM_H
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c b/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c
+index 70665817d93d..11d7a8ef6560 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/kernel.h>
+ #include <linux/clk.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_lowlevel.h b/drivers/soc/eswin/ai_driver/npu/nvdla_lowlevel.h
+index 08bd5f77fe5b..f833987cfeea 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_lowlevel.h
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_lowlevel.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __NVDLA_LOWLEVEL_H__
+ #define __NVDLA_LOWLEVEL_H__
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_proc.c b/drivers/soc/eswin/ai_driver/npu/nvdla_proc.c
+index 91d47bae97d2..93bc993fe849 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_proc.c
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_proc.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/fs.h>
+ #include <linux/proc_fs.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_proc.h b/drivers/soc/eswin/ai_driver/npu/nvdla_proc.h
+index be2e45cee663..afa6c7906b0a 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_proc.h
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_proc.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __NVDLA_PROC_H_
+ #define __NVDLA_PROC_H_
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_sim.c b/drivers/soc/eswin/ai_driver/npu/nvdla_sim.c
+index eaf6de2c74fb..1e318f786c0f 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_sim.c
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_sim.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/parse_dep.c b/drivers/soc/eswin/ai_driver/npu/parse_dep.c
+index 36b48dd376b0..b7829b0f08d5 100644
+--- a/drivers/soc/eswin/ai_driver/npu/parse_dep.c
++++ b/drivers/soc/eswin/ai_driver/npu/parse_dep.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/pdp.c b/drivers/soc/eswin/ai_driver/npu/pdp.c
+index e32a4dfb27ee..c1fe8839bbb1 100644
+--- a/drivers/soc/eswin/ai_driver/npu/pdp.c
++++ b/drivers/soc/eswin/ai_driver/npu/pdp.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/slab.h>
+ #include <opendla.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/post_drp.h b/drivers/soc/eswin/ai_driver/npu/post_drp.h
+index 51d11e560fe5..e56861b9ea32 100644
+--- a/drivers/soc/eswin/ai_driver/npu/post_drp.h
++++ b/drivers/soc/eswin/ai_driver/npu/post_drp.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef POST_DRP_H
+ #define POST_DRP_H
+diff --git a/drivers/soc/eswin/ai_driver/npu/rubik.c b/drivers/soc/eswin/ai_driver/npu/rubik.c
+index 1e08b06480ad..6771a121b604 100644
+--- a/drivers/soc/eswin/ai_driver/npu/rubik.c
++++ b/drivers/soc/eswin/ai_driver/npu/rubik.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/slab.h>
+ #include <opendla.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/scheduler.c b/drivers/soc/eswin/ai_driver/npu/scheduler.c
+index 0f23eb00b11f..2c01649a0612 100644
+--- a/drivers/soc/eswin/ai_driver/npu/scheduler.c
++++ b/drivers/soc/eswin/ai_driver/npu/scheduler.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+diff --git a/drivers/soc/eswin/ai_driver/npu/sdp.c b/drivers/soc/eswin/ai_driver/npu/sdp.c
+index fcb4dcfaffa8..792e87a2e1e2 100644
+--- a/drivers/soc/eswin/ai_driver/npu/sdp.c
++++ b/drivers/soc/eswin/ai_driver/npu/sdp.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/slab.h>
+ 
+diff --git a/drivers/soc/eswin/ai_driver/npu/sdp.h b/drivers/soc/eswin/ai_driver/npu/sdp.h
+index ee013c2fb7e3..b4af8cb07642 100644
+--- a/drivers/soc/eswin/ai_driver/npu/sdp.h
++++ b/drivers/soc/eswin/ai_driver/npu/sdp.h
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #ifndef __SDP_H_
+ #define __SDP_H_
+diff --git a/drivers/soc/eswin/ai_driver/npu/user_context.c b/drivers/soc/eswin/ai_driver/npu/user_context.c
+index b32f9484d98d..bef308e8dccb 100644
+--- a/drivers/soc/eswin/ai_driver/npu/user_context.c
++++ b/drivers/soc/eswin/ai_driver/npu/user_context.c
+@@ -1,9 +1,24 @@
+-// Copyright © 2023 ESWIN. All rights reserved.
+-//
+-// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
+-// all intellectual property and proprietary rights in and to this software. Except as expressly
+-// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
+-// modified, adapted, translated, or created derivative work of, in whole or in part.
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN PCIe root complex driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
+ 
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+-- 
+2.47.0
+

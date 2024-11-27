@@ -1,0 +1,42 @@
+From cba3751508d3cdbbd6e8f0c7f2d14aa5d727a123 Mon Sep 17 00:00:00 2001
+From: huangyifeng <huangyifeng@eswincomputing.com>
+Date: Fri, 16 Aug 2024 16:17:38 +0800
+Subject: [PATCH 154/215] fix(noc):fix kmemleak warning
+
+Changelogs:
+    1.kfree bf_name in sideband_mgr_init when it is no need.
+
+Signed-off-by: huangyifeng <huangyifeng@eswincomputing.com>
+---
+ drivers/interconnect/eswin/noc.c                      | 2 +-
+ drivers/interconnect/eswin/win2030_sideband_manager.c | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/interconnect/eswin/noc.c b/drivers/interconnect/eswin/noc.c
+index 6712cf02f5f2..cd577ec7c116 100644
+--- a/drivers/interconnect/eswin/noc.c
++++ b/drivers/interconnect/eswin/noc.c
+@@ -91,7 +91,7 @@ const char **win2030_get_strings_from_dts(struct device *_dev,
+ 			return ERR_PTR(-ENOMEM);
+ 
+ 		of_property_for_each_string(np, property_name, prop, s)
+-		lut[i++] = s;
++			lut[i++] = s;
+ 
+ 		/* To find out the end of the list */
+ 		lut[lut_len] = NULL;
+diff --git a/drivers/interconnect/eswin/win2030_sideband_manager.c b/drivers/interconnect/eswin/win2030_sideband_manager.c
+index c694e34115ea..6c58a90c54fe 100644
+--- a/drivers/interconnect/eswin/win2030_sideband_manager.c
++++ b/drivers/interconnect/eswin/win2030_sideband_manager.c
+@@ -143,6 +143,7 @@ static int win2030_noc_register_sideband_mgr(struct device_node *np,
+ 
+ 		bf->sbm_id = values_tab[2 * i];
+ 	}
++	kfree(bf_name);
+ 	noc_device->sbm = sbm;
+ 	list_add_tail(&sbm->link, &win2030_noc_ctrl.sbm_link);
+ 	return 0;
+-- 
+2.47.0
+

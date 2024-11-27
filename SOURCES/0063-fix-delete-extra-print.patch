@@ -1,0 +1,29 @@
+From 4e875b304135b99c1b37f69c3de26bb47024fcb1 Mon Sep 17 00:00:00 2001
+From: yangqiang <yangqiang1@eswincomputing.com>
+Date: Wed, 3 Jul 2024 13:55:36 +0800
+Subject: [PATCH 063/215] fix:delete extra print
+
+Changelogs:
+	delete extra print
+---
+ sound/soc/eswin/esw-audio-proc.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/sound/soc/eswin/esw-audio-proc.c b/sound/soc/eswin/esw-audio-proc.c
+index 5ffed4c4ab34..f0c0cbe10f56 100644
+--- a/sound/soc/eswin/esw-audio-proc.c
++++ b/sound/soc/eswin/esw-audio-proc.c
+@@ -354,10 +354,6 @@ static int audio_dev_mmap(struct file *file, struct vm_area_struct *vma)
+ 	enum DEVICES_ID deviceID = INVALID_DEVICE;
+ 	unsigned long size = vma->vm_end - vma->vm_start;
+ 
+-	pr_info("audio_dev_mmap:%s\n", file->f_path.dentry->d_name.name);
+-
+-	pr_info("vma->vm_end:%ld,vma->vm_start:%ld\n",vma->vm_end, vma->vm_start);
+-
+ 	if (size > (MAX_PERF_SIZE * sizeof(int32_t))) {
+ 		pr_err("audio_dev_mmap: size:%ld > %ld.\n", size, MAX_PERF_SIZE * sizeof(int32_t));
+ 		return -EINVAL;
+-- 
+2.47.0
+

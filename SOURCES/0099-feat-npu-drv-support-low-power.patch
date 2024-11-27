@@ -1,0 +1,106 @@
+From 285d7e31511a8301c551cc8d8d6f1f4d2b6f26a3 Mon Sep 17 00:00:00 2001
+From: donghuawei <donghuawei@eswincomputing.com>
+Date: Tue, 16 Jul 2024 10:15:29 +0800
+Subject: [PATCH 099/215] feat: npu drv support low power
+
+Changelogs:
+	support npu clock enable and disable for low power
+
+Signed-off-by: donghuawei <donghuawei@eswincomputing.com>
+---
+ drivers/memory/eswin/codacache/llc_spram.c | 56 ++++++++++++++++++++++
+ drivers/memory/eswin/codacache/llc_spram.h |  3 +-
+ 2 files changed, 58 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/memory/eswin/codacache/llc_spram.c b/drivers/memory/eswin/codacache/llc_spram.c
+index 4e9027dd5db9..c26567e5aa80 100644
+--- a/drivers/memory/eswin/codacache/llc_spram.c
++++ b/drivers/memory/eswin/codacache/llc_spram.c
+@@ -38,6 +38,7 @@
+ #include <linux/mfd/syscon.h>
+ #include <linux/memblock.h>
+ #include <linux/version.h>
++#include <linux/clk-provider.h>
+ 
+ #include <linux/eswin_npu.h>
+ #include <linux/regulator/consumer.h>
+@@ -471,6 +472,61 @@ int npu_cfg_rst(int nid, bool enable)
+ }
+ EXPORT_SYMBOL(npu_cfg_rst);
+ 
++static int npu_clk_enable(struct platform_device *pdev, struct spram_dev *spram)
++{
++	int ret;
++
++	if (!__clk_is_enabled(spram->cfg_clk)) {
++		ret = clk_prepare_enable(spram->cfg_clk);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to enable cfg_clk: %d\n", ret);
++			return ret;
++		}
++	}
++
++	if (!__clk_is_enabled(spram->core_clk)) {
++		ret = clk_prepare_enable(spram->core_clk);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to enable core_clk: %d\n", ret);
++			return ret;
++		}
++	}
++	return 0;
++}
++
++static int npu_clk_disable(struct platform_device *pdev, struct spram_dev *spram)
++{
++	clk_disable_unprepare(spram->core_clk);
++	clk_disable_unprepare(spram->cfg_clk);
++	return 0;
++}
++
++int npu_clk_gate_set(int nid, bool enable)
++{
++	struct platform_device *pdev = pdevs[nid];
++	struct spram_dev *spram;
++
++	if (NULL == pdev) {
++		pr_err("%s, Invalid node id:%d\n", __func__, nid);
++		return -EINVAL;
++	}
++
++	spram = platform_get_drvdata(pdev);
++	if (spram == NULL)
++		return -EINVAL;
++
++	if (enable == true) {
++		return npu_clk_enable(pdev, spram);
++	} else if (enable == false) {
++		return npu_clk_disable(pdev, spram);
++	} else {
++		pr_err("param enable=%d error.\n", enable);
++		return -EINVAL;
++	}
++	return 0;
++}
++EXPORT_SYMBOL(npu_clk_gate_set);
++
+ int npu_core_rst(int nid, bool enable)
+ {
+ 	struct platform_device *pdev = pdevs[nid];
+diff --git a/drivers/memory/eswin/codacache/llc_spram.h b/drivers/memory/eswin/codacache/llc_spram.h
+index 40dd35efec5c..44863a70efbd 100644
+--- a/drivers/memory/eswin/codacache/llc_spram.h
++++ b/drivers/memory/eswin/codacache/llc_spram.h
+@@ -84,7 +84,8 @@ struct llc_cache_ops {
+ int llc_user_register(struct device *user_dev);
+ int npu_cfg_rst(int nid, bool enable);
+ int npu_core_rst(int nid, bool enable);
++int npu_clk_gate_set(int nid, bool enable);
+ int llc_spram_avail_size(int nid, uint32_t *pSpramSize);
+ 
+ int llc_flush_operation(unsigned long start, unsigned long len);
+-#endif
+\ No newline at end of file
++#endif
+-- 
+2.47.0
+

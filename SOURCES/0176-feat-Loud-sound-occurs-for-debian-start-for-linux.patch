@@ -1,0 +1,33 @@
+From c4270806f264e74e732354297b6214d3e3ee6267 Mon Sep 17 00:00:00 2001
+From: zhouliang2 <zhouliang2@eswincomputing.com>
+Date: Mon, 23 Sep 2024 15:07:31 +0800
+Subject: [PATCH 176/215] feat:Loud sound occurs for debian start for linux
+
+Changelogs:
+	1. change for linux
+
+Signed-off-by: zhouliang2 <zhouliang2@eswincomputing.com>
+---
+ sound/soc/codecs/eswin/es8328.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/sound/soc/codecs/eswin/es8328.c b/sound/soc/codecs/eswin/es8328.c
+index 2c7a4031fa44..3c01c33f2737 100644
+--- a/sound/soc/codecs/eswin/es8328.c
++++ b/sound/soc/codecs/eswin/es8328.c
+@@ -789,12 +789,6 @@ static int es8328_set_dai_fmt(struct snd_soc_dai *codec_dai,
+ 	snd_soc_component_write(component, ES8328_LDACVOL, 0);
+ 	snd_soc_component_write(component, ES8328_RDACVOL, 0);
+ 
+-	/* Set L/R Out Volume */
+-	snd_soc_component_write(component, ES8328_LOUT1VOL, 0x1e);
+-	snd_soc_component_write(component, ES8328_ROUT1VOL, 0x1e);
+-	snd_soc_component_write(component, ES8328_LOUT2VOL, 0x1e);
+-	snd_soc_component_write(component, ES8328_ROUT2VOL, 0x1e);
+-
+ 	/* Set MIC PGA Volume */
+ 	snd_soc_component_write(component, ES8328_ADCCONTROL1, 0x88);
+ 
+-- 
+2.47.0
+

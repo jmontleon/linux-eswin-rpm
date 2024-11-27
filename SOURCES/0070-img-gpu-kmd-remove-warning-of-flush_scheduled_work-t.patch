@@ -1,0 +1,26 @@
+From c5ea9812970262d1b1a6ba409ee40d93cf56a748 Mon Sep 17 00:00:00 2001
+From: Sakura286 <sakura286@outlook.com>
+Date: Fri, 5 Jul 2024 12:11:41 +0800
+Subject: [PATCH 070/215] img gpu kmd: remove warning of flush_scheduled_work()
+ to enable volcanic gpu work
+
+ref: https://github.com/starfive-tech/linux/commit/d89c0fec5e542e859df5dc590caeaff99cae10db
+---
+ include/linux/workqueue.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 52c6dd6d80ac..629f9dcdc111 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -636,7 +636,6 @@ extern void __warn_flushing_systemwide_wq(void)
+ /* Please stop using this function, for this function will be removed in near future. */
+ #define flush_scheduled_work()						\
+ ({									\
+-	__warn_flushing_systemwide_wq();				\
+ 	__flush_workqueue(system_wq);					\
+ })
+ 
+-- 
+2.47.0
+

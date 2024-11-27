@@ -1,0 +1,120 @@
+From 43a092b588823ba6bdde32173aa83bf8a8238842 Mon Sep 17 00:00:00 2001
+From: liusheng <liusheng@eswincomputing.com>
+Date: Fri, 19 Jul 2024 14:43:33 +0800
+Subject: [PATCH 123/215] fix:fix the cpu 100% issue when wait FE idle
+
+Changelogs:
+1. The waiting FE idle is dead cycle query, it cause cpu 100%. The
+solution use signal to avoid dead cycle query
+
+Signed-off-by: liusheng <liusheng@eswincomputing.com>
+---
+ .../hae/hal/kernel/arch/gc_hal_kernel_hardware.c     |  9 +++++++--
+ .../hae/hal/kernel/arch/gc_hal_kernel_hardware.h     |  2 ++
+ .../kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c | 12 ++++++------
+ .../hae/hal/os/linux/kernel/gc_hal_kernel_device.c   |  1 +
+ 4 files changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.c b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.c
+index 21a1b0d204bd..a40648236f10 100644
+--- a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.c
++++ b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.c
+@@ -2033,6 +2033,9 @@ gckHARDWARE_Construct(gckOS Os, gckKERNEL Kernel, gckHARDWARE *Hardware)
+     /* Check if big endian */
+     hardware->bigEndian = (*(gctUINT8 *)&data == 0xff);
+ 
++    gcmkONERROR(gckOS_CreateSignal(Os, gcvFALSE, &hardware->feIdleSignal));
++    gcmkONERROR(gckOS_Signal(Os, hardware->feIdleSignal, gcvTRUE));
++
+     /* Initialize the fast clear. */
+     gcmkONERROR(gckHARDWARE_SetFastClear(hardware, -1, -1));
+ 
+@@ -2320,6 +2323,8 @@ gckHARDWARE_Destroy(gckHARDWARE Hardware)
+     /* Mark the object as unknown. */
+     Hardware->object.type = gcvOBJ_UNKNOWN;
+ 
++    gcmkONERROR(gckOS_DestroySignal(Hardware->os, Hardware->feIdleSignal));
++
+     /* Free the object. */
+     gcmkONERROR(gcmkOS_SAFE_FREE(Hardware->os, Hardware));
+ 
+@@ -3473,7 +3478,7 @@ gckHARDWARE_Fence(gckHARDWARE Hardware, gceENGINE Engine, gctPOINTER Logical,
+ gceSTATUS
+ gckHARDWARE_UpdateQueueTail(gckHARDWARE Hardware, gctPOINTER Logical, gctUINT32 Offset)
+ {
+-    gceSTATUS status;
++    gceSTATUS status = gcvSTATUS_OK;
+ 
+     gcmkHEADER_ARG("Hardware=%p Logical=%p Offset=0x%08x",
+                    Hardware, Logical, Offset);
+@@ -11047,7 +11052,7 @@ gckHARDWARE_CancelJob(gckHARDWARE Hardware)
+     }
+ 
+     for (i = 0; i < 32; i++) {
+-        if (mask & (1 << i))
++        if (mask & (1U << i))
+             count++;
+     }
+ 
+diff --git a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.h b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.h
+index cfd691f1c5eb..878241b4b49b 100644
+--- a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.h
++++ b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.h
+@@ -249,6 +249,8 @@ struct _gckHARDWARE {
+     gctUINT32                   devID;
+ 
+     gctBOOL                     largeVA;
++
++    gctSIGNAL                   feIdleSignal;
+ };
+ 
+ gceSTATUS
+diff --git a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c
+index 256581fd48a2..bae3b4538639 100644
+--- a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c
++++ b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c
+@@ -1125,16 +1125,12 @@ gckWLFE_Execute(gckHARDWARE Hardware, gctADDRESS Address, gctUINT32 Bytes)
+ 
+     if (command->feType == gcvHW_FE_END) {
+         gctUINT idle = 0;
+-        gctUINT64 startTicks,currentTicks;
+-        gckOS_GetTime(&startTicks);
+         /* Make sure FE is idle. */
+         do {
+             gcmkVERIFY_OK(gckOS_ReadRegisterEx(Hardware->os, Hardware->kernel,
+                                                0x00004, &idle));
+-            gckOS_GetTime(&currentTicks);
+-            if (currentTicks - startTicks > gcdGPU_2D_TIMEOUT * 1000u) {
+-                dumpCurrentState(Hardware, Address, Bytes);
+-                gcmkONERROR(gcvSTATUS_TIMEOUT);
++            if (idle != 0x7FFFFFFF) {
++                gcmkONERROR(gckOS_WaitSignal(Hardware->os, Hardware->feIdleSignal, gcvFALSE, gcdGPU_2D_TIMEOUT));
+             }
+         } while (idle != 0x7FFFFFFF);
+     }
+@@ -1215,6 +1211,10 @@ gckWLFE_Execute(gckHARDWARE Hardware, gctADDRESS Address, gctUINT32 Bytes)
+ 
+ OnError:
+     /* Return the status. */
++    if (status == gcvSTATUS_TIMEOUT) {
++        dumpCurrentState(Hardware, Address, Bytes);
++    }
++
+     gcmkFOOTER();
+     return status;
+ }
+diff --git a/drivers/staging/media/eswin/hae/hal/os/linux/kernel/gc_hal_kernel_device.c b/drivers/staging/media/eswin/hae/hal/os/linux/kernel/gc_hal_kernel_device.c
+index 21e9513d8347..b31682bb944e 100644
+--- a/drivers/staging/media/eswin/hae/hal/os/linux/kernel/gc_hal_kernel_device.c
++++ b/drivers/staging/media/eswin/hae/hal/os/linux/kernel/gc_hal_kernel_device.c
+@@ -2458,6 +2458,7 @@ threadRoutine(void *ctxt)
+ 
+             return 0;
+         }
++        gckOS_Signal(kernel->os, kernel->hardware->feIdleSignal, gcvTRUE);
+ 
+         gckKERNEL_Notify(kernel, gcvNOTIFY_INTERRUPT);
+     }
+-- 
+2.47.0
+

@@ -1,0 +1,203 @@
+From 3a569891a7bd9a39fda9b3b0886c835d6562e6af Mon Sep 17 00:00:00 2001
+From: donghuawei <donghuawei@eswincomputing.com>
+Date: Thu, 26 Sep 2024 11:27:58 +0800
+Subject: [PATCH 177/215] fix: dsp driver need cancel scheduled work
+
+Changelogs:
+	when suspend, driver need flush work for scheduled work have
+done.
+
+Signed-off-by: donghuawei <donghuawei@eswincomputing.com>
+---
+ drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c   |  5 ++-
+ drivers/soc/eswin/ai_driver/dsp/dsp_main.c    | 31 ++++++++++++++-----
+ .../soc/eswin/ai_driver/dsp/dsp_platform.c    | 23 ++++++++++++++
+ .../soc/eswin/ai_driver/dsp/dsp_platform.h    |  1 +
+ .../eswin/ai_driver/dsp/dsp_platform_sim.c    |  5 +++
+ 5 files changed, 57 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
+index 1edac591f642..c42c9ec251c7 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
+@@ -1170,7 +1170,10 @@ static int dsp_open(struct inode *inode, struct file *flip)
+ 	int ret;
+ 
+ 	dsp_info("%s %d, pid %d\n", __func__, __LINE__, current->pid);
+-
++	if (dsp->off) {
++		dsp_err("%s, %d, dsp fw is offline.\n", __func__, __LINE__);
++		return -EIO;
++	}
+ 	ret = es_dsp_pm_get_sync(dsp);
+ 	if (ret < 0) {
+ 		dsp_err("%s, %d, pm get sync err, ret=%d.\n", __func__,
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+index 4a68e4bf3559..130479f6d778 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+@@ -329,7 +329,6 @@ irqreturn_t dsp_irq_handler(void *msg_data, struct es_dsp *dsp)
+ 		}
+ 	}
+ 
+-	dsp->current_task = NULL;
+ 	spin_unlock_irqrestore(&dsp->send_lock, flags);
+ 	BUG_ON(timer_pending(&dsp->task_timer));
+ 
+@@ -338,12 +337,14 @@ irqreturn_t dsp_irq_handler(void *msg_data, struct es_dsp *dsp)
+ 
+ 	req->d2h_msg = *msg;
+ 	dsp_complete_work(dsp, req);
++	dsp->current_task = NULL;
+ 
+ 	dsp_debug("%s, current task req = 0x%px.\n", __func__, req);
+ 	dsp_info("op name:%s take time:%lld\n", dsp->stats->last_op_name,
+ 		 dsp->stats->last_task_time);
+-
+-	dsp_schedule_task(dsp);
++	if (dsp->off == false) {
++		dsp_schedule_task(dsp);
++	}
+ 	return IRQ_HANDLED;
+ }
+ EXPORT_SYMBOL(dsp_irq_handler);
+@@ -717,10 +718,23 @@ int __maybe_unused dsp_suspend(struct device *dev)
+ 	if (ret < 0) {
+ 		return ret;
+ 	}
++	dsp->off = true;
++
++	if (dsp->current_task != NULL) {
++		ret = wait_for_current_tsk_done(dsp);
++		if (ret) {
++			dsp_err("%s, %d, cannot wait for current task done, ret = %d.\n", __func__, __LINE__, ret);
++			dsp->off = false;
++			return ret;
++		}
++	}
++
++	flush_work(&dsp->task_work);
++
++	dsp_disable_irq(dsp);
+ 	es_dsp_hw_uninit(dsp);
+ 
+ 	dsp_release_firmware(dsp);
+-	dsp_disable_irq(dsp);
+ 	dsp_halt(dsp);
+ 
+ 	pm_runtime_mark_last_busy(dsp->dev);
+@@ -728,7 +742,7 @@ int __maybe_unused dsp_suspend(struct device *dev)
+ 	win2030_tbu_power(dsp->dev, false);
+ 	es_dsp_clk_disable(dsp);
+ 	dsp_disable_mbox_clock(dsp);
+-	dsp_debug("%s, %d, dsp core%d generic suspend done.\n", __func__,
++		dsp_debug("%s, %d, dsp core%d generic suspend done.\n", __func__,
+ 		  __LINE__, dsp->process_id);
+ 	return 0;
+ }
+@@ -737,8 +751,6 @@ int __maybe_unused dsp_resume(struct device *dev)
+ {
+ 	struct es_dsp *dsp = dev_get_drvdata(dev);
+ 	int ret;
+-	if (dsp->off)
+-		goto out;
+ 
+ 	dsp_debug("%s, dsp core%d generic resuming..\n\n", __func__,
+ 		  dsp->process_id);
+@@ -775,6 +787,8 @@ int __maybe_unused dsp_resume(struct device *dev)
+ 	pm_runtime_put_autosuspend(dsp->dev);
+ 	dsp_debug("dsp_core%d Generic resume ok, dsp->off=%d.\n",
+ 		  dsp->process_id, dsp->off);
++	dsp->off = false;
++	dsp_schedule_task(dsp);
+ 	return 0;
+ err_firm:
+ 	es_dsp_hw_uninit(dsp);
+@@ -792,6 +806,7 @@ int __maybe_unused dsp_runtime_suspend(struct device *dev)
+ 	struct es_dsp *dsp = dev_get_drvdata(dev);
+ 	dsp_debug("%s, dsp core%d runtime suspend.\n", __func__,
+ 		  dsp->process_id);
++
+ 	win2030_tbu_power(dev, false);
+ 	es_dsp_clk_disable(dsp);
+ 	return 0;
+@@ -1096,6 +1111,8 @@ static int es_dsp_hw_remove(struct platform_device *pdev)
+ 	if (NULL != dsp->miscdev.this_device) {
+ 		misc_deregister(&dsp->miscdev);
+ 	}
++
++	cancel_work_sync(&dsp->task_work);
+ 	es_dsp_hw_uninit(dsp);
+ 
+ 	pm_runtime_disable(dsp->dev);
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+index a2a360d181e9..055428dfaba1 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+@@ -352,6 +352,28 @@ void es_dsp_release(struct es_dsp_hw *hw)
+ 	return;
+ }
+ 
++int wait_for_current_tsk_done(struct es_dsp *dsp)
++{
++	const int sleep_retries = 5;
++	const int wake_retries = 20;
++	int i, j;
++
++	for (i = 0; i < sleep_retries; i++) {
++		for (j = 0; j < wake_retries; j++) {
++			if (dsp->current_task == NULL) {
++				break;
++			}
++			usleep_range(100, 5000);
++		}
++
++		if (j < wake_retries) {
++			return 0;
++		}
++	}
++	dsp_err("%s, %d, Timeout for wait current task done.\n", __func__, __LINE__);
++	return -ETIMEDOUT;
++}
++
+ static int check_dsp_fw_state(struct es_dsp *dsp)
+ {
+ 	struct dsp_fw_state_t *dsp_state = (struct dsp_fw_state_t *)dsp->dsp_fw_state_base;
+@@ -1237,6 +1259,7 @@ void dsp_disable_irq(struct es_dsp *dsp)
+ 	if (dsp->mbox_irq) {
+ 		disable_irq(dsp->mbox_irq);
+ 	}
++	synchronize_irq(dsp->mbox_irq);
+ }
+ 
+ int dsp_enable_irq(struct es_dsp *dsp)
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
+index b01f21bc7055..e0b3bf847d3f 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
+@@ -55,5 +55,6 @@ int dsp_enable_irq(struct es_dsp *dsp);
+ void dsp_disable_irq(struct es_dsp *dsp);
+ void dsp_disable_mbox_clock(struct es_dsp *dsp);
+ int dsp_enable_mbox_clock(struct es_dsp *dsp);
++int wait_for_current_tsk_done(struct es_dsp *dsp);
+ 
+ #endif
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c
+index fd2edd5fa926..8c36e90e20f6 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c
+@@ -498,6 +498,11 @@ int dsp_alloc_hw(struct platform_device *pdev, struct es_dsp *dsp)
+ 	return 0;
+ }
+ 
++int wait_for_current_tsk_done(struct es_dsp *dsp)
++{
++	return 0;
++}
++
+ void dsp_free_hw(struct es_dsp *dsp)
+ {
+ 	struct es_dsp_hw *hw = (struct es_dsp_hw *)dsp->hw_arg;
+-- 
+2.47.0
+

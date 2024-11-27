@@ -1,0 +1,633 @@
+From 4a715ebfeb39bbf4aae4c6263886afac8e07882e Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Mon, 2 Sep 2024 10:17:35 +0800
+Subject: [PATCH 163/215] fix:Update the NPU & DSP driver code.
+
+Changelogs:
+	Merge the driver code of npu sdk & dsp sdk to dev branch.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h   |  32 +++++
+ drivers/soc/eswin/ai_driver/dsp/dsp_main.c    |  47 ++++---
+ drivers/soc/eswin/ai_driver/dsp/dsp_main.h    |   6 +-
+ .../soc/eswin/ai_driver/dsp/dsp_platform.c    |  64 ++++++++-
+ .../soc/eswin/ai_driver/dsp/dsp_platform.h    |   2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_proc.c    | 124 +++++++++++++++---
+ .../eswin/ai_driver/include/es_dsp_internal.h |   9 ++
+ drivers/soc/eswin/ai_driver/npu/npu_main.c    |  17 ++-
+ 8 files changed, 252 insertions(+), 49 deletions(-)
+
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h b/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h
+index 27e3313bfb5f..00b8539b1d47 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h
+@@ -22,6 +22,38 @@
+ #define DSP_OP_LIB_DIR "/lib/firmware/dsp_kernels"
+ #endif
+ 
++/*
++ * bit7-0: dsp fw state.
++ * 0: dsp fw not inited.
++ * 1: dsp is alive
++ * 2: dsp is died.
++ * bit15-8: npu task state.
++ * 0: no npu task process.
++ * 1: npu task is processing.
++ * bit23-16: dsp task state.
++ * 0: no dsp task process.
++ * 1: dsp task is processing.
++ * bit31-24: task func state:
++ * 0: no func exec
++ * 1: prepare func is executing.
++ * 2: prepare func is done.
++ * 3: eval func is executing.
++ * 4: eval func is done
++ */
++struct dsp_fw_state_t {
++    ES_U32 exccause;
++    ES_U32 ps;
++    ES_U32 pc;
++    union {
++        struct {
++            ES_U32 fw_state : 8;
++            ES_U32 npu_task_state : 8;
++            ES_U32 dsp_task_state : 8;
++            ES_U32 func_state : 8;
++        };
++        ES_U32 val;
++    };
++};
+ 
+ typedef struct es_dsp_buffer_group_t {
+     es_dsp_buffer* buffers;
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+index 1fa928df25c2..dcfd23a6f205 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+@@ -56,7 +56,7 @@
+ #define DSP_SUBSYS_HILOAD_CLK 1040000000
+ #define DSP_SUBSYS_LOWLOAD_CLK 5200000
+ 
+-#define ES_DSP_DEFAULT_TIMEOUT (100 * 2)
++#define ES_DSP_DEFAULT_TIMEOUT (100* 6)
+ 
+ #ifdef DEBUG
+ #pragma GCC optimize("O0")
+@@ -236,8 +236,15 @@ static void dsp_process_expire_work(struct work_struct *work)
+ 	dsp_request_t *req;
+ 	unsigned long flags;
+ 	int ret;
+-
+-	dsp_err("%s, %d, task timeout.\n", __func__, __LINE__);
++	struct dsp_fw_state_t *dsp_fw_state =
++		(struct dsp_fw_state_t *)dsp->dsp_fw_state_base;
++
++	dsp_err("%s, %d, task timeout, dsp fw state=0x%x, excause=0x%x, ps=0x%x, pc=0x%x, dsp_task=0x%x"
++		"npu_task=0x%x, func_state=0x%x\n",
++		__func__, __LINE__, dsp_fw_state->fw_state,
++		dsp_fw_state->exccause, dsp_fw_state->ps, dsp_fw_state->pc,
++		dsp_fw_state->dsp_task_state, dsp_fw_state->npu_task_state,
++		dsp_fw_state->func_state);
+ 	ret = es_dsp_reboot_core(dsp->hw_arg);
+ 	if (ret < 0) {
+ 		dsp_err("reboot dsp core failed.\n");
+@@ -695,7 +702,7 @@ int dsp_boot_firmware(struct es_dsp *dsp)
+ 	return 0;
+ }
+ 
+-int dsp_suspend(struct device *dev)
++int __maybe_unused dsp_suspend(struct device *dev)
+ {
+ 	struct es_dsp *dsp = dev_get_drvdata(dev);
+ 	int ret;
+@@ -716,11 +723,12 @@ int dsp_suspend(struct device *dev)
+ 	win2030_tbu_power(dsp->dev, false);
+ 	es_dsp_core_clk_disable(dsp);
+ 	dsp_disable_mbox_clock(dsp);
+-	dsp_debug("%s, %d, dsp core%d generic suspend done.\n", __func__, __LINE__, dsp->process_id);
++	dsp_debug("%s, %d, dsp core%d generic suspend done.\n", __func__,
++		  __LINE__, dsp->process_id);
+ 	return 0;
+ }
+ 
+-int dsp_resume(struct device *dev)
++int __maybe_unused dsp_resume(struct device *dev)
+ {
+ 	struct es_dsp *dsp = dev_get_drvdata(dev);
+ 	int ret;
+@@ -760,7 +768,8 @@ int dsp_resume(struct device *dev)
+ 
+ 	pm_runtime_mark_last_busy(dsp->dev);
+ 	pm_runtime_put_autosuspend(dsp->dev);
+-	dsp_debug("dsp_core%d Generic resume ok, dsp->off=%d.\n", dsp->process_id, dsp->off);
++	dsp_debug("dsp_core%d Generic resume ok, dsp->off=%d.\n",
++		  dsp->process_id, dsp->off);
+ 	return 0;
+ err_firm:
+ 	es_dsp_hw_uninit(dsp);
+@@ -773,16 +782,18 @@ int dsp_resume(struct device *dev)
+ 	return ret;
+ }
+ 
+-int dsp_runtime_suspend(struct device *dev)
++int __maybe_unused dsp_runtime_suspend(struct device *dev)
+ {
+ 	struct es_dsp *dsp = dev_get_drvdata(dev);
+-	dsp_debug("%s, dsp core%d runtime suspend.\n", __func__, dsp->process_id);
++	dsp_debug("%s, dsp core%d runtime suspend.\n", __func__,
++		  dsp->process_id);
++	win2030_tbu_power(dev, false);
+ 	es_dsp_core_clk_disable(dsp);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(dsp_runtime_suspend);
+ 
+-int dsp_runtime_resume(struct device *dev)
++int __maybe_unused dsp_runtime_resume(struct device *dev)
+ {
+ 	struct es_dsp *dsp = dev_get_drvdata(dev);
+ 	int ret = 0;
+@@ -798,6 +809,7 @@ int dsp_runtime_resume(struct device *dev)
+ 		dev_err(dsp->dev, "couldn't enable DSP\n");
+ 		goto out;
+ 	}
++	win2030_tbu_power(dev, true);
+ 	dsp_debug("dsp core%d, runtime resume ok.\n", dsp->process_id);
+ out:
+ 	return ret;
+@@ -965,7 +977,8 @@ static int es_dsp_hw_probe(struct platform_device *pdev)
+ 
+ 	ret = es_dsp_map_resource(dsp);
+ 	if (ret < 0) {
+-		dsp_err("%s, %d, dsp map resource err, ret=%d.\n", __func__, __LINE__, ret);
++		dsp_err("%s, %d, dsp map resource err, ret=%d.\n", __func__,
++			__LINE__, ret);
+ 		goto err_map_res;
+ 	}
+ 	init_waitqueue_head(&dsp->hd_ready_wait);
+@@ -983,7 +996,8 @@ static int es_dsp_hw_probe(struct platform_device *pdev)
+ 
+ 	ret = dsp_enable_mbox_clock(dsp);
+ 	if (ret < 0) {
+-		dsp_err("%s, %d, enable mbox clock err, ret = %d.\n", __func__, __LINE__, ret);
++		dsp_err("%s, %d, enable mbox clock err, ret = %d.\n", __func__,
++			__LINE__, ret);
+ 		goto err_mbox_clk;
+ 	}
+ 	ret = es_dsp_clk_enable(dsp);
+@@ -1097,10 +1111,9 @@ static int es_dsp_hw_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-
+-static const struct dev_pm_ops es_dsp_hw_pm_ops = {
+-	SYSTEM_SLEEP_PM_OPS(dsp_suspend, dsp_resume)
+-	SET_RUNTIME_PM_OPS(dsp_runtime_suspend, dsp_runtime_resume, NULL) };
++static const struct dev_pm_ops es_dsp_hw_pm_ops = { SYSTEM_SLEEP_PM_OPS(
++	dsp_suspend, dsp_resume) SET_RUNTIME_PM_OPS(dsp_runtime_suspend,
++						    dsp_runtime_resume, NULL) };
+ 
+ static struct platform_driver es_dsp_hw_driver = {
+ 	.probe   = es_dsp_hw_probe,
+@@ -1108,7 +1121,7 @@ static struct platform_driver es_dsp_hw_driver = {
+ 	.driver  = {
+ 		.name = DRIVER_NAME,
+ 		.of_match_table = of_match_ptr(es_dsp_hw_match),
+-		.pm = &es_dsp_hw_pm_ops,
++		.pm = pm_ptr(&es_dsp_hw_pm_ops),
+ 	},
+ };
+ 
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_main.h b/drivers/soc/eswin/ai_driver/dsp/dsp_main.h
+index 7d2b9e77ee57..308a5b1758fb 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_main.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_main.h
+@@ -128,6 +128,9 @@ struct es_dsp {
+ 	struct work_struct task_work;
+ 
+ 	struct es_dsp_stats *stats;
++	void __iomem *perf_reg_base;
++	u32 __iomem *dsp_fw_state_base;
++	void __iomem *flat_base;
+ 
+ 	struct timer_list task_timer;
+ 	struct work_struct expire_work;
+@@ -147,7 +150,6 @@ struct es_dsp {
+ 	struct resource *mbox_tx_res;
+ 	struct resource *mbox_rx_res;
+ 
+-
+ 	u64 send_time;
+ 	u64 done_time;
+ 
+@@ -179,7 +181,7 @@ struct es_dsp {
+ 
+ /* 0xFF9B_0000 -- 0xFFFB_0000 for SPAD */
+ #define DSP_IDDR_IOVA 0xff9b0000
+-#define DSP_IDDR_IOVA_SIZE 0x400000
++#define DSP_IDDR_IOVA_SIZE 0x600000
+ 
+ #define DSP_DEVICE_AUX_E31_IOVA 0xfffb0000  // unused iova
+ #define DSP_DEVICE_AUX_E31_IOVA_SIZE 0x1000
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+index 998538a44f46..14c8ed7c2350 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+@@ -79,6 +79,13 @@
+ #define SCU_DSPT_DIV_SEL BIT_ULL(19)
+ #define SCU_DSPT_DIV_EN BIT_ULL(23)
+ 
++// from eswin/dsp/framework/lsp/memmap.xmm .dram1.perfdata(0x2813ffc8)
++#define DSP_FLAT_ADDR 0x5b13fe70
++#define DSP_FW_STATE_ADDR 0x5b13ffb0
++#define DSP_PERF_START_ADDR 0x5b13ffc8
++#define DIE_BASE_INTERVAL 0x20000000
++#define DSP_CORE_INTERVAL 0x40000
++
+ enum dsp_irq_mode {
+ 	DSP_IRQ_NONE,
+ 	DSP_IRQ_LEVEL,
+@@ -339,6 +346,17 @@ void es_dsp_release(struct es_dsp_hw *hw)
+ 	return;
+ }
+ 
++static int check_dsp_fw_state(struct es_dsp *dsp)
++{
++	struct dsp_fw_state_t *dsp_state = (struct dsp_fw_state_t *)dsp->dsp_fw_state_base;
++	if (dsp_state == NULL) {
++		return 0;
++	}
++	dsp_err("%s, %d, exccause=0x%x, ps=0x%x, pc=0x%x.\n", __func__, __LINE__, dsp_state->exccause, dsp_state->ps, dsp_state->pc);
++	dsp_err("%s, %d, fw_state=%d, npu_state=%d, dsp_state=%d, func_state=%d.\n", __func__, __LINE__, dsp_state->fw_state, dsp_state->npu_task_state, dsp_state->dsp_task_state, dsp_state->func_state);
++	return 0;
++}
++
+ static int dsp_send_msg_by_mbx(struct es_dsp *dsp, void *data)
+ {
+ 	unsigned long flags;
+@@ -351,6 +369,9 @@ static int dsp_send_msg_by_mbx(struct es_dsp *dsp, void *data)
+ 	while (true) {
+ 		if (count > 3) {
+ 			spin_unlock_irqrestore(&dsp->mbox_lock, flags);
++			dsp_err("%s, %d, tx mbxlock = 0x%x, fifo status=0x%x.\n", __func__, __LINE__, readl(dsp->mbox_tx_base + ESWIN_MBOX_WR_LOCK),
++					readl(dsp->mbox_tx_base + ESWIN_MBOX_FIFO_STATUS));
++			check_dsp_fw_state(dsp);
+ 			return -EBUSY;
+ 		}
+ 		writel(dsp->mbox_lock_bit,
+@@ -390,14 +411,15 @@ void dsp_send_invalid_code_seg(struct es_dsp_hw *hw, struct dsp_op_desc *op)
+ 	h2d_msg.command = DSP_CMD_INVALID_ICACHE;
+ 	h2d_msg.size = op->op_shared_seg_size >> DSP_2M_SHIFT;
+ 	h2d_msg.iova_ptr = op->iova_base;
+-
++	dsp_debug("DSP, send inv iov=0x%x.\n", op->iova_base);
+ 	ret = dsp_send_msg_by_mbx(hw->es_dsp, (void *)&h2d_msg);
+-	if (ret < 0)
++	if (ret < 0) {
+ 		dev_err(NULL, "Failed to send message via mailbox\n");
++	}
+ 	return;
+ }
+ 
+-void es_dsp_send_irq(struct es_dsp_hw *hw, dsp_request_t *req)
++int es_dsp_send_irq(struct es_dsp_hw *hw, dsp_request_t *req)
+ {
+ 	es_dsp_h2d_msg h2d_msg;
+ 	int ret;
+@@ -406,11 +428,12 @@ void es_dsp_send_irq(struct es_dsp_hw *hw, dsp_request_t *req)
+ 	h2d_msg.poll_mode = req->poll_mode;
+ 	h2d_msg.sync_cache = req->sync_cache;
+ 	h2d_msg.iova_ptr = req->dsp_flat1_iova;
+-
++	dsp_debug("DSP, send irq iova=0x%x.\n", req->dsp_flat1_iova);
+ 	ret = dsp_send_msg_by_mbx(hw->es_dsp, (void *)&h2d_msg);
+-	if (ret < 0)
+-		dev_err(NULL, "Failed to send message via mailbox\n");
+-	return;
++	if (ret < 0) {
++		dev_err(NULL, " dsp mailbox send message busy, try again.\n");
++	}
++	return ret;
+ }
+ 
+ /*
+@@ -1047,6 +1070,7 @@ int es_dsp_map_resource(struct es_dsp *dsp)
+ {
+ 	struct es_dsp_hw *hw = (struct es_dsp_hw *)dsp->hw_arg;
+ 	int ret;
++	unsigned long base;
+ 
+ 	hw->flat_dma_pool = dma_pool_create("dsp_flat_dma", dsp->dev,
+ 					    sizeof(struct es_dsp_flat1_desc) +
+@@ -1079,6 +1103,32 @@ int es_dsp_map_resource(struct es_dsp *dsp)
+ 		ret = -ENOMEM;
+ 		return ret;
+ 	}
++
++	base = DSP_PERF_START_ADDR + dsp->numa_id * DIE_BASE_INTERVAL +
++	       DSP_CORE_INTERVAL * dsp->process_id;
++
++	dsp->perf_reg_base = devm_ioremap(dsp->dev, base, sizeof(es_dsp_perf_info));
++	if (!dsp->perf_reg_base) {
++		dev_err(dsp->dev, "ioremap for perf reg err.\n");
++		return -ENOMEM;
++	}
++
++	base = DSP_FW_STATE_ADDR + dsp->numa_id * DIE_BASE_INTERVAL +
++	       DSP_CORE_INTERVAL * dsp->process_id;
++	dsp->dsp_fw_state_base = devm_ioremap(dsp->dev, base, 0x18);
++	if (!dsp->dsp_fw_state_base) {
++		dev_err(dsp->dev, "ioremap for dsp fw state err.\n");
++		return -ENOMEM;
++	}
++
++	base = DSP_FLAT_ADDR + dsp->numa_id * DIE_BASE_INTERVAL +
++	       DSP_CORE_INTERVAL * dsp->process_id;
++	dsp->flat_base = devm_ioremap(dsp->dev, base, 0x140);
++	if (!dsp->flat_base) {
++		dev_err(dsp->dev, "ioremap for dsp flat base err.\n");
++		return -ENOMEM;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
+index 82343e910bc2..b01f21bc7055 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
+@@ -11,7 +11,7 @@
+ #include <linux/platform_device.h>
+ #include "dsp_main.h"
+ struct es_dsp_hw;
+-void es_dsp_send_irq(struct es_dsp_hw *, dsp_request_t *);
++int es_dsp_send_irq(struct es_dsp_hw *, dsp_request_t *);
+ int es_dsp_reboot_core(struct es_dsp_hw *);
+ int es_dsp_enable(struct es_dsp_hw *);
+ void es_dsp_disable(struct es_dsp_hw *);
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c
+index b12258767c43..27e39de0ccb0 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c
+@@ -9,51 +9,51 @@
+ #include <linux/proc_fs.h>
+ #include <linux/kernel.h>
+ #include <linux/seq_file.h>
++#include <linux/iommu.h>
+ #include "dsp_main.h"
+ 
+ static struct proc_dir_entry *proc_es_dsp;
+ extern int dsp_log_level;
+ int dsp_perf_enable = 0;
+ 
+-// from eswin/dsp/framework/lsp/memmap.xmm .dram1.perfdata(0x2813ffc0)
+-#define DSP_PERF_START_ADDR 0x5b13ffc0
+-#define DIE_BASE_INTERVAL 0x20000000
+-#define DSP_CORE_INTERVAL 0x40000
+-
+ void get_dsp_perf_info(es_dsp_perf_info *perf_info, int die_num, int dsp_num)
+ {
+ 	struct es_dsp *dsp = NULL;
+-	void *iomem = NULL;
+-	unsigned long phys;
+ 
+ 	memset((void *)perf_info, 0, sizeof(es_dsp_perf_info));
+ 	dsp = es_proc_get_dsp(die_num, dsp_num);
+ 	if (!dsp) {
+ 		return;
+ 	}
++	memcpy((void *)perf_info, dsp->perf_reg_base, sizeof(es_dsp_perf_info));
++}
+ 
+-	phys = DSP_PERF_START_ADDR + die_num * DIE_BASE_INTERVAL +
+-	       DSP_CORE_INTERVAL * dsp_num;
+-	iomem = ioremap(phys, sizeof(es_dsp_perf_info));
+-	if (!iomem) {
+-		return;
+-	}
+-	memcpy((void *)perf_info, iomem, sizeof(es_dsp_perf_info));
++static char *fw_state[] = {
++	"Not_ready",
++	"Alive",
++	"Hang",
++};
+ 
+-	iounmap(iomem);
+-}
++static char *func_state[] = {
++	"No_task", "prep_run", "prep_done", "eval_run", "eval_done",
++};
+ 
+ static int stats_show(struct seq_file *m, void *p)
+ {
+ 	struct es_dsp *dsp;
+ 	int i, j;
+ 	dsp_request_t req;
++	dsp_request_t *myreq;
+ 	struct timespec64 ts;
+ 	const int die_cnt = 2;
+ 	const int dsp_cnt = 4;
+ 	es_dsp_perf_info perf_info;
+ 	int k;
+-
++	u32 state, cause, ps, pc;
++	u32 fw_val, npu_task, dsp_task, func_val;
++	struct dsp_fw_state_t *dsp_fw_state;
++	struct iommu_domain *domain;
++	phys_addr_t phys;
+ 	seq_printf(
+ 		m,
+ 		"--------------------------------DSP PARAM INFO----------------------------------\n");
+@@ -75,6 +75,96 @@ static int stats_show(struct seq_file *m, void *p)
+ 		}
+ 	}
+ 
++	seq_printf(m, "\n");
++	seq_printf(
++		m,
++		"--------------------------DSP FW STATE--------------------------------------\n");
++	seq_printf(m,
++		   "  %-5s %-6s\t %-8s\t %-8s   %-8s"
++		   "   %-8s\t    %-8s   %-8s   %-10s\n",
++		   "DieId", "CoreId", "fw_state", "cause", "ps", "pc",
++		   "npu_task", "dsp_task", "func_state");
++	for (j = 0; j < die_cnt; j++) {
++		for (i = 0; i < dsp_cnt; i++) {
++			dsp = es_proc_get_dsp(j, i);
++			if (dsp == NULL) {
++				continue;
++			}
++			if (!dsp->dsp_fw_state_base) {
++				continue;
++			}
++			dsp_fw_state =
++				(struct dsp_fw_state_t *)dsp->dsp_fw_state_base;
++			cause = dsp_fw_state->exccause;
++			ps = dsp_fw_state->ps;
++			pc = dsp_fw_state->pc;
++			fw_val = dsp_fw_state->fw_state;
++			dsp_task = dsp_fw_state->dsp_task_state;
++			npu_task = dsp_fw_state->npu_task_state;
++			func_val = dsp_fw_state->func_state;
++			seq_printf(
++				m,
++				"  %-5d %-6d\t %-8s\t 0x%-8x 0x%-8x 0x%-8x\t %-8s %-8s %-10s\n",
++				j, i, fw_state[fw_val], cause, ps, pc,
++				npu_task ? "run" : "no_task",
++				dsp_task ? "run" : "no_task",
++				func_state[func_val]);
++		}
++	}
++
++	seq_printf(
++		m,
++		"--------------------------dsp hw flat content--------------------------------------\n");
++	for (j = 0; j < die_cnt; j++) {
++		struct dsp_op_desc *opdesc;
++		struct dsp_hw_flat_test *hw_flat;
++		for (i = 0; i < dsp_cnt; i++) {
++			dsp = es_proc_get_dsp(j, i);
++			if (dsp == NULL) {
++				continue;
++			}
++			domain = iommu_get_domain_for_dev(dsp->dev);
++
++			hw_flat = dsp->flat_base;
++			if (hw_flat->flat_iova == 0) {
++				continue;
++			}
++			phys = iommu_iova_to_phys(domain, hw_flat->flat_iova);
++			seq_printf(m, "die=%d, core=%d, flat iova = 0x%x, phys=0x%lx.\n", j, i, hw_flat->flat_iova, phys);
++			seq_printf(m, "num_buf=%d, input_idx=%d, out_idx=%d.\n", hw_flat->num_buffer, hw_flat->input_index, hw_flat->output_index);
++		}
++	}
++	seq_printf(
++		m,
++		"--------------------------DSP Current Task--------------------------------------\n");
++
++	for (j = 0; j < die_cnt; j++) {
++		struct dsp_op_desc *opdesc;
++		for (i = 0; i < dsp_cnt; i++) {
++			dsp = es_proc_get_dsp(j, i);
++			if (dsp == NULL) {
++				continue;
++			}
++			if (!dsp->current_task) {
++				continue;
++			}
++			myreq = dsp->current_task;
++			opdesc = (struct dsp_op_desc *)myreq->handle;
++			seq_printf(m, "die=%d, dspcore=%d, opname=%s", j, i, opdesc->name);
++			seq_printf(
++				m,
++				"\tdie=%d core=%d flat_iova=%x num_buf=%x input_idx=%d output_idx=%d\n", j, i, myreq->dsp_flat1_iova, myreq->flat_virt->num_buffer, myreq->flat_virt->input_index,
++				myreq->flat_virt->output_index);
++			domain = iommu_get_domain_for_dev(dsp->dev);
++			seq_printf(m, "domain_type=0x%x.\n", domain->type);
++			for (k = 0; k < myreq->flat_virt->num_buffer; k++) {
++				phys = iommu_iova_to_phys(domain, myreq->flat_virt->buffers[k].addr);
++				seq_printf(m, "buffer[%d]=0x%x. size=0x%x, phys=0x%llx\n", k, myreq->flat_virt->buffers[k].addr, myreq->flat_virt->buffers[k].size, phys);
++			}
++		}
++	}
++
++
+ 	seq_printf(m, "\n");
+ 	seq_printf(
+ 		m,
+diff --git a/drivers/soc/eswin/ai_driver/include/es_dsp_internal.h b/drivers/soc/eswin/ai_driver/include/es_dsp_internal.h
+index ec2c202ed2d8..3fd15afae0c8 100644
+--- a/drivers/soc/eswin/ai_driver/include/es_dsp_internal.h
++++ b/drivers/soc/eswin/ai_driver/include/es_dsp_internal.h
+@@ -60,6 +60,7 @@ struct operator_funcs {
+ };
+ #endif
+ 
++
+ typedef struct es_dsp_buffer_t {
+     ES_U32 addr;
+     ES_U32 size;
+@@ -133,6 +134,14 @@ typedef struct {
+      */
+     ES_U32 reserved : 11;
+ } es_dsp_h2d_msg;
++struct dsp_hw_flat_test {
++    struct operator_funcs funcs;
++    ES_U32 num_buffer;
++    ES_U32 input_index;
++    ES_U32 output_index;
++    ES_U32 flat_iova;
++    es_dsp_buffer buffers[0];
++};
+ 
+ typedef struct {
+     /**
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_main.c b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+index e83f7c9c85f3..309e6b6bafef 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_main.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+@@ -558,7 +558,7 @@ static int32_t __exit edla_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-int npu_runtime_suspend(struct device *dev)
++int __maybe_unused npu_runtime_suspend(struct device *dev)
+ {
+ 	struct nvdla_device *ndev = dev_get_drvdata(dev);
+ 	int ret;
+@@ -567,12 +567,14 @@ int npu_runtime_suspend(struct device *dev)
+ 		dla_error("%s, %d, ndev is null.\n", __func__, __LINE__);
+ 		return -EIO;
+ 	}
++
++	npu_tbu_power(dev, false);
+ 	ret = npu_disable_clock(ndev);
+ 	dla_debug("%s, %d, ret=%d.\n", __func__, __LINE__, ret);
+ 	return ret;
+ }
+ 
+-int npu_runtime_resume(struct device *dev)
++int __maybe_unused npu_runtime_resume(struct device *dev)
+ {
+ 	struct nvdla_device *ndev = dev_get_drvdata(dev);
+ 	int ret;
+@@ -582,11 +584,16 @@ int npu_runtime_resume(struct device *dev)
+ 		return -EIO;
+ 	}
+ 	ret = npu_enable_clock(ndev);
++    if (ret) {
++        dla_error("%s, %d, enable clock err, ret = %d.\n", __func__, __LINE__, ret);
++        return ret;
++    }
++	npu_tbu_power(dev, true);
+ 	dla_debug("%s, %d, ret=%d.\n", __func__, __LINE__, ret);
+ 	return ret;
+ }
+ 
+-int npu_suspend(struct device *dev)
++int __maybe_unused npu_suspend(struct device *dev)
+ {
+ 	int ret;
+ 	struct nvdla_device *nvdla_dev = dev_get_drvdata(dev);
+@@ -616,7 +623,7 @@ int npu_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-int npu_resume(struct device *dev)
++int __maybe_unused npu_resume(struct device *dev)
+ {
+ 	int ret;
+ 	struct nvdla_device *ndev = dev_get_drvdata(dev);
+@@ -683,7 +690,7 @@ static struct platform_driver edla_driver =
+ 	{
+ 		.name = DRIVER_NAME,
+ 		.of_match_table = of_match_ptr(edla_of_match),
+-		.pm = &npu_hw_pm_ops,
++		.pm = pm_ptr(&npu_hw_pm_ops),
+ 	},
+ };
+ 
+-- 
+2.47.0
+

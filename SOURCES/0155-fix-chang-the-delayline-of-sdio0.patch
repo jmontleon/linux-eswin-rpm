@@ -1,0 +1,108 @@
+From ddd762aa53d8c1e54496c1a71f8fdb721e18ec73 Mon Sep 17 00:00:00 2001
+From: liangshuang <liangshuang@eswincomputing.com>
+Date: Wed, 14 Aug 2024 10:50:26 +0800
+Subject: [PATCH 155/215] fix:chang the delayline of sdio0.
+
+Changelogs:
+1.Change the delaycode of sdio.
+2.Fix the issue of wifi driver insmod fail.
+
+Signed-off-by: liangshuang <liangshuang@eswincomputing.com>
+---
+ arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts      | 2 +-
+ arch/riscv/boot/dts/eswin/eic7700-evb.dts         | 2 +-
+ arch/riscv/boot/dts/eswin/eic7702-evb-a1-d0.dts   | 2 +-
+ arch/riscv/boot/dts/eswin/eic7702-evb-a1-d1.dts   | 2 +-
+ arch/riscv/boot/dts/eswin/hifive-premier-p550.dts | 2 +-
+ drivers/mmc/host/sdhci-of-eswin-sdio.c            | 3 ++-
+ 6 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+index 120fc44ae3f8..5a979e84d2c9 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+@@ -458,7 +458,7 @@ &sdhci_emmc {
+ &sdio0 {
+ 	/* sd card */
+ 	status = "okay";
+-	delay_code = <0x29>;
++	delay_code = <0x55>;
+ 	drive-impedance-ohm = <33>;
+ 	enable-cmd-pullup;
+ 	enable-data-pullup;
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb.dts b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+index 5655e3692619..20fe88d55119 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+@@ -430,7 +430,7 @@ &sdhci_emmc {
+ &sdio0 {
+ 	/* sd card */
+ 	status = "okay";
+-	delay_code = <0x29>;
++	delay_code = <0x55>;
+ 	drive-impedance-ohm = <33>;
+ 	enable-cmd-pullup;
+ 	enable-data-pullup;
+diff --git a/arch/riscv/boot/dts/eswin/eic7702-evb-a1-d0.dts b/arch/riscv/boot/dts/eswin/eic7702-evb-a1-d0.dts
+index 870323d163ea..52cec742b771 100644
+--- a/arch/riscv/boot/dts/eswin/eic7702-evb-a1-d0.dts
++++ b/arch/riscv/boot/dts/eswin/eic7702-evb-a1-d0.dts
+@@ -409,7 +409,7 @@ &sdhci_emmc {
+ &sdio0 {
+ 	/* sd card */
+ 	status = "okay";
+-	delay_code = <0x29>;
++	delay_code = <0x55>;
+ 	drive-impedance-ohm = <33>;
+ 	enable-cmd-pullup;
+ 	enable-data-pullup;
+diff --git a/arch/riscv/boot/dts/eswin/eic7702-evb-a1-d1.dts b/arch/riscv/boot/dts/eswin/eic7702-evb-a1-d1.dts
+index cd069bc2da76..d065b67d3dda 100644
+--- a/arch/riscv/boot/dts/eswin/eic7702-evb-a1-d1.dts
++++ b/arch/riscv/boot/dts/eswin/eic7702-evb-a1-d1.dts
+@@ -421,7 +421,7 @@ &sdhci_emmc {
+ &sdio0 {
+ 	/* wifi module */
+ 	status = "okay";
+-	delay_code = <0x29>;
++	delay_code = <0x55>;
+ 	drive-impedance-ohm = <33>;
+ 	enable-cmd-pullup;
+ 	enable-data-pullup;
+diff --git a/arch/riscv/boot/dts/eswin/hifive-premier-p550.dts b/arch/riscv/boot/dts/eswin/hifive-premier-p550.dts
+index db6520a2e6de..33e02628614a 100644
+--- a/arch/riscv/boot/dts/eswin/hifive-premier-p550.dts
++++ b/arch/riscv/boot/dts/eswin/hifive-premier-p550.dts
+@@ -408,7 +408,7 @@ &sdhci_emmc {
+ &sdio0 {
+ 	/* sd card */
+ 	status = "okay";
+-	delay_code = <0x29>;
++	delay_code = <0x55>;
+ 	drive-impedance-ohm = <33>;
+ 	enable-cmd-pullup;
+ 	enable-data-pullup;
+diff --git a/drivers/mmc/host/sdhci-of-eswin-sdio.c b/drivers/mmc/host/sdhci-of-eswin-sdio.c
+index bff2897c17c0..8cd8deb339b0 100644
+--- a/drivers/mmc/host/sdhci-of-eswin-sdio.c
++++ b/drivers/mmc/host/sdhci-of-eswin-sdio.c
+@@ -333,6 +333,7 @@ static const struct sdhci_ops eswin_sdhci_sdio_cqe_ops = {
+ static const struct sdhci_pltfm_data eswin_sdhci_sdio_cqe_pdata = {
+ 	.ops = &eswin_sdhci_sdio_cqe_ops,
+ 	.quirks = SDHCI_QUIRK_BROKEN_CQE |
++		SDHCI_QUIRK_SINGLE_POWER_WRITE |
+ 		SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN |
+ 		SDHCI_QUIRK_BROKEN_TIMEOUT_VAL,
+ 	.quirks2 = SDHCI_QUIRK2_PRESET_VALUE_BROKEN |
+@@ -457,7 +458,7 @@ static int eswin_sdhci_sdio_runtime_resume(struct device *dev)
+ 	}
+ 	win2030_tbu_power(dev, true);
+ 
+-	ret = sdhci_runtime_resume_host(host, 0);
++	ret = sdhci_runtime_resume_host(host, 1);
+ 	if (ret) {
+ 		dev_err(dev, "runtime resume failed!\n");
+ 		goto clk_disable;
+-- 
+2.47.0
+

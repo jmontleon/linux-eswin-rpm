@@ -1,0 +1,5936 @@
+From dbc2ae6d237e2a903f077fd52e79a09f286c1902 Mon Sep 17 00:00:00 2001
+From: linmin <linmin@eswincomputing.com>
+Date: Wed, 19 Jun 2024 16:23:06 +0800
+Subject: [PATCH 102/215] refactor(MMZ vb and heap):MMZ code moved in kernel
+
+Changelogs:
+1.Moved es_buddy source code to drivers/memory/eswin/es_buddy
+2.Moved es_proc source code to drivers/memory/eswin/es_proc
+3.Moved mmz_vb source code to drivers/memory/eswin/es_mmz_vb
+4.Moved es_rsvmem_heap source code to drivers/memory/eswin/es_rsvmem_heap
+
+Signed-off-by: linmin <linmin@eswincomputing.com>
+Reviewed-by: ningyu <ningyu@eswincomputing.com>
+---
+ arch/riscv/configs/win2030_defconfig          |    4 +
+ drivers/memory/eswin/Kconfig                  |    4 +
+ drivers/memory/eswin/Makefile                 |    8 +
+ drivers/memory/eswin/buddy.h                  |   44 +-
+ drivers/memory/eswin/es_buddy/Kconfig         |    6 +
+ drivers/memory/eswin/es_buddy/Makefile        |    3 +
+ .../eswin/es_buddy/buddy_allocator/buddy.c    |  222 ++
+ drivers/memory/eswin/es_buddy/es_buddy.c      |  186 ++
+ drivers/memory/eswin/es_buddy/es_buddy.h      |   52 +
+ drivers/memory/eswin/es_mmz_vb/Kconfig        |    6 +
+ drivers/memory/eswin/es_mmz_vb/Makefile       |    5 +
+ .../eswin/es_mmz_vb/include/linux/mmz_vb.h    |   58 +
+ .../es_mmz_vb/include/linux/mmz_vb_type.h     |   17 +
+ drivers/memory/eswin/es_mmz_vb/mmz_vb.c       | 2375 +++++++++++++++++
+ drivers/memory/eswin/es_proc/Kconfig          |    7 +
+ drivers/memory/eswin/es_proc/Makefile         |    7 +
+ drivers/memory/eswin/es_proc/es_proc.c        |  233 ++
+ .../eswin/es_proc/include/linux/es_proc.h     |   40 +
+ drivers/memory/eswin/es_rsvmem_heap/Kconfig   |    6 +
+ drivers/memory/eswin/es_rsvmem_heap/Makefile  |    8 +
+ .../dmabuf-heap-import-helper.c               |  652 +++++
+ .../es_rsvmem_heap/eswin_rsvmem_common.c      |  447 ++++
+ .../eswin/es_rsvmem_heap/eswin_rsvmem_heap.c  |  634 +++++
+ .../include/linux/mem_perf_api.h              |  123 +
+ .../include/uapi/linux/eswin_rsvmem_common.h  |   56 +
+ include/linux/dmabuf-heap-import-helper.h     |  100 +
+ include/linux/eswin_rsvmem_common.h           |   94 +
+ include/uapi/linux/es_vb_user.h               |   58 +
+ include/uapi/linux/mmz_vb.h                   |  175 ++
+ 29 files changed, 5606 insertions(+), 24 deletions(-)
+ create mode 100644 drivers/memory/eswin/es_buddy/Kconfig
+ create mode 100644 drivers/memory/eswin/es_buddy/Makefile
+ create mode 100644 drivers/memory/eswin/es_buddy/buddy_allocator/buddy.c
+ create mode 100644 drivers/memory/eswin/es_buddy/es_buddy.c
+ create mode 100644 drivers/memory/eswin/es_buddy/es_buddy.h
+ create mode 100644 drivers/memory/eswin/es_mmz_vb/Kconfig
+ create mode 100644 drivers/memory/eswin/es_mmz_vb/Makefile
+ create mode 100644 drivers/memory/eswin/es_mmz_vb/include/linux/mmz_vb.h
+ create mode 100644 drivers/memory/eswin/es_mmz_vb/include/linux/mmz_vb_type.h
+ create mode 100644 drivers/memory/eswin/es_mmz_vb/mmz_vb.c
+ create mode 100644 drivers/memory/eswin/es_proc/Kconfig
+ create mode 100644 drivers/memory/eswin/es_proc/Makefile
+ create mode 100644 drivers/memory/eswin/es_proc/es_proc.c
+ create mode 100644 drivers/memory/eswin/es_proc/include/linux/es_proc.h
+ create mode 100644 drivers/memory/eswin/es_rsvmem_heap/Kconfig
+ create mode 100644 drivers/memory/eswin/es_rsvmem_heap/Makefile
+ create mode 100644 drivers/memory/eswin/es_rsvmem_heap/dmabuf-heap-import-helper.c
+ create mode 100644 drivers/memory/eswin/es_rsvmem_heap/eswin_rsvmem_common.c
+ create mode 100644 drivers/memory/eswin/es_rsvmem_heap/eswin_rsvmem_heap.c
+ create mode 100644 drivers/memory/eswin/es_rsvmem_heap/include/linux/mem_perf_api.h
+ create mode 100644 drivers/memory/eswin/es_rsvmem_heap/include/uapi/linux/eswin_rsvmem_common.h
+ create mode 100644 include/linux/dmabuf-heap-import-helper.h
+ create mode 100644 include/linux/eswin_rsvmem_common.h
+ create mode 100644 include/uapi/linux/es_vb_user.h
+ create mode 100644 include/uapi/linux/mmz_vb.h
+
+diff --git a/arch/riscv/configs/win2030_defconfig b/arch/riscv/configs/win2030_defconfig
+index 370b8dbe4a2e..32b31b28bdbd 100644
+--- a/arch/riscv/configs/win2030_defconfig
++++ b/arch/riscv/configs/win2030_defconfig
+@@ -736,6 +736,10 @@ CONFIG_RPMSG_VIRTIO=y
+ CONFIG_ARCH_ESWIN_EIC770X_SOC_FAMILY=y
+ CONFIG_EXTCON=y
+ CONFIG_MEMORY=y
++CONFIG_ESWIN_BUDDY=y
++CONFIG_ESWIN_PROC=y
++CONFIG_ESWIN_RSVMEM_HEAP=y
++CONFIG_ESWIN_MMZ_VB=y
+ CONFIG_PWM=y
+ CONFIG_PWM_ESWIN=y
+ CONFIG_RESET_ESWIN_WIN2030=y
+diff --git a/drivers/memory/eswin/Kconfig b/drivers/memory/eswin/Kconfig
+index 8f85e3cb466b..013e2f376dd3 100644
+--- a/drivers/memory/eswin/Kconfig
++++ b/drivers/memory/eswin/Kconfig
+@@ -25,5 +25,9 @@ config ESWIN_RSV_MEMBLOCK
+ 	  If unsure, say "n".
+ 
+ source "drivers/memory/eswin/codacache/Kconfig"
++source "drivers/memory/eswin/es_buddy/Kconfig"
++source "drivers/memory/eswin/es_proc/Kconfig"
++source "drivers/memory/eswin/es_rsvmem_heap/Kconfig"
++source "drivers/memory/eswin/es_mmz_vb/Kconfig"
+ 
+ endif
+diff --git a/drivers/memory/eswin/Makefile b/drivers/memory/eswin/Makefile
+index 1b732b2a439d..3e5e09bab5dd 100644
+--- a/drivers/memory/eswin/Makefile
++++ b/drivers/memory/eswin/Makefile
+@@ -2,3 +2,11 @@
+ obj-$(CONFIG_ESWIN_MC)				+= eswin_cpuid_hartid_convert.o
+ obj-$(CONFIG_ESWIN_RSV_MEMBLOCK)		+= eswin_memblock.o
+ obj-$(CONFIG_ESWIN_CODACACHE_CONTROLLER)	+= codacache/
++obj-$(CONFIG_ESWIN_BUDDY)			+= es_buddy/
++obj-$(CONFIG_ESWIN_PROC)			+= es_proc/
++obj-$(CONFIG_ESWIN_RSVMEM_HEAP)			+= es_rsvmem_heap/
++obj-$(CONFIG_ESWIN_RSVMEM_HEAP)			+= es_mmz_vb/
++
++ES_MEM_HEADER := drivers/memory/eswin/
++
++COPY_HEADERS := $(shell cp $(ES_MEM_HEADER)/*.h include/linux)
+\ No newline at end of file
+diff --git a/drivers/memory/eswin/buddy.h b/drivers/memory/eswin/buddy.h
+index 2c40d1116ad8..ff47325f2d27 100644
+--- a/drivers/memory/eswin/buddy.h
++++ b/drivers/memory/eswin/buddy.h
+@@ -1,3 +1,13 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Header file of ESWIN internal buddy allocator
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
+ #ifndef __BUDDY_H__
+ #define __BUDDY_H__
+ 
+@@ -38,13 +48,11 @@
+ #define es_spin_lock(esLock)
+ #define es_spin_unlock(esLock)
+ #endif
+-/*
+- * ���Page������״̬
+- * */
++
+ enum esPageflags_e{
+-	enPG_head,    //����buddyϵͳ�ڣ��׸�ҳ
+-	enPG_tail,    //����buddyϵͳ�ڣ���ҳ֮���ҳ��
+-	enPG_buddy,   //��buddyϵͳ��
++	enPG_head,
++	enPG_tail,
++	enPG_buddy,
+ };
+ 
+ #define BUDDY_PAGE_SHIFT    PAGE_SHIFT//(12UL)
+@@ -110,11 +118,7 @@ void         buddy_free_pages(struct mem_zone *zone,
+ 							  struct esPage_s *page);
+ unsigned long buddy_num_free_page(struct mem_zone *zone);
+ 
+-/*
+- * ҳ��Ϊ���ࣺһ���ǵ�ҳ��zero page��,
+- * һ�������ҳ��compound page����
+- * ���ҳ�ĵ�һ����head������Ϊtail��
+- * */
++
+ static inline void __esSetPageHead(struct esPage_s *page)
+ {
+ 	page->flags |= (1UL<<enPG_head);
+@@ -160,9 +164,7 @@ static inline int esPageBuddy(struct esPage_s *page)
+ 	return (page->flags & (1UL<<enPG_buddy));
+ }
+ 
+-/*
+- * ����ҳ��order��PG_buddy��־
+- * */
++
+ static inline void set_page_order_buddy(struct esPage_s *page, unsigned long order)
+ {
+ 	page->order = order;
+@@ -175,9 +177,7 @@ static inline void rmv_page_order_buddy(struct esPage_s *page)
+ 	__esClearPageBuddy(page);
+ }
+ 
+-/*
+- * ����buddyҳ
+- * */
++
+ static inline unsigned long
+ __find_buddy_index(unsigned long page_idx, unsigned int order)
+ {
+@@ -190,21 +190,17 @@ __find_combined_index(unsigned long page_idx, unsigned int order)
+ 	return (page_idx & ~(1 << order));
+ }
+ 
+-/*
+- * Linux�ں˽����ҳ��order��¼�ڵڶ���ҳ���prevָ����
+- * ��ϵͳ�����ҳ��order��¼���׸�ҳ���page->order����
+- * */
++
+ static inline unsigned long esCompound_order(struct esPage_s *page)
+ {
+ 	if (!esPageHead(page))
+-		return 0; //��ҳ
+-	//return (unsigned long)page[1].lru.prev;
++		return 0;
++
+ 	return page->order;
+ }
+ 
+ static inline void esSet_compound_order(struct esPage_s *page, unsigned long order)
+ {
+-	//page[1].lru.prev = (void *)order;
+ 	page->order = order;
+ }
+ 
+diff --git a/drivers/memory/eswin/es_buddy/Kconfig b/drivers/memory/eswin/es_buddy/Kconfig
+new file mode 100644
+index 000000000000..94d755f4ba86
+--- /dev/null
++++ b/drivers/memory/eswin/es_buddy/Kconfig
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0
++
++config ESWIN_BUDDY
++	tristate "ESWIN buddy allocator for reserved memory"
++	help
++	  buddy allocator api.
+diff --git a/drivers/memory/eswin/es_buddy/Makefile b/drivers/memory/eswin/es_buddy/Makefile
+new file mode 100644
+index 000000000000..4115fd0901d7
+--- /dev/null
++++ b/drivers/memory/eswin/es_buddy/Makefile
+@@ -0,0 +1,3 @@
++# SPDX-License-Identifier: GPL-2.0
++obj-$(CONFIG_ESWIN_BUDDY)	+= es_buddy.o buddy_allocator/buddy.o
++
+diff --git a/drivers/memory/eswin/es_buddy/buddy_allocator/buddy.c b/drivers/memory/eswin/es_buddy/buddy_allocator/buddy.c
+new file mode 100644
+index 000000000000..56f084d0fc46
+--- /dev/null
++++ b/drivers/memory/eswin/es_buddy/buddy_allocator/buddy.c
+@@ -0,0 +1,222 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Internal APIs for ESWIN buddy allocator
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#include "../../buddy.h"
++
++#define SIZE_4GB    0x100000000
++static int is_4G_boundary_page(struct mem_block *memblock, unsigned long page_idx)
++{
++	struct page *kpage;
++
++    kpage = memblock->kPageStart + page_idx;
++    if (!((page_to_phys(kpage) + BUDDY_PAGE_SIZE) % SIZE_4GB))
++        return 1;
++
++    return 0;
++}
++
++void buddy_system_init(struct mem_block *memblock,
++                       struct esPage_s *start_page,
++                       unsigned long start_addr,
++                       unsigned long page_num)
++{
++    unsigned long i;
++    struct esPage_s *page = NULL;
++    struct es_free_area_s *area = NULL;
++    // init memory zone
++    struct mem_zone *zone = &memblock->zone;
++    zone->page_num = page_num;
++    zone->page_size = BUDDY_PAGE_SIZE;
++    zone->first_page = start_page;
++    zone->start_addr = start_addr;
++    zone->end_addr = start_addr + page_num * BUDDY_PAGE_SIZE;
++    // TODO: init zone->lock
++    #ifdef RUN_IN_KERNEL
++    buddy_spin_lock_init(&zone->lock);
++    #endif
++    // init each area
++    for (i = 0; i < BUDDY_MAX_ORDER; i++)
++    {
++        area = zone->free_area + i;
++        INIT_LIST_HEAD(&area->free_list);
++        area->nr_free = 0;
++    }
++    memset(start_page, 0, page_num * sizeof(struct esPage_s));
++    // init and free each page
++    for (i = 0; i < page_num; i++)
++    {
++        page = zone->first_page + i;
++        INIT_LIST_HEAD(&page->lru);
++        /* Reserve 4kB at (4GB-4k) alignment address boundary. This is a workaround for g2d.
++           The g2d hardware has problem with accessing the 4GB alignment address boundray,
++           such as the address at 4GB, 8GB, 12GB and 16GB.
++         */
++        if (is_4G_boundary_page(memblock, i)) {
++            memblock->page_num--;
++            continue;
++        }
++
++        buddy_free_pages(zone, page);
++    }
++}
++
++static void prepare_compound_pages(struct esPage_s *page, unsigned long order)
++{
++    unsigned long i;
++    unsigned long nr_pages = (1UL<<order);
++
++    esSet_compound_order(page, order);
++    __esSetPageHead(page);
++    for(i = 1; i < nr_pages; i++)
++    {
++        struct esPage_s *p = page + i;
++        __SetPageTail(p);
++        p->first_page = page;
++    }
++}
++
++static void expand(struct mem_zone *zone, struct esPage_s *page,
++                   unsigned long low_order, unsigned long high_order,
++                   struct es_free_area_s *area)
++{
++    unsigned long size = (1U << high_order);
++    while (high_order > low_order)
++    {
++        area--;
++        high_order--;
++        size >>= 1;
++        list_add(&page[size].lru, &area->free_list);
++        area->nr_free++;
++        // set page order
++        set_page_order_buddy(&page[size], high_order);
++    }
++}
++
++static struct esPage_s *__alloc_page(unsigned long order,
++                                 struct mem_zone *zone)
++{
++    struct esPage_s *page = NULL;
++    struct es_free_area_s *area = NULL;
++    unsigned long current_order = 0;
++
++    for (current_order = order;
++         current_order < BUDDY_MAX_ORDER; current_order++)
++    {
++        area = zone->free_area + current_order;
++        if (list_empty(&area->free_list)) {
++            continue;
++        }
++        // remove closest size page
++        page = list_entry(area->free_list.next, struct esPage_s, lru);
++        list_del(&page->lru);
++        rmv_page_order_buddy(page);
++        area->nr_free--;
++        // expand to lower order
++        expand(zone, page, order, current_order, area);
++        // compound page
++        if (order > 0)
++            prepare_compound_pages(page, order);
++        else // single page
++            page->order = 0;
++        return page;
++    }
++    return NULL;
++}
++
++struct esPage_s *buddy_get_pages(struct mem_zone *zone,
++                             unsigned long order)
++{
++    struct esPage_s *page = NULL;
++
++    if (order >= BUDDY_MAX_ORDER)
++    {
++        BUDDY_BUG(__FILE__, __LINE__);
++        return NULL;
++    }
++    //TODO: lock zone->lock
++    buddy_spin_lock(&zone->lock);
++    page = __alloc_page(order, zone);
++    //TODO: unlock zone->lock
++    buddy_spin_unlock(&zone->lock);
++    return page;
++}
++
++static int destroy_compound_pages(struct esPage_s *page, unsigned long order)
++{
++    int bad = 0;
++    unsigned long i;
++    unsigned long nr_pages = (1UL<<order);
++
++    __esClearPageHead(page);
++    for(i = 1; i < nr_pages; i++)
++    {
++        struct esPage_s *p = page + i;
++        if( !esPageTail(p) || p->first_page != page )
++        {
++            bad++;
++            BUDDY_BUG(__FILE__, __LINE__);
++        }
++        __ClearPageTail(p);
++    }
++    return bad;
++}
++
++#define PageCompound(page) \
++        (page->flags & ((1UL<<enPG_head)|(1UL<<enPG_tail)))
++
++#define page_is_buddy(page,order) \
++        (esPageBuddy(page) && (page->order == order))
++
++void buddy_free_pages(struct mem_zone *zone,
++                      struct esPage_s *page)
++{
++    unsigned long order = esCompound_order(page);
++    unsigned long buddy_idx = 0, combinded_idx = 0;
++    unsigned long page_idx = page - zone->first_page;
++    //TODO: lock zone->lock
++    buddy_spin_lock(&zone->lock);
++    if (PageCompound(page))
++        if (destroy_compound_pages(page, order))
++            BUDDY_BUG(__FILE__, __LINE__);
++
++    while (order < BUDDY_MAX_ORDER-1)
++    {
++        struct esPage_s *buddy;
++        // find and delete buddy to combine
++        buddy_idx = __find_buddy_index(page_idx, order);
++        buddy = page + (buddy_idx - page_idx);
++        if (!page_is_buddy(buddy, order))
++            break;
++        list_del(&buddy->lru);
++        zone->free_area[order].nr_free--;
++        // remove buddy's flag and order
++        rmv_page_order_buddy(buddy);
++        // update page and page_idx after combined
++        combinded_idx = __find_combined_index(page_idx, order);
++        page = page + (combinded_idx - page_idx);
++        page_idx = combinded_idx;
++        order++;
++    }
++    set_page_order_buddy(page, order);
++    list_add(&page->lru, &zone->free_area[order].free_list);
++    zone->free_area[order].nr_free++;
++    //TODO: unlock zone->lock
++     buddy_spin_unlock(&zone->lock);
++}
++
++unsigned long buddy_num_free_page(struct mem_zone *zone)
++{
++    unsigned long i, ret;
++    for (i = 0, ret = 0; i < BUDDY_MAX_ORDER; i++)
++    {
++        ret += zone->free_area[i].nr_free * (1UL<<i);
++    }
++    return ret;
++}
+diff --git a/drivers/memory/eswin/es_buddy/es_buddy.c b/drivers/memory/eswin/es_buddy/es_buddy.c
+new file mode 100644
+index 000000000000..bc05cf473af6
+--- /dev/null
++++ b/drivers/memory/eswin/es_buddy/es_buddy.c
+@@ -0,0 +1,186 @@
++/*
++ * ESWIN buddy allocator.
++ * eswin_rsvmem initializes the reserved memory in dst that has compatible = "eswin-reserve-memory" and
++ * no-map property. Each of these memory region will be treated as one memory block and managed by eswin
++ * buddy system. Users can allocate/frree pages from/to these memory blocks via es_alloc_pages/es_free_pages.
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#define pr_fmt(fmt) "eswin_buddy: " fmt
++
++#include <linux/memblock.h>
++#include <linux/err.h>
++#include <linux/mm.h>
++#include <linux/module.h>
++#include <linux/sizes.h>
++#include <linux/slab.h>
++#include <linux/log2.h>
++#include <linux/highmem.h>
++#include <linux/io.h>
++#include <linux/kmemleak.h>
++
++#include "../eswin_memblock.h"
++#include "es_buddy.h"
++
++
++static void es_buddy_system_init(struct mem_block *memblock,
++                       unsigned long start_addr,
++                       unsigned long page_num)
++{
++	struct esPage_s *start_page = memblock->esPagesStart;
++
++	es_spin_lock_init(&memblock->esLock);
++	buddy_system_init(memblock, start_page, start_addr, page_num);
++}
++
++struct page *es_alloc_pages(struct mem_block *memblock,
++					unsigned long order)
++{
++	struct esPage_s *page;
++	struct page *kpage;
++	struct mem_zone *zone = &memblock->zone;
++	unsigned long page_idx;
++
++	es_spin_lock(&memblock->esLock);
++	page = buddy_get_pages(zone, order);
++	if (NULL == page) {
++		es_spin_unlock(&memblock->esLock);
++		return NULL;
++	}
++
++	page_idx = page - zone->first_page;
++	kpage = memblock->kPageStart + page_idx;
++
++	if (order > 0) {
++		__SetPageHead(kpage);
++		set_compound_order(kpage, order);
++	}
++	es_spin_unlock(&memblock->esLock);
++
++	buddy_print("%s:input order=%ld, esCompound_order(page)=%ld, kCompound_order(kpage)=%d, page_size(kpage)=0x%lx, phys_addr=0x%llx\n",
++			__func__, order, esCompound_order(page), compound_order(kpage), page_size(kpage), page_to_phys(kpage));
++	return kpage;
++}
++EXPORT_SYMBOL(es_alloc_pages);
++
++void es_free_pages(struct mem_block *memblock,
++					struct page *kpage)
++{
++	struct mem_zone *zone = &memblock->zone;
++	unsigned long page_idx = kpage - memblock->kPageStart;
++	struct esPage_s *page = zone->first_page + page_idx;
++	unsigned long order = esCompound_order(page);
++
++	buddy_print("%s:esCompound_order(page)=%ld, kCompound_order(kpage)=%d, page_idx=0x%lx, page_size(kpage)=0x%lx, phys_addr=0x%llx\n",
++			__func__, esCompound_order(page), compound_order(kpage), page_idx, page_size(kpage), page_to_phys(kpage));
++	es_spin_lock(&memblock->esLock);
++	buddy_free_pages(zone, page);
++
++	if (order > 0) {
++		ClearPageHead(kpage);
++	}
++	es_spin_unlock(&memblock->esLock);
++
++}
++EXPORT_SYMBOL(es_free_pages);
++
++unsigned long es_num_free_pages(struct mem_block *memblock)
++{
++	struct mem_zone *zone = &memblock->zone;
++
++	return buddy_num_free_page(zone);
++}
++EXPORT_SYMBOL(es_num_free_pages);
++
++void *es_page_to_virt(struct mem_zone *zone,
++                   struct esPage_s *page)
++{
++    unsigned long page_idx = 0;
++    unsigned long address = 0;
++
++    page_idx = page - zone->first_page;
++    address = zone->start_addr + page_idx * BUDDY_PAGE_SIZE;
++
++    return (void *)address;
++}
++
++struct esPage_s *es_virt_to_page(struct mem_zone *zone, void *ptr)
++{
++    unsigned long page_idx = 0;
++    struct esPage_s *page = NULL;
++    unsigned long address = (unsigned long)ptr;
++
++    if((address<zone->start_addr)||(address>zone->end_addr))
++    {
++        buddy_print("start_addr=0x%lx, end_addr=0x%lx, address=0x%lx\n",
++                zone->start_addr, zone->end_addr, address);
++        BUDDY_BUG(__FILE__, __LINE__);
++        return NULL;
++    }
++    page_idx = (address - zone->start_addr)>>BUDDY_PAGE_SHIFT;
++
++    page = zone->first_page + page_idx;
++    return page;
++}
++
++static int do_rsvmem_buddy_init(struct mem_block *memblock, void *data)
++{
++	int pages_size;
++
++	pr_debug("eswin buddy init for %s\n", memblock->name);
++	/* alloc esPage_s for all the pages to manage the pages*/
++	pages_size = memblock->page_num * sizeof(struct esPage_s);
++	memblock->esPagesStart = (struct esPage_s*)vmalloc(pages_size);
++	if (!memblock->esPagesStart) {
++		pr_err("%s:%d, failed to buddy init for %s\n",
++			__func__, __LINE__, memblock->name);
++		return -ENOMEM;
++	}
++	es_buddy_system_init(memblock, 0, memblock->page_num);
++
++	return 0;
++}
++static int eswin_rsvmem_buddy_init(void)
++{
++	int ret = 0;
++
++	ret = eswin_rsvmem_for_each_block(do_rsvmem_buddy_init, NULL);
++
++	return ret;
++}
++
++static int do_rsvmem_buddy_uninit(struct mem_block *memblock, void *data)
++{
++	unsigned long numFreePages = 0;
++
++	if (NULL == memblock->esPagesStart)
++		return 0;
++
++	numFreePages = es_num_free_pages(memblock);
++	pr_debug("%s: free mem=0x%lx\n",
++		memblock->name, numFreePages<<PAGE_SHIFT);
++	if (numFreePages == memblock->zone.page_num) {
++		vfree((void*)memblock->esPagesStart);
++	}
++	else {
++		pr_err("%s: %ld outof %ld pages still in use, skip destroy memblock!\n",
++			memblock->name, numFreePages, memblock->zone.page_num);
++
++		return -EBUSY;
++	}
++
++	return 0;
++}
++
++static void __exit eswin_rsvmem_buddy_uninit(void)
++{
++	eswin_rsvmem_for_each_block(do_rsvmem_buddy_uninit, NULL);
++}
++
++subsys_initcall(eswin_rsvmem_buddy_init);
++module_exit(eswin_rsvmem_buddy_uninit);
++MODULE_LICENSE("GPL v2");
+\ No newline at end of file
+diff --git a/drivers/memory/eswin/es_buddy/es_buddy.h b/drivers/memory/eswin/es_buddy/es_buddy.h
+new file mode 100644
+index 000000000000..7861a6cbcab8
+--- /dev/null
++++ b/drivers/memory/eswin/es_buddy/es_buddy.h
+@@ -0,0 +1,52 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Header file of ESWIN buddy allocator
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#ifndef __ESWIN_BUDDY_H__
++#define __ESWIN_BUDDY_H__
++
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/version.h>
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
++#include <linux/mm_types.h>
++#include <asm/atomic.h>
++#endif
++#include <linux/numa.h>
++#include "../buddy.h"
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
++static inline void folio_set_order(struct folio *folio, unsigned int order)
++{
++	if (WARN_ON_ONCE(!order || !folio_test_large(folio)))
++		return;
++
++	folio->_flags_1 = (folio->_flags_1 & ~0xffUL) | order;
++#ifdef CONFIG_64BIT
++	folio->_folio_nr_pages = 1U << order;
++#endif
++}
++
++static inline void prep_compound_head(struct page *page, unsigned int order)
++{
++	struct folio *folio = (struct folio *)page;
++
++	folio_set_order(folio, order);
++	atomic_set(&folio->_entire_mapcount, -1);
++	atomic_set(&folio->_nr_pages_mapped, 0);
++	atomic_set(&folio->_pincount, 0);
++}
++#define set_compound_order(kpage, order) prep_compound_head(kpage, order)
++#endif
++
++extern struct page *es_alloc_pages(struct mem_block *memblock, unsigned long order);
++extern void es_free_pages(struct mem_block *memblock, struct page *kpage);
++extern unsigned long es_num_free_pages(struct mem_block *memblock);
++
++#endif
+diff --git a/drivers/memory/eswin/es_mmz_vb/Kconfig b/drivers/memory/eswin/es_mmz_vb/Kconfig
+new file mode 100644
+index 000000000000..e290be281abe
+--- /dev/null
++++ b/drivers/memory/eswin/es_mmz_vb/Kconfig
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0
++
++config ESWIN_MMZ_VB
++	tristate "ESWIN MMZ reserved memory VB"
++	help
++	  ESWIN MMZ reserved memory VB device.
+diff --git a/drivers/memory/eswin/es_mmz_vb/Makefile b/drivers/memory/eswin/es_mmz_vb/Makefile
+new file mode 100644
+index 000000000000..fe2bfe6291b1
+--- /dev/null
++++ b/drivers/memory/eswin/es_mmz_vb/Makefile
+@@ -0,0 +1,5 @@
++# SPDX-License-Identifier: GPL-2.0
++obj-$(CONFIG_ESWIN_MMZ_VB)	+=  mmz_vb.o
++
++
++
+diff --git a/drivers/memory/eswin/es_mmz_vb/include/linux/mmz_vb.h b/drivers/memory/eswin/es_mmz_vb/include/linux/mmz_vb.h
+new file mode 100644
+index 000000000000..e167311a238d
+--- /dev/null
++++ b/drivers/memory/eswin/es_mmz_vb/include/linux/mmz_vb.h
+@@ -0,0 +1,58 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#ifndef __MMZ_VB_H__
++#define __MMZ_VB_H__
++
++#include <linux/types.h>
++#include "../../../eswin_memblock.h"
++#include "../../../es_buddy/es_buddy.h"
++
++
++/**
++ *  select whether the block will be memset to 0 while exporting it as dmabuf.
++ *  1: memset
++ *  0: do NOT memset
++*/
++// #define MMZ_VB_DMABUF_MEMSET	1
++
++#define MMZ_VB_VALID_FD_FLAGS (O_CLOEXEC | O_ACCMODE)
++
++#define VB_K_POOL_MAX_ID	INT_MAX
++
++/* one block info organized in kernel */
++typedef struct esVB_K_BLOCK_INFO_S {
++	struct page *cma_pages;
++	struct sg_table sg_table; // for buddy allocator
++	struct esVB_K_POOL_INFO_S *pool;
++	int nr;
++}VB_K_BLOCK_INFO_S;
++
++/* one pool info organized in kernel */
++typedef struct esVB_K_POOL_INFO_S {
++	s32 poolId;
++	struct esVB_POOL_CONFIG_S poolCfg;
++	unsigned long *bitmap; // used for block get/release managment
++	struct esVB_K_BLOCK_INFO_S *blocks; // point to the block array
++	struct esVB_K_MMZ_S *partitions; // poiont to the partitions
++	struct hlist_node node;
++	spinlock_t lock;
++	enum esVB_UID_E enVbUid;
++	unsigned long flag;
++}VB_K_POOL_INFO_S;
++
++/* MMZs info in kernel */
++typedef struct esVB_K_MMZ_S {
++	u32 partCnt;
++	// pool is found via idr api
++	struct idr pool_idr;
++	struct rw_semaphore idr_lock;
++	struct mem_block *mem_blocks[ES_VB_MAX_MMZs];
++}VB_K_MMZ_S;
++
++#endif
+diff --git a/drivers/memory/eswin/es_mmz_vb/include/linux/mmz_vb_type.h b/drivers/memory/eswin/es_mmz_vb/include/linux/mmz_vb_type.h
+new file mode 100644
+index 000000000000..8adecbbc4d6b
+--- /dev/null
++++ b/drivers/memory/eswin/es_mmz_vb/include/linux/mmz_vb_type.h
+@@ -0,0 +1,17 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#ifndef __MMZ_VB_TYPE_H__
++#define __MMZ_VB_TYPE_H__
++
++typedef unsigned int ES_U32;
++typedef unsigned long long ES_U64;
++typedef char ES_CHAR;
++typedef ES_U32 VB_POOL;
++
++#endif
+diff --git a/drivers/memory/eswin/es_mmz_vb/mmz_vb.c b/drivers/memory/eswin/es_mmz_vb/mmz_vb.c
+new file mode 100644
+index 000000000000..2c2f829817ad
+--- /dev/null
++++ b/drivers/memory/eswin/es_mmz_vb/mmz_vb.c
+@@ -0,0 +1,2375 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * ESWIN MMZ VB driver. MMZ VB stands for Media Memory Zone Video Buffer.
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#include <linux/dma-buf.h>
++#include <linux/dma-heap.h>
++#include <linux/dma-map-ops.h>
++#include <linux/highmem.h>
++#include <linux/bitfield.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/types.h>
++#include <linux/string.h>
++#include <linux/miscdevice.h>
++#include <linux/fs.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <asm/uaccess.h>
++#include <linux/dmaengine.h>
++#include <linux/uaccess.h>	/* For copy_to_user/put_user/... */
++#include <linux/of_address.h>
++#include <crypto/hash.h>
++#include <linux/delay.h>
++#include <linux/hashtable.h>
++#include <linux/es_proc.h>
++#include <linux/dmabuf-heap-import-helper.h>
++#include "include/linux/mmz_vb_type.h" /*must include before es_vb_user.h*/
++#include <uapi/linux/es_vb_user.h>
++#include <uapi/linux/mmz_vb.h>
++#include "include/linux/mmz_vb.h"
++
++MODULE_IMPORT_NS(DMA_BUF);
++
++#define DRIVER_NAME 	"mmz_vb"
++#define MMZ_VB_DMABUF_NAME		"mmz_vb_dmabuf"
++#define MMZ_VB_DMABUF_SPLITTED_NAME	"mmz_vb_dmabuf_splitted"
++
++#define vb_fmt(fmt)	"[%s-MMZ_VB]: " fmt
++#define info_fmt(fmt)	vb_fmt("%s[%d]: " fmt), "INFO",	\
++		        __func__, __LINE__
++#define dbg_fmt(fmt)	vb_fmt("%s[%d]: " fmt), "DEBUG",	\
++		        __func__, __LINE__
++#define err_fmt(fmt)	vb_fmt("%s[%d]: " fmt), "ERROR",	\
++		        __func__, __LINE__
++
++#define vb_info(fmt, args...) \
++	do {							\
++		printk(KERN_INFO info_fmt(fmt), ##args);	\
++	} while (0)
++
++#define vb_debug(fmt, args...) \
++	do {							\
++		printk(KERN_DEBUG dbg_fmt(fmt), ##args);	\
++	} while (0)
++#define vb_err(fmt, args...) \
++	do {							\
++		printk(KERN_ERR err_fmt(fmt), ##args);		\
++	} while (0)
++
++static struct device *mmz_vb_dev;
++static struct mmz_vb_priv *g_mmz_vb_priv = NULL;
++
++struct mmz_vb_priv {
++	struct device *dev;
++	struct esVB_K_MMZ_S partitions;
++	atomic_t allocBlkcnt;   /*total block allocated*/
++	struct hlist_head ht[VB_UID_MAX][ES_VB_MAX_MOD_POOL];
++	struct rw_semaphore pool_lock[VB_UID_MAX];
++	unsigned long cfg_flag[VB_UID_MAX];	/*flag for pVbConfig*/
++	struct esVB_CONFIG_S *pVbConfig[VB_UID_MAX];
++	struct mutex cfg_lock[VB_UID_MAX];
++};
++
++#define do_vb_pool_size(pPool)	(pPool->poolCfg.blkCnt * pPool->poolCfg.blkSize)
++static int vb_find_pool_by_id_unlock(VB_POOL poolId, struct esVB_K_POOL_INFO_S **ppPool);
++static int vb_find_pool_by_id(VB_POOL poolId, struct esVB_K_POOL_INFO_S **ppPool);
++static int vb_pool_size(VB_POOL poolId, u64 *pPoolSize);
++// static int vb_flush_pool(struct esVB_FLUSH_POOL_CMD_S *flushPoolCmd);
++static int vb_get_block(struct esVB_GET_BLOCK_CMD_S *getBlkCmd, struct esVB_K_BLOCK_INFO_S **ppBlk);
++static void vb_release_block(struct esVB_K_BLOCK_INFO_S *pBlk);
++static int vb_pool_get_free_block_cnt_unlock(struct esVB_K_POOL_INFO_S *pool);
++static int vb_is_splitted_blk(int fd, bool *isSplittedBlk);
++static int vb_blk_to_pool(struct esVB_BLOCK_TO_POOL_CMD_S *blkToPoolCmd);
++static int vb_get_blk_offset(struct esVB_GET_BLOCKOFFSET_CMD_S *getBlkOffsetCmd);
++static int vb_split_dmabuf(struct esVB_SPLIT_DMABUF_CMD_S *splitDmabufCmd);
++static int vb_get_dmabuf_refcnt(struct esVB_DMABUF_REFCOUNT_CMD_S *getDmabufRefCntCmd);
++static int vb_retrieve_mem_node(struct esVB_RETRIEVE_MEM_NODE_CMD_S *retrieveMemNodeCmd);
++static int vb_get_dmabuf_size(struct esVB_DMABUF_SIZE_CMD_S *getDmabufSizeCmd);
++static int mmz_vb_pool_exit(void);
++static int mmz_vb_init_memory_region(void);
++
++/**
++ * vb dmabuf releated struct
++ *
++ */
++struct mmz_vb_buffer {
++	struct esVB_K_BLOCK_INFO_S *pBlk;
++	struct list_head attachments;
++	struct mutex lock;
++	unsigned long len;
++	struct sg_table *table; // for buddy allocator
++	struct page **pages;
++	int vmap_cnt;
++	void *vaddr;
++};
++
++struct mmz_vb_attachment {
++	struct device *dev;
++	struct sg_table *table;
++	struct list_head list;
++	bool mapped;
++};
++
++static struct sg_table *dup_sg_table(struct sg_table *table)
++{
++	struct sg_table *new_table;
++	int ret, i;
++	struct scatterlist *sg, *new_sg;
++
++	new_table = kzalloc(sizeof(*new_table), GFP_KERNEL);
++	if (!new_table)
++		return ERR_PTR(-ENOMEM);
++
++	ret = sg_alloc_table(new_table, table->orig_nents, GFP_KERNEL);
++	if (ret) {
++		kfree(new_table);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	new_sg = new_table->sgl;
++	for_each_sgtable_sg(table, sg, i) {
++		sg_set_page(new_sg, sg_page(sg), sg->length, sg->offset);
++		new_sg = sg_next(new_sg);
++	}
++
++	return new_table;
++}
++
++static int mmz_vb_attach(struct dma_buf *dmabuf,
++			   struct dma_buf_attachment *attachment)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++	struct mmz_vb_attachment *a;
++	struct sg_table *table;
++
++	a = kzalloc(sizeof(*a), GFP_KERNEL);
++	if (!a)
++		return -ENOMEM;
++
++	table = dup_sg_table(buffer->table);
++	if (IS_ERR(table)) {
++		kfree(a);
++		return -ENOMEM;
++	}
++
++	a->table = table;
++	a->dev = attachment->dev;
++	INIT_LIST_HEAD(&a->list);
++	a->mapped = false;
++
++	attachment->priv = a;
++
++	mutex_lock(&buffer->lock);
++	list_add(&a->list, &buffer->attachments);
++	mutex_unlock(&buffer->lock);
++
++	return 0;
++}
++
++static void mmz_vb_detach(struct dma_buf *dmabuf,
++			    struct dma_buf_attachment *attachment)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++	struct mmz_vb_attachment *a = attachment->priv;
++
++	mutex_lock(&buffer->lock);
++	list_del(&a->list);
++	mutex_unlock(&buffer->lock);
++
++	sg_free_table(a->table);
++	kfree(a->table);
++	kfree(a);
++}
++
++static struct sg_table *mmz_vb_map_dma_buf(struct dma_buf_attachment *attachment,
++					     enum dma_data_direction direction)
++{
++	struct mmz_vb_attachment *a = attachment->priv;
++	struct sg_table *table =a->table;
++	int ret;
++
++	/* Skipt cache sync, since it takes a lot of time when import to device.
++	*  It's the user's responsibility for guaranteeing the cache coherency by
++	   flusing cache explicitly before importing to device.
++	*/
++	ret = dma_map_sgtable(attachment->dev, table, direction, DMA_ATTR_SKIP_CPU_SYNC);
++
++	if (ret)
++		return ERR_PTR(-ENOMEM);
++	a->mapped = true;
++	return table;
++}
++
++static void mmz_vb_unmap_dma_buf(struct dma_buf_attachment *attachment,
++				   struct sg_table *table,
++				   enum dma_data_direction direction)
++{
++	struct mmz_vb_attachment *a = attachment->priv;
++
++	a->mapped = false;
++
++	/* Skipt cache sync, since it takes a lot of time when unmap from device.
++	*  It's the user's responsibility for guaranteeing the cache coherency after
++	   the device has done processing the data.(For example, CPU do NOT read untill
++	   the device has done)
++	*/
++	dma_unmap_sgtable(attachment->dev, table, direction, DMA_ATTR_SKIP_CPU_SYNC);
++}
++
++static int mmz_vb_dma_buf_begin_cpu_access(struct dma_buf *dmabuf,
++					     enum dma_data_direction direction)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++	struct sg_table *table = buffer->table;
++	struct scatterlist *sg;
++	int i;
++
++	mutex_lock(&buffer->lock);
++
++	if (buffer->vmap_cnt)
++		invalidate_kernel_vmap_range(buffer->vaddr, buffer->len);
++
++	/* Since the cache sync was skipped when mmz_vb_map_dma_buf/mmz_vb_unmap_dma_buf,
++	   So force cache sync here when user call ES_SYS_MemFlushCache, eventhough there
++	   is no device attached to this dmabuf.
++	*/
++	#ifndef QEMU_DEBUG
++	for_each_sg(table->sgl, sg, table->orig_nents, i)
++		arch_sync_dma_for_cpu(sg_phys(sg), sg->length, direction);
++	#endif
++	mutex_unlock(&buffer->lock);
++
++	return 0;
++}
++
++static int mmz_vb_dma_buf_end_cpu_access(struct dma_buf *dmabuf,
++					   enum dma_data_direction direction)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++	struct sg_table *table = buffer->table;
++	struct scatterlist *sg;
++	int i;
++
++	mutex_lock(&buffer->lock);
++
++	if (buffer->vmap_cnt)
++		flush_kernel_vmap_range(buffer->vaddr, buffer->len);
++
++	/* Since the cache sync was skipped while mmz_vb_map_dma_buf/mmz_vb_unmap_dma_buf,
++	   So force cache sync here when user call ES_SYS_MemFlushCache, eventhough there
++	   is no device attached to this dmabuf.
++	*/
++	#ifndef QEMU_DEBUG
++	for_each_sg(table->sgl, sg, table->orig_nents, i)
++		arch_sync_dma_for_device(sg_phys(sg), sg->length, direction);
++	#endif
++	mutex_unlock(&buffer->lock);
++
++	return 0;
++}
++
++#if 0
++static int mmz_vb_sync_cache_internal(struct dma_buf *dmabuf, enum dma_data_direction direction)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++	struct sg_table *table = buffer->table;
++	struct scatterlist *sg;
++	int i;
++
++	for_each_sg(table->sgl, sg, table->orig_nents, i)
++		arch_sync_dma_for_device(sg_phys(sg), sg->length, direction);
++
++
++	return 0;
++}
++#endif
++
++static int mmz_vb_mmap(struct dma_buf *dmabuf, struct vm_area_struct *vma)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++	struct sg_table *table = buffer->table;
++	unsigned long addr = vma->vm_start;
++	unsigned long pgoff = vma->vm_pgoff, mapsize = 0;
++	unsigned long size_remaining = vma->vm_end - vma->vm_start;
++	struct scatterlist *sg;
++	struct page *page = NULL;
++	unsigned int nents = 0;
++	int i;
++	int ret;
++
++	if ((vma->vm_flags & (VM_SHARED | VM_MAYSHARE)) == 0)
++		return -EINVAL;
++
++	/* vm_private_data will be used by eswin-ipc-scpu.c.
++	    ipc will import this dmabuf to get iova.
++	*/
++	vma->vm_private_data = dmabuf;
++
++	/* support mman flag MAP_SHARED_VALIDATE | VM_NORESERVE, used to map uncached memory to user space.
++	   The cache needs to be flush first since there might be dirty data in cache.
++	 */
++	if (vma->vm_flags & VM_NORESERVE) {
++		vm_flags_clear(vma, VM_NORESERVE);
++		#ifndef QEMU_DEBUG
++		vma->vm_page_prot = pgprot_dmacoherent(vma->vm_page_prot);
++		#endif
++		/* skip sync cache, users should guarantee the cache is clean after done using it in
++		   cached mode(i.e, ES_SYS_Mmap(SYS_CACHE_MODE_CACHED))
++		*/
++		#if 0
++		pr_debug("%s uncached user memory, flush cache firstly!\n", __func__);
++		if (mmz_vb_sync_cache_internal(dmabuf, DMA_TO_DEVICE)) {
++			vb_err("%s, failed to flush cache!\n",__func__);
++			return -EINVAL;
++		}
++		#endif
++	}
++	pr_debug("%s, size_remaining:0x%lx, pgoff:0x%lx, dmabuf->size:0x%lx, start_phys:0x%llx\n",
++		__func__, size_remaining, pgoff, dmabuf->size, sg_phys(table->sgl));
++	for_each_sg(table->sgl, sg, table->orig_nents, i) {
++		pr_debug("sgl:%d, phys:0x%llx, length:0x%x\n", i, sg_phys(sg), sg->length);
++		if (pgoff >= (sg->length >> PAGE_SHIFT)) {
++			pgoff -= (sg->length >> PAGE_SHIFT);
++			continue;
++		}
++
++		page = sg_page(sg);
++		if (nents == 0) {
++			mapsize = sg->length - (pgoff << PAGE_SHIFT);
++			mapsize = min(size_remaining, mapsize);
++			ret = remap_pfn_range(vma, addr, page_to_pfn(page) + pgoff, mapsize,
++					vma->vm_page_prot);
++			pr_debug("nents:%d, sgl:%d, pgoff:0x%lx, mapsize:0x%lx, phys:0x%llx\n",
++				nents, i, pgoff, mapsize, pfn_to_phys(page_to_pfn(page) + pgoff));
++		}
++		else {
++			mapsize = min((unsigned int)size_remaining, (sg->length));
++			ret = remap_pfn_range(vma, addr, page_to_pfn(page), mapsize,
++					vma->vm_page_prot);
++			pr_debug("nents:%d, sgl:%d, mapsize:0x%lx, phys:0x%llx\n", nents, i, mapsize, page_to_phys(page));
++		}
++		pgoff = 0;
++		nents++;
++
++		if (ret)
++			return ret;
++
++		addr += mapsize;
++		size_remaining -= mapsize;
++		if (size_remaining == 0)
++			return 0;
++	}
++
++	return 0;
++}
++
++static void *mmz_vb_do_vmap(struct dma_buf *dmabuf)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++	struct esVB_K_POOL_INFO_S *pool = buffer->pBlk->pool;
++	pgprot_t prot = PAGE_KERNEL;
++	struct sg_table *table = buffer->table;
++	int npages = PAGE_ALIGN(buffer->len) / PAGE_SIZE;
++	struct page **pages = vmalloc(sizeof(struct page *) * npages);
++	struct page **tmp = pages;
++	struct sg_page_iter piter;
++	void *vaddr;
++
++	if (!pages)
++		return ERR_PTR(-ENOMEM);
++
++	for_each_sgtable_page(table, &piter, 0) {
++		WARN_ON(tmp - pages >= npages);
++		*tmp++ = sg_page_iter_page(&piter);
++	}
++
++	/* The property of this dmabuf in kernel space is determined by SYS_CACHE_MODE_E of the pool . */
++	if (pool->poolCfg.enRemapMode == SYS_CACHE_MODE_NOCACHE) {
++		pr_debug("%s uncached kernel buffer!\n", __func__);
++		#ifndef QEMU_DEBUG
++		prot = pgprot_dmacoherent(PAGE_KERNEL);
++		#endif
++	}
++	else {
++		pr_debug("%s cached kernel buffer!\n", __func__);
++	}
++
++	vaddr = vmap(pages, npages, VM_MAP, prot);
++	vfree(pages);
++
++	if (!vaddr)
++		return ERR_PTR(-ENOMEM);
++
++	return vaddr;
++}
++
++static int mmz_vb_vmap(struct dma_buf *dmabuf, struct dma_buf_map *map)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++	void *vaddr;
++	int ret = 0;
++
++	mutex_lock(&buffer->lock);
++	if (buffer->vmap_cnt) {
++		buffer->vmap_cnt++;
++		dma_buf_map_set_vaddr(map, buffer->vaddr);
++		goto out;
++	}
++
++	vaddr = mmz_vb_do_vmap(dmabuf);
++	if (IS_ERR(vaddr)) {
++		ret = PTR_ERR(vaddr);
++		goto out;
++	}
++	buffer->vaddr = vaddr;
++	buffer->vmap_cnt++;
++	dma_buf_map_set_vaddr(map, buffer->vaddr);
++out:
++	mutex_unlock(&buffer->lock);
++
++	return ret;
++}
++
++static void mmz_vb_vunmap(struct dma_buf *dmabuf, struct dma_buf_map *map)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++
++	mutex_lock(&buffer->lock);
++	if (!--buffer->vmap_cnt) {
++		vunmap(buffer->vaddr);
++		buffer->vaddr = NULL;
++	}
++	mutex_unlock(&buffer->lock);
++	dma_buf_map_clear(map);
++}
++
++static void mmz_vb_dma_buf_release(struct dma_buf *dmabuf)
++{
++	struct mmz_vb_buffer *buffer = dmabuf->priv;
++
++	if (buffer->vmap_cnt > 0) {
++		WARN(1, "%s: buffer still mapped in the kernel\n", __func__);
++		vunmap(buffer->vaddr);
++		buffer->vaddr = NULL;
++	}
++
++	/* release block. In fact, release block to pool */
++	vb_release_block(buffer->pBlk);
++
++	kfree(buffer);
++}
++
++static const struct dma_buf_ops mmz_vb_buf_ops = {
++	.attach = mmz_vb_attach,
++	.detach = mmz_vb_detach,
++	.map_dma_buf = mmz_vb_map_dma_buf,
++	.unmap_dma_buf = mmz_vb_unmap_dma_buf,
++	.begin_cpu_access = mmz_vb_dma_buf_begin_cpu_access,
++	.end_cpu_access = mmz_vb_dma_buf_end_cpu_access,
++	.mmap = mmz_vb_mmap,
++	.vmap = mmz_vb_vmap,
++	.vunmap = mmz_vb_vunmap,
++	.release = mmz_vb_dma_buf_release,
++};
++
++static const unsigned int orders[] = {MAX_ORDER-1, 9, 0};
++#define NUM_ORDERS ARRAY_SIZE(orders)
++
++static struct page *alloc_largest_available(struct mem_block *memblock,
++						unsigned long size,
++						unsigned int max_order)
++{
++	struct page *page;
++	int i;
++
++	for (i = 0; i < NUM_ORDERS; i++) {
++		if (size <  (PAGE_SIZE << orders[i]))
++			continue;
++		if (max_order < orders[i])
++			continue;
++
++		page = es_alloc_pages(memblock, orders[i]);
++		if (!page)
++			continue;
++		return page;
++	}
++	return NULL;
++}
++
++static int vb_blk_pages_allocate(struct mem_block *memblock, struct esVB_K_BLOCK_INFO_S *blocks, unsigned long len)
++{
++	unsigned long size_remaining = len;
++	unsigned int max_order = orders[0];
++	struct sg_table *table;
++	struct scatterlist *sg;
++	struct list_head pages;
++	struct page *page, *tmp_page;
++	int i, ret = -ENOMEM;
++
++	INIT_LIST_HEAD(&pages);
++	i = 0;
++	while (size_remaining > 0) {
++		/*
++		 * Avoid trying to allocate memory if the process
++		 * has been killed by SIGKILL
++		 */
++		if (fatal_signal_pending(current)) {
++			ret = -EINTR;
++			goto free_buffer;
++		}
++
++		page = alloc_largest_available(memblock, size_remaining, max_order);
++		if (!page)
++			goto free_buffer;
++
++		list_add_tail(&page->lru, &pages);
++		size_remaining -= page_size(page);
++		max_order = compound_order(page);
++		i++;
++		// pr_debug("page_size(page)=0x%lx, phys_addr=0x%llx, max_order=%d\n",
++			// page_size(page), page_to_phys(page), max_order);
++
++	}
++
++	table = &blocks->sg_table;
++	if (sg_alloc_table(table, i, GFP_KERNEL))
++		goto free_buffer;
++
++	sg = table->sgl;
++	list_for_each_entry_safe(page, tmp_page, &pages, lru) {
++		sg_set_page(sg, page, page_size(page), 0);
++		sg = sg_next(sg);
++		list_del(&page->lru);
++	}
++
++	return 0;
++
++free_buffer:
++	list_for_each_entry_safe(page, tmp_page, &pages, lru)
++		es_free_pages(memblock, page);
++
++
++	return ret;
++}
++
++static void vb_blk_pages_release(struct mem_block *memblock, struct esVB_K_BLOCK_INFO_S *blocks)
++{
++	struct sg_table *table;
++	struct scatterlist *sg;
++	int i;
++
++	table = &blocks->sg_table;
++	for_each_sgtable_sg(table, sg, i) {
++		struct page *page = sg_page(sg);
++		// pr_debug("%s:%d,page_size(page)=0x%lx, phys_addr=0x%llx\n",
++			// __func__, __LINE__, page_size(page), page_to_phys(page));
++		es_free_pages(memblock, page);
++	}
++	sg_free_table(table);
++
++}
++
++static int vb_blk_dmabuf_alloc(struct esVB_GET_BLOCK_CMD_S *getBlkCmd)
++{
++	struct mmz_vb_buffer *buffer;
++	struct esVB_K_BLOCK_INFO_S *pBlk;
++	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
++	size_t size;
++	struct dma_buf *dmabuf;
++	#ifdef MMZ_VB_DMABUF_MEMSET
++	struct sg_table *table;
++	struct scatterlist *sg;
++	int i;
++	#endif
++	int fd;
++	int ret = -ENOMEM;
++
++	buffer = kzalloc(sizeof(*buffer), GFP_KERNEL);
++	if (!buffer)
++		return -ENOMEM;
++
++	INIT_LIST_HEAD(&buffer->attachments);
++	mutex_init(&buffer->lock);
++
++	ret = vb_get_block(getBlkCmd, &pBlk);
++	/* try to get a required block from pool */
++	if (ret) {
++		vb_err("failed to get block from pool!!!\n");
++		goto free_buffer;
++	}
++
++	size = pBlk->pool->poolCfg.blkSize;
++	buffer->len = size;
++	buffer->table = &pBlk->sg_table;
++	#ifdef MMZ_VB_DMABUF_MEMSET
++	/*TODO: Clear the pages, sg_virt dose not work because vb memory is reserved as no-map!!!!*/
++	#if 0
++	{
++		table = buffer->table;
++		for_each_sg(table->sgl, sg, table->orig_nents, i)
++			memset(sg_virt(sg), 0, sg->length);
++	}
++	#endif
++	#endif
++	buffer->pBlk = pBlk;
++
++	/* create the dmabuf */
++	exp_info.exp_name = MMZ_VB_DMABUF_NAME;
++	exp_info.ops = &mmz_vb_buf_ops;
++	exp_info.size = buffer->len;
++	exp_info.flags = O_RDWR | O_CLOEXEC;
++	exp_info.priv = buffer;
++	dmabuf = dma_buf_export(&exp_info);
++	if (IS_ERR(dmabuf)) {
++		ret = PTR_ERR(dmabuf);
++		goto release_block;
++	}
++
++	fd = dma_buf_fd(dmabuf, MMZ_VB_VALID_FD_FLAGS);
++	if (fd < 0) {
++		dma_buf_put(dmabuf);
++		/* just return, as put will call release and that will free */
++		return fd;
++	}
++
++	getBlkCmd->getBlkResp.fd = fd;
++	getBlkCmd->getBlkResp.actualBlkSize = size;
++	getBlkCmd->getBlkResp.nr = pBlk->nr;
++	return 0;
++
++release_block:
++	vb_release_block(pBlk);
++free_buffer:
++	kfree(buffer);
++
++	return ret;
++}
++
++static int vb_ioctl_get_blk(void __user *user_getBlkCmd)
++{
++	int ret = 0;
++	struct esVB_GET_BLOCK_CMD_S *getBlkCmd;
++
++	getBlkCmd = kzalloc(sizeof(*getBlkCmd), GFP_KERNEL);
++	if (!getBlkCmd) {
++		return -ENOMEM;
++	}
++	if (copy_from_user(getBlkCmd, user_getBlkCmd, sizeof(*getBlkCmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++
++	ret = vb_blk_dmabuf_alloc(getBlkCmd);
++	if (ret) {
++		goto out_free;
++	}
++
++	if (copy_to_user(user_getBlkCmd, getBlkCmd, sizeof(*getBlkCmd)))
++		ret = -EFAULT;
++
++out_free:
++	kfree(getBlkCmd);
++	return ret;
++}
++
++static int vb_ioctl_pool_size(void __user *user_getPoolSizeCmd)
++{
++	int ret = 0;
++	struct esVB_GET_POOLSIZE_CMD_S *getPoolSizeCmd;
++
++	getPoolSizeCmd = kzalloc(sizeof(*getPoolSizeCmd), GFP_KERNEL);
++	if (!getPoolSizeCmd) {
++		return -ENOMEM;
++	}
++	if (copy_from_user(getPoolSizeCmd, user_getPoolSizeCmd, sizeof(*getPoolSizeCmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++
++	ret = vb_pool_size(getPoolSizeCmd->poolId, &getPoolSizeCmd->poolSize);
++	if (ret) {
++		goto out_free;
++	}
++
++	if (copy_to_user(user_getPoolSizeCmd, getPoolSizeCmd, sizeof(*getPoolSizeCmd)))
++		ret = -EFAULT;
++
++out_free:
++	kfree(getPoolSizeCmd);
++	return ret;
++}
++#if 0
++static int vb_ioctl_flush_pool(void __user *user_flushPoolCmd)
++{
++	int ret = 0;
++	struct esVB_FLUSH_POOL_CMD_S *flushPoolCmd;
++
++	flushPoolCmd = kzalloc(sizeof(*flushPoolCmd), GFP_KERNEL);
++	if (!flushPoolCmd) {
++		return -ENOMEM;
++	}
++	if (copy_from_user(flushPoolCmd, user_flushPoolCmd, sizeof(*flushPoolCmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++
++	ret = vb_flush_pool(flushPoolCmd);
++	if (ret) {
++		goto out_free;
++	}
++
++	if (copy_to_user(user_flushPoolCmd, flushPoolCmd, sizeof(*flushPoolCmd)))
++		ret = -EFAULT;
++
++out_free:
++	kfree(flushPoolCmd);
++	return ret;
++}
++#endif
++
++static int vb_ioctl_blk_to_pool(void __user *user_blkToPoolCmd)
++{
++	int ret = 0;
++	struct esVB_BLOCK_TO_POOL_CMD_S *blkToPoolCmd;
++
++	blkToPoolCmd = kzalloc(sizeof(*blkToPoolCmd), GFP_KERNEL);
++	if (!blkToPoolCmd) {
++		return -ENOMEM;
++	}
++	if (copy_from_user(blkToPoolCmd, user_blkToPoolCmd, sizeof(*blkToPoolCmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++
++	ret = vb_blk_to_pool(blkToPoolCmd);
++	if (ret)
++		goto out_free;
++
++	if (copy_to_user(user_blkToPoolCmd, blkToPoolCmd, sizeof(*blkToPoolCmd)))
++		ret = -EFAULT;
++
++out_free:
++	kfree(blkToPoolCmd);
++	return ret;
++}
++
++static int vb_ioctl_get_blk_offset(void __user *user_getBlkOffsetCmd)
++{
++	int ret = 0;
++	struct esVB_GET_BLOCKOFFSET_CMD_S *getBlkOffsetCmd;
++
++	getBlkOffsetCmd = kzalloc(sizeof(*getBlkOffsetCmd), GFP_KERNEL);
++	if (!getBlkOffsetCmd) {
++		return -ENOMEM;
++	}
++	if (copy_from_user(getBlkOffsetCmd, user_getBlkOffsetCmd, sizeof(*getBlkOffsetCmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++
++	ret = vb_get_blk_offset(getBlkOffsetCmd);
++	if (ret) {
++		goto out_free;
++	}
++
++	if (copy_to_user(user_getBlkOffsetCmd, getBlkOffsetCmd, sizeof(*getBlkOffsetCmd)))
++		ret = -EFAULT;
++
++out_free:
++	kfree(getBlkOffsetCmd);
++	return ret;
++}
++
++static int vb_ioctl_split_dmabuf(void __user *user_splitDmabufCmd)
++{
++	int ret = 0;
++	struct esVB_SPLIT_DMABUF_CMD_S *splitDmabufCmd;
++
++	splitDmabufCmd = kzalloc(sizeof(*splitDmabufCmd), GFP_KERNEL);
++	if (!splitDmabufCmd) {
++		return -ENOMEM;
++	}
++	if (copy_from_user(splitDmabufCmd, user_splitDmabufCmd, sizeof(*splitDmabufCmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++
++	ret = vb_split_dmabuf(splitDmabufCmd);
++	if (ret) {
++		goto out_free;
++	}
++
++	if (copy_to_user(user_splitDmabufCmd, splitDmabufCmd, sizeof(*splitDmabufCmd)))
++		ret = -EFAULT;
++
++out_free:
++	kfree(splitDmabufCmd);
++	return ret;
++}
++
++static int vb_ioctl_get_dmabuf_refcnt(void __user *user_getDmabufRefCntCmd)
++{
++	int ret = 0;
++	struct esVB_DMABUF_REFCOUNT_CMD_S *getDmabufRefCntCmd;
++
++	getDmabufRefCntCmd = kzalloc(sizeof(*getDmabufRefCntCmd), GFP_KERNEL);
++	if (!getDmabufRefCntCmd) {
++		return -ENOMEM;
++	}
++	if (copy_from_user(getDmabufRefCntCmd, user_getDmabufRefCntCmd, sizeof(*getDmabufRefCntCmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++
++	ret = vb_get_dmabuf_refcnt(getDmabufRefCntCmd);
++	if (ret)
++		goto out_free;
++
++	if (copy_to_user(user_getDmabufRefCntCmd, getDmabufRefCntCmd, sizeof(*getDmabufRefCntCmd)))
++		ret = -EFAULT;
++
++out_free:
++	kfree(getDmabufRefCntCmd);
++	return ret;
++}
++
++static int vb_ioctl_retrieve_mem_node(void __user *user_retrieveMemNodeCmd)
++{
++	int ret = 0;
++	struct esVB_RETRIEVE_MEM_NODE_CMD_S *retrieveMemNodeCmd;
++
++	retrieveMemNodeCmd = kzalloc(sizeof(*retrieveMemNodeCmd), GFP_KERNEL);
++	if (!retrieveMemNodeCmd) {
++		return -ENOMEM;
++	}
++	if (copy_from_user(retrieveMemNodeCmd, user_retrieveMemNodeCmd, sizeof(*retrieveMemNodeCmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++
++	ret = vb_retrieve_mem_node(retrieveMemNodeCmd);
++	if (ret)
++		goto out_free;
++
++	if (copy_to_user(user_retrieveMemNodeCmd, retrieveMemNodeCmd, sizeof(*retrieveMemNodeCmd)))
++		ret = -EFAULT;
++
++out_free:
++	kfree(retrieveMemNodeCmd);
++	return ret;
++}
++
++static int vb_ioctl_get_dmabuf_size(void __user *user_getDmabufSizeCmd)
++{
++	int ret = 0;
++	struct esVB_DMABUF_SIZE_CMD_S *getDmabufSizeCmd;
++
++	getDmabufSizeCmd = kzalloc(sizeof(*getDmabufSizeCmd), GFP_KERNEL);
++	if (!getDmabufSizeCmd) {
++		return -ENOMEM;
++	}
++	if (copy_from_user(getDmabufSizeCmd, user_getDmabufSizeCmd, sizeof(*getDmabufSizeCmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++
++	ret = vb_get_dmabuf_size(getDmabufSizeCmd);
++	if (ret)
++		goto out_free;
++
++	if (copy_to_user(user_getDmabufSizeCmd, getDmabufSizeCmd, sizeof(*getDmabufSizeCmd)))
++		ret = -EFAULT;
++
++out_free:
++	kfree(getDmabufSizeCmd);
++	return ret;
++}
++
++static int mmz_vb_assign_pool_id(struct esVB_K_POOL_INFO_S *pool)
++{
++	int ret = 0;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++
++	down_write(&partitions->idr_lock);
++	ret = idr_alloc(&partitions->pool_idr, pool, 0, VB_K_POOL_MAX_ID,
++			GFP_KERNEL);
++	if (ret >= 0) {
++		pool->poolId = ret;
++	}
++	up_write(&partitions->idr_lock);
++
++	return ret < 0 ? ret : 0;
++}
++
++static int mmz_vb_remove_pool_id(struct esVB_K_POOL_INFO_S *pool, bool is_lock)
++{
++	int ret = 0;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++
++	if (is_lock) {
++		down_write(&partitions->idr_lock);
++	}
++
++	idr_remove(&partitions->pool_idr, pool->poolId);
++
++	if (is_lock) {
++		up_write(&partitions->idr_lock);
++	}
++	return ret < 0 ? ret : 0;
++}
++
++static int mmz_pool_insert_list(struct esVB_K_POOL_INFO_S *pool, enum esVB_UID_E uid)
++{
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++
++	if (uid <= VB_UID_PRIVATE || uid >= VB_UID_MAX) {
++		dev_err(mmz_vb_dev, "%s %d, invalid uid %d\n",__func__,__LINE__, uid);
++		return -EINVAL;
++	}
++	down_write(&vb_priv->pool_lock[uid]);
++	hash_add(vb_priv->ht[uid], &pool->node, pool->poolCfg.blkSize);
++	up_write(&vb_priv->pool_lock[uid]);
++	return 0;
++}
++
++static struct mem_block *vb_get_memblock(const char *memBlkName)
++{
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++	struct mem_block *memblock = NULL, *rsvmem_block = NULL;
++	int i;
++
++	for (i = 0; i < partitions->partCnt; i++) {
++		rsvmem_block = partitions->mem_blocks[i];
++		if (!strcmp(memBlkName, rsvmem_block->name)){
++			memblock = rsvmem_block;
++			break;
++		}
++	}
++
++	return memblock;
++}
++
++static int mmz_vb_do_create_pool(struct esVB_POOL_CONFIG_S *pool_cfg,
++	struct esVB_K_POOL_INFO_S **pool_out)
++{
++	int i;
++	int ret = 0;
++	struct esVB_K_POOL_INFO_S *pool;
++	struct esVB_K_BLOCK_INFO_S *blocks;
++	struct mem_block *memblock = NULL;
++	const char *memBlkName = pool_cfg->mmzName;
++	size_t size;
++
++	// 0.find the memblock
++	memblock = vb_get_memblock(memBlkName);
++	if (NULL == memblock) {
++		vb_err("%s NOT found!\n", memBlkName);
++		return -EINVAL;
++	}
++
++	// 1.init pool
++	pool = devm_kzalloc(mmz_vb_dev, sizeof(struct esVB_K_POOL_INFO_S), GFP_KERNEL);
++	if (!pool) {
++		dev_err(mmz_vb_dev, "%s %d, faild to alloc pool cb\n",__func__,__LINE__);
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	pool->blocks = vmalloc(sizeof(struct esVB_K_BLOCK_INFO_S) * pool_cfg->blkCnt);
++	if (!pool->blocks) {
++		dev_err(mmz_vb_dev, "%s %d, faild to alloc blocks cb\n",__func__,__LINE__);
++		ret = -ENOMEM;
++		goto out_free_pool;
++	}
++
++	spin_lock_init(&pool->lock);
++	memcpy(&pool->poolCfg, pool_cfg, sizeof(struct esVB_POOL_CONFIG_S));
++
++	pool->bitmap = bitmap_zalloc(pool_cfg->blkCnt, GFP_KERNEL);
++	if (!pool->bitmap) {
++		dev_err(mmz_vb_dev, "%s %d, faild to alloc bitmap\n",__func__,__LINE__);
++		ret = -ENOMEM;
++		goto out_free_block_arrays;
++	}
++
++	// 2. make blkSize align
++	size = PAGE_ALIGN(pool_cfg->blkSize);
++	/* If len >= 1MB, align len with 2M to improve performance of SMMU */
++	if (size/(PAGE_SIZE << 8)) {
++		size = ALIGN(size, (PAGE_SIZE << 9));
++	}
++	pool_cfg->blkSize = size;
++	pool->poolCfg.blkSize = pool_cfg->blkSize;
++	dev_dbg(mmz_vb_dev, "blkSize(0x%llx) from pool creation is "
++		"aligned to 0x%lx to improve performance.\n",
++		pool_cfg->blkSize, size);
++
++	// 3. alloc pages for blocks
++	for (i = 0; i < pool_cfg->blkCnt; i++) {
++		blocks = &pool->blocks[i];
++		blocks->nr = i;
++		blocks->pool = pool;
++		ret = vb_blk_pages_allocate(memblock, blocks, pool_cfg->blkSize);
++		if (ret) {
++			while (--i >= 0) {
++				vb_blk_pages_release(memblock, &pool->blocks[i]);
++			}
++			dev_err(mmz_vb_dev, "%s %d, faild to alloc block page!\n", __func__,__LINE__);
++			ret = -ENOMEM;
++			goto out_free_bitmap;
++		}
++	}
++	// 4. everthing is ok, add pool to idr
++	ret = mmz_vb_assign_pool_id(pool);
++	if (0 != ret) {
++		dev_err(mmz_vb_dev, "%s %d, faild to assign pool id\n",__func__,__LINE__);
++		ret = -EINVAL;
++		goto out_free_block_pages;
++	}
++	*pool_out = pool;
++	return ret;
++
++out_free_block_pages:
++	for (i = 0; i < pool_cfg->blkCnt; i++) {
++		vb_blk_pages_release(memblock, &pool->blocks[i]);
++	}
++out_free_bitmap:
++	bitmap_free(pool->bitmap);;
++out_free_block_arrays:
++	vfree(pool->blocks);
++out_free_pool:
++	devm_kfree(mmz_vb_dev, pool);
++out:
++	return ret;
++}
++
++static int vb_pool_config_check(struct esVB_POOL_CONFIG_S *pool_cfg)
++{
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct mem_block *memblock = NULL;
++	const char *memBlkName = pool_cfg->mmzName;
++	unsigned long numFreePages = 0;
++	u64 req_size;
++
++	if (NULL == vb_priv) {
++		return 0;
++	}
++
++	// find the memblock
++	memblock = vb_get_memblock(memBlkName);
++	if (NULL == memblock) {
++		vb_err("%s NOT found!\n", memBlkName);
++		return -EINVAL;
++	}
++
++	req_size = pool_cfg->blkCnt * PAGE_ALIGN(pool_cfg->blkSize);
++	numFreePages = es_num_free_pages(memblock);
++	if (numFreePages < (req_size >> PAGE_SHIFT)) {
++		dev_err(mmz_vb_dev, "%s %d, (%s)out of memory, request pool size %llu "
++			"free %ld!\n",
++			__func__,__LINE__,
++			memBlkName, req_size, (numFreePages << PAGE_SHIFT));
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++
++static int vb_ioctl_create_pool(void __user *user_cmd)
++{
++	int ret = 0;
++	struct esVB_CREATE_POOL_CMD_S cmd;
++	struct esVB_CREATE_POOL_REQ_S *req;
++	struct esVB_CREATE_POOL_RESP_S *rsp;
++	struct esVB_POOL_CONFIG_S *pool_cfg;
++	struct esVB_K_POOL_INFO_S *pool = NULL;
++
++	if (copy_from_user(&cmd, user_cmd, sizeof(cmd))) {
++		ret = -EFAULT;
++		goto out_free;
++	}
++	req = &cmd.PoolReq;
++	pool_cfg = &req->req;
++	ret = vb_pool_config_check(pool_cfg);
++	if (ret) {
++		goto out_free;
++	}
++	ret = mmz_vb_do_create_pool(pool_cfg, &pool);
++	if (ret) {
++		goto out_free;
++	}
++	pool->enVbUid = VB_UID_PRIVATE;
++	rsp = &cmd.PoolResp;
++	rsp->PoolId = pool->poolId;
++	dev_dbg(mmz_vb_dev, "[%s %d]:create pool, PoolId %d!\n",__func__,__LINE__, rsp->PoolId);
++	if (copy_to_user(user_cmd, &cmd, sizeof(cmd)))
++		ret = -EFAULT;
++	else
++		ret = 0;
++
++out_free:
++	return ret;
++}
++
++/**
++ * mmz_vb_do_destory_pool - do the pool destory operation
++ * @pool:	The pool
++ * @is_lock:	when set true, will lock the idr when remove the idr id.
++ * @is_force:	when set true, will still destory the bool even the bitmap is not empty.
++ */
++static int mmz_vb_do_destory_pool(struct esVB_K_POOL_INFO_S *pool, bool is_lock, bool is_force)
++{
++	struct esVB_POOL_CONFIG_S *poolCfg = &pool->poolCfg;
++	const char *memBlkName = poolCfg->mmzName;
++	struct mem_block *memblock = NULL;
++	struct esVB_K_BLOCK_INFO_S *blocks = NULL;
++	int ret = 0;
++	int i;
++
++	// find the memblock
++	memblock = vb_get_memblock(memBlkName);
++	if (NULL == memblock) {
++		vb_err("%s NOT found!\n", memBlkName);
++		return -EINVAL;
++	}
++
++	if (!bitmap_empty(pool->bitmap, pool->poolCfg.blkCnt)) {
++		if (true == is_force) {
++			dev_info(mmz_vb_dev, "%s %d, non-empty pool, still destory it!\n",__func__,__LINE__);
++		} else {
++			dev_info(mmz_vb_dev, "%s %d, non-empty pool, can not destory!\n",__func__,__LINE__);
++			ret = -ENOTEMPTY;
++			goto out;
++		}
++	}
++
++
++	blocks = pool->blocks;
++	for (i = 0; i < poolCfg->blkCnt; i++) {
++		vb_blk_pages_release(memblock, &blocks[i]);
++	}
++	mmz_vb_remove_pool_id(pool, is_lock);
++	if (pool->enVbUid >= VB_UID_COMMON && pool->enVbUid < VB_UID_MAX) {
++		hash_del(&pool->node);
++	}
++	bitmap_free(pool->bitmap);
++	vfree(pool->blocks);
++out:
++	if (0 == ret) {
++		devm_kfree(mmz_vb_dev, pool);
++	}
++	return ret;
++}
++
++static int vb_ioctl_destory_pool(void __user *user_cmd)
++{
++	int ret = 0;
++	struct esVB_K_POOL_INFO_S *pool = NULL;
++	struct esVB_DESTORY_POOL_CMD_S cmd;
++	struct esVB_DESTORY_POOL_REQ_S *req = NULL;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++
++	if (copy_from_user(&cmd, user_cmd, sizeof(cmd))) {
++		return -EFAULT;
++	}
++	req = &cmd.req;
++	dev_dbg(mmz_vb_dev, "[%s %d]:destory pool, PoolId %d!\n",__func__,__LINE__, req->PoolId);
++	down_write(&partitions->idr_lock);
++	ret = vb_find_pool_by_id_unlock(req->PoolId, &pool);
++	if (ret) {
++		up_write(&partitions->idr_lock);
++		dev_err(mmz_vb_dev, "%s %d, faild to find pool, PoolId %d\n",
++			__func__,__LINE__, req->PoolId);
++		return ret;
++	}
++	ret = mmz_vb_do_destory_pool(pool, false, false);
++	if (-ENOTEMPTY == ret) {
++		set_bit(MMZ_VB_POOL_FLAG_DESTORY, &pool->flag);
++		up_write(&partitions->idr_lock);
++		dev_info(mmz_vb_dev, "%s %d, pool %d not empty, waiting to destory\n",
++			__func__,__LINE__, req->PoolId);
++		return 0;
++	} else if (ret) {
++		up_write(&partitions->idr_lock);
++		dev_err(mmz_vb_dev, "%s %d, faild to destory pool, PoolId %d\n",
++			__func__,__LINE__, req->PoolId);
++		return ret;
++	}
++	up_write(&partitions->idr_lock);
++	return 0;
++}
++
++/*check whether the VbConfig is legal*/
++static int vb_config_check(struct esVB_CONFIG_S *pVbConfig)
++{
++	int i;
++	struct esVB_POOL_CONFIG_S *pool_cfg = NULL;
++	int ret;
++
++	if (pVbConfig->poolCnt > ES_VB_MAX_MOD_POOL) {
++		dev_err(mmz_vb_dev, "%s %d, poolCnt %d exceed the limit %d!\n",
++			__func__,__LINE__, pVbConfig->poolCnt, ES_VB_MAX_MOD_POOL);
++		return -EINVAL;
++	}
++	for (i = 0; i < pVbConfig->poolCnt; i++) {
++		pool_cfg = &pVbConfig->poolCfgs[i];
++		ret = vb_pool_config_check(pool_cfg);
++		if (0 != ret) {
++			return ret;
++		}
++	}
++	return 0;
++}
++
++static int vb_ioctl_set_config(void __user *user_cmd)
++{
++	struct esVB_SET_CFG_CMD_S *cmd;
++	struct esVB_SET_CFG_REQ_S *req;
++	enum esVB_UID_E enVbUid;
++	struct esVB_CONFIG_S *pVbConfig = NULL;
++	struct esVB_CONFIG_S *vb_cfg = NULL;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	int ret = 0;
++
++	cmd = devm_kzalloc(mmz_vb_dev, sizeof(*cmd), GFP_KERNEL);
++	if (!cmd) {
++		dev_err(mmz_vb_dev, "%s %d, uid %d, failed to alloc memory!\n",
++			__func__,__LINE__, enVbUid);
++		ret = -ENOMEM;
++		goto out;
++	}
++	if (copy_from_user(cmd, user_cmd, sizeof(*cmd))) {
++		ret = -EFAULT;
++		goto out_free_cmd;
++	}
++	req = &cmd->CfgReq;
++	enVbUid = req->uid;
++	pVbConfig = &req->cfg;
++	if (enVbUid <= VB_UID_PRIVATE || enVbUid >= VB_UID_MAX) {
++		dev_err(mmz_vb_dev, "%s %d, invaild uid %d!\n", __func__,__LINE__, enVbUid);
++		ret = -EFAULT;
++		goto out_free_cmd;
++	}
++	ret = vb_config_check(pVbConfig);
++	if (ret) {
++		dev_err(mmz_vb_dev, "%s %d, uid %d, vbConfig check fail!\n",
++			__func__,__LINE__, enVbUid);
++		goto out_free_cmd;
++	}
++	mutex_lock(&vb_priv->cfg_lock[enVbUid]);
++	if (NULL != vb_priv->pVbConfig[enVbUid]) {
++		if (test_bit(MMZ_VB_CFG_FLAG_INIT, &vb_priv->cfg_flag[enVbUid])) {
++			dev_err(mmz_vb_dev, "%s %d, uid %d cfg already exist and init!\n",
++				__func__,__LINE__, enVbUid);
++			ret = -EFAULT;
++			goto out_unlock;
++		} else {
++			/*release the old config*/
++			devm_kfree(mmz_vb_dev, vb_priv->pVbConfig[enVbUid]);
++			vb_priv->pVbConfig[enVbUid] = NULL;
++		}
++	}
++	vb_cfg = devm_kzalloc(mmz_vb_dev, sizeof(struct esVB_CONFIG_S), GFP_KERNEL);
++	if (!vb_cfg) {
++		dev_err(mmz_vb_dev, "%s %d, uid %d, failed to alloc memory!\n",
++			__func__,__LINE__, enVbUid);
++		ret =  -ENOMEM;
++		goto out_unlock;
++	}
++	memcpy(vb_cfg, pVbConfig, sizeof(struct esVB_CONFIG_S));
++	vb_priv->pVbConfig[enVbUid] = vb_cfg;
++out_unlock:
++	mutex_unlock(&vb_priv->cfg_lock[enVbUid]);
++out_free_cmd:
++	devm_kfree(mmz_vb_dev, cmd);
++out:
++	return ret;
++}
++
++static int vb_ioctl_get_config(void __user *user_cmd)
++{
++	struct esVB_GET_CFG_CMD_S *cmd;
++	struct esVB_GET_CFG_REQ_S *req;
++	struct esVB_GET_CFG_RSP_S *rsp;
++	enum esVB_UID_E enVbUid;
++	struct esVB_CONFIG_S *vb_cfg = NULL;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	int ret = 0;
++
++	cmd = devm_kzalloc(mmz_vb_dev, sizeof(*cmd), GFP_KERNEL);
++	if (!cmd) {
++		dev_err(mmz_vb_dev, "%s %d, uid %d, failed to alloc memory!\n",
++			__func__,__LINE__, enVbUid);
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	if (copy_from_user(cmd, user_cmd, sizeof(*cmd))) {
++		ret = -EFAULT;
++		goto out_free_cmd;
++	}
++	req = &cmd->req;
++	enVbUid = req->uid;
++	if (enVbUid <= VB_UID_PRIVATE || enVbUid >= VB_UID_MAX) {
++		dev_err(mmz_vb_dev, "%s %d, invaild uid %d!\n",__func__,__LINE__, enVbUid);
++		ret = -EFAULT;
++		goto out_free_cmd;
++	}
++	mutex_lock(&vb_priv->cfg_lock[enVbUid]);
++	vb_cfg = vb_priv->pVbConfig[enVbUid];
++	if (NULL == vb_cfg) {
++		dev_err(mmz_vb_dev, "%s %d, uid %d cfg not exist!\n", __func__,__LINE__, enVbUid);
++		ret = -EFAULT;
++		goto out_unlock;
++	}
++	rsp = &cmd->rsp;
++	memcpy(&rsp->cfg, vb_cfg, sizeof(struct esVB_CONFIG_S));
++	if (copy_to_user(user_cmd, cmd, sizeof(*cmd))) {
++		ret = -EFAULT;
++		goto out_unlock;
++	}
++out_unlock:
++	mutex_unlock(&vb_priv->cfg_lock[enVbUid]);
++out_free_cmd:
++	devm_kfree(mmz_vb_dev, cmd);
++out:
++	return ret;
++}
++
++static int vb_ioctl_init_config(void __user *user_cmd)
++{
++	VB_INIT_CFG_CMD_S cmd;
++	VB_INIT_CFG_REQ_S *req = NULL;
++	enum esVB_UID_E enVbUid;
++	struct esVB_CONFIG_S *vb_cfg = NULL;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	int i;
++	int ret = 0;
++	struct esVB_POOL_CONFIG_S *pool_cfg;
++	struct esVB_K_POOL_INFO_S *pool[ES_VB_MAX_MOD_POOL] = {NULL};
++
++	if (copy_from_user(&cmd, user_cmd, sizeof(cmd))) {
++		ret = -EFAULT;
++		goto out;
++	}
++	req = &cmd.req;
++	enVbUid = req->uid;
++
++	if (enVbUid < VB_UID_COMMON || enVbUid >= VB_UID_MAX) {
++		dev_err(mmz_vb_dev, "%s %d, invaild uid %d!\n",__func__,__LINE__, enVbUid);
++		ret = -EFAULT;
++		goto out;
++	}
++	mutex_lock(&vb_priv->cfg_lock[enVbUid]);
++	vb_cfg = vb_priv->pVbConfig[enVbUid];
++	if (NULL == vb_cfg) {
++		dev_err(mmz_vb_dev, "%s %d, uid %d cfg not exist!\n", __func__,__LINE__, enVbUid);
++		ret = -EFAULT;
++		goto out_unlock;
++	}
++	if (test_bit(MMZ_VB_CFG_FLAG_INIT, &vb_priv->cfg_flag[enVbUid])) {
++		dev_err(mmz_vb_dev, "%s %d, uid %d cfg already initialized!\n", __func__,__LINE__, enVbUid);
++		ret = -EPERM;
++		goto out_unlock;
++	}
++
++	for (i = 0; i < vb_cfg->poolCnt; i++) {
++		pool_cfg = &vb_cfg->poolCfgs[i];
++		ret = mmz_vb_do_create_pool(pool_cfg, &pool[i]);
++		if (0 != ret) {
++			while(--i >= 0) {
++				ret = mmz_vb_do_destory_pool(pool[i], true, false);
++				if (ret) {
++					dev_err(mmz_vb_dev, "%s %d, faild to destory pool!\n",
++						__func__,__LINE__);
++				}
++			}
++			dev_err(mmz_vb_dev, "%s %d, faild to create pool!\n",__func__, __LINE__);
++			goto out_unlock;
++		}
++		mmz_pool_insert_list(pool[i], enVbUid);
++		pool[i]->enVbUid = enVbUid;
++	}
++	set_bit(MMZ_VB_CFG_FLAG_INIT, &vb_priv->cfg_flag[enVbUid]);
++out_unlock:
++	mutex_unlock(&vb_priv->cfg_lock[enVbUid]);
++out:
++	return ret;
++}
++
++static int vb_ioctl_uninit_config(void __user *user_cmd)
++{
++	struct esVB_UNINIT_CFG_CMD_S cmd;
++	enum esVB_UID_E enVbUid;
++	int ret;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_POOL_INFO_S *pool = NULL;
++	unsigned long bkt = 0;
++	struct hlist_node *tmp_node = NULL;
++
++	if (copy_from_user(&cmd, user_cmd, sizeof(cmd))) {
++		return -EFAULT;
++	}
++	enVbUid = cmd.req.uid;
++
++	if (enVbUid <= VB_UID_PRIVATE || enVbUid >= VB_UID_MAX) {
++		dev_err(mmz_vb_dev, "%s %d, invaild uid %d!\n",__func__,__LINE__, enVbUid);
++		return -EFAULT;
++	}
++	mutex_lock(&vb_priv->cfg_lock[enVbUid]);
++	if (!test_bit(MMZ_VB_CFG_FLAG_INIT, &vb_priv->cfg_flag[enVbUid])) {
++		dev_err(mmz_vb_dev, "%s %d, uid %d cfg not initialized!\n", __func__,__LINE__, enVbUid);
++		mutex_unlock(&vb_priv->cfg_lock[enVbUid]);
++		return -EINVAL;
++	}
++	mutex_unlock(&vb_priv->cfg_lock[enVbUid]);
++
++	down_write(&vb_priv->pool_lock[enVbUid]);
++	hash_for_each_safe(vb_priv->ht[enVbUid], bkt, tmp_node, pool, node) {
++		ret = mmz_vb_do_destory_pool(pool, true, false);
++		if (ret) {
++			dev_err(mmz_vb_dev, "%s %d, faild to destory pool, PoolId %d, enVbUid %d\n",
++				__func__,__LINE__, pool->poolId, enVbUid);
++			up_write(&vb_priv->pool_lock[enVbUid]);
++			return ret;
++		}
++	}
++	up_write(&vb_priv->pool_lock[enVbUid]);
++
++	mutex_lock(&vb_priv->cfg_lock[enVbUid]);
++	devm_kfree(mmz_vb_dev, vb_priv->pVbConfig[enVbUid]);
++	vb_priv->pVbConfig[enVbUid] = NULL;
++	clear_bit(MMZ_VB_CFG_FLAG_INIT, &vb_priv->cfg_flag[enVbUid]);
++	mutex_unlock(&vb_priv->cfg_lock[enVbUid]);
++	return 0;
++}
++
++static long mmz_vb_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++{
++	int ret = 0;
++	void __user *argp;
++
++	argp = (void __user *)arg;
++	switch (cmd) {
++	case MMZ_VB_IOCTL_GET_BLOCK:
++		return vb_ioctl_get_blk(argp);
++	case MMZ_VB_IOCTL_CREATE_POOL:
++		return vb_ioctl_create_pool(argp);
++	case MMZ_VB_IOCTL_DESTORY_POOL:
++		return vb_ioctl_destory_pool(argp);
++	case MMZ_VB_IOCTL_SET_CFG:
++		return vb_ioctl_set_config(argp);
++	case MMZ_VB_IOCTL_GET_CFG:
++		return vb_ioctl_get_config(argp);
++	case MMZ_VB_IOCTL_INIT_CFG:
++		return vb_ioctl_init_config(argp);
++	case MMZ_VB_IOCTL_UNINIT_CFG:
++		return vb_ioctl_uninit_config(argp);
++	case MMZ_VB_IOCTL_POOL_SIZE:
++		return vb_ioctl_pool_size(argp);
++#if 0
++	case MMZ_VB_IOCTL_FLUSH_POOL:
++		return vb_ioctl_flush_pool(argp);
++#endif
++	case MMZ_VB_IOCTL_BLOCK_TO_POOL:
++		return vb_ioctl_blk_to_pool(argp);
++	case MMZ_VB_IOCTL_GET_BLOCK_OFFSET:
++		return vb_ioctl_get_blk_offset(argp);
++	case MMZ_VB_IOCTL_SPLIT_DMABUF:
++		return vb_ioctl_split_dmabuf(argp);
++	case MMZ_VB_IOCTL_DMABUF_REFCOUNT:
++		return vb_ioctl_get_dmabuf_refcnt(argp);
++	case MMZ_VB_IOCTL_RETRIEVE_MEM_NODE:
++		return vb_ioctl_retrieve_mem_node(argp);
++	case MMZ_VB_IOCTL_DMABUF_SIZE:
++		return vb_ioctl_get_dmabuf_size(argp);
++	default:
++		pr_debug("Invalid IOCTL CMD!!!\n");
++		return -EINVAL;
++	}
++	pr_debug("%s:%d, success!\n", __func__, __LINE__);
++	return ret;
++}
++
++static int mmz_vb_open(struct inode *inode, struct file *file)
++{
++
++	pr_debug("%s:%d, success!\n", __func__, __LINE__);
++
++	return 0;
++}
++
++static int mmz_vb_release(struct inode *inode, struct file *file)
++{
++	pr_debug("%s:%d, success!\n", __func__, __LINE__);
++
++	return 0;
++}
++
++/* mem = mmap(0, len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, addr_pha);
++*  vma->vm_pgoff indicats the pool ID
++*/
++static int mmz_vb_mmap_pool(struct file *file, struct vm_area_struct *vma)
++{
++	int ret = 0;
++	size_t size = vma->vm_end - vma->vm_start;
++	VB_POOL poolId = (VB_POOL)vma->vm_pgoff;
++	unsigned long addr = vma->vm_start;
++	struct esVB_K_POOL_INFO_S *pPool = NULL;
++	struct esVB_K_BLOCK_INFO_S *pBlk = NULL;
++	u64 poolSize, blkSize;
++	u32 i;
++
++	ret = vb_find_pool_by_id(poolId, &pPool);
++	if (ret)
++		return ret;
++
++	poolSize = do_vb_pool_size(pPool);
++	/* is the mmap size equal to poolSize? */
++	if (size != poolSize)
++		return -EINVAL;
++
++	/* pool is mmapped as uncached memory */
++	#ifndef QEMU_DEBUG
++	vma->vm_page_prot = pgprot_dmacoherent(vma->vm_page_prot);
++	#endif
++
++	blkSize = pPool->poolCfg.blkSize;
++	pBlk = pPool->blocks;
++	for (i = 0; i < pPool->poolCfg.blkCnt; i++) {
++		struct sg_table *table = &pBlk->sg_table;
++
++		/* mmap for one block */
++		struct scatterlist *sg;
++		int j;
++
++		for_each_sg(table->sgl, sg, table->orig_nents, j) {
++			struct page *page = sg_page(sg);
++			ret = remap_pfn_range(vma, addr, page_to_pfn(page), sg->length,
++					vma->vm_page_prot);
++			if (ret)
++				return ret;
++			addr += sg->length;
++			if (addr >= vma->vm_end)
++				return 0;
++		}
++		pBlk++;
++	}
++
++	pr_debug("%s:%d, success!\n", __func__, __LINE__);
++
++	return ret;
++}
++
++static struct file_operations mmz_vb_fops = {
++	.owner        = THIS_MODULE,
++	.llseek        = no_llseek,
++	.unlocked_ioctl = mmz_vb_unlocked_ioctl,
++	.open        = mmz_vb_open,
++	.release    = mmz_vb_release,
++	.mmap	= mmz_vb_mmap_pool,
++};
++
++static struct miscdevice mmz_vb_miscdev = {
++	.minor	= MISC_DYNAMIC_MINOR,
++	.name	= DRIVER_NAME,
++	.fops	= &mmz_vb_fops,
++};
++
++static char es_mmz_name_prefix[] = "mmz_nid_";
++static int mmz_vb_init_partitions(void)
++{
++	int ret = 0;
++	struct mmz_vb_priv *mmz_vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions;
++
++	if (NULL == mmz_vb_priv)
++		return -EFAULT;
++
++	partitions = &mmz_vb_priv->partitions;;
++	init_rwsem(&partitions->idr_lock);
++	idr_init(&partitions->pool_idr);
++
++	partitions->partCnt = mmz_vb_init_memory_region();
++	if (partitions->partCnt == 0) {
++		vb_err("No VB memory block was found or correctly initialized!\n");
++		ret = -EFAULT;
++	}
++
++	return ret;
++}
++
++static int mmz_vb_idr_iterate_show(int id, void *p, void *data)
++{
++	struct esVB_K_POOL_INFO_S *pool = (struct esVB_K_POOL_INFO_S *)p;
++	struct esVB_POOL_CONFIG_S *pool_cfg;
++	es_proc_entry_t *s = (es_proc_entry_t *)data;
++
++	spin_lock(&pool->lock);
++	pool_cfg = &pool->poolCfg;
++	es_seq_printf(s, "\t Uid %d, PoolId %d, blkSize 0x%llx, blkCnt %d, "
++		"RemapMode %d, mmzName %s, allocated blkCnt %d\n\r", pool->enVbUid,
++		pool->poolId, pool_cfg->blkSize, pool_cfg->blkCnt,
++		pool_cfg->enRemapMode, pool_cfg->mmzName,
++		pool_cfg->blkCnt - vb_pool_get_free_block_cnt_unlock(pool));
++	spin_unlock(&pool->lock);
++	return 0;
++}
++
++static int mmz_vb_proc_show(es_proc_entry_t *s)
++{
++	int i;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++	unsigned long numFreePages = 0;
++	struct mem_block *memblock = NULL, *rsvmem_block = NULL;
++	int ret;
++
++	es_seq_printf(s, "\nModule: [VB], Build Time[xx]\n");
++	/*
++	   use es_seq_printf to show more debug info
++	*/
++	es_seq_printf(s, "-----MMZ REGION CONFIG-----\n\r");
++	for (i = 0; i < partitions->partCnt; i++) {
++		rsvmem_block = partitions->mem_blocks[i];
++		memblock = vb_get_memblock(rsvmem_block->name);
++		if (NULL == memblock) {
++			vb_err("%s NOT found!\n", rsvmem_block->name);
++			return -EINVAL;
++		}
++		numFreePages = es_num_free_pages(memblock);
++		es_seq_printf(s, "\tmemblock: %s, total size(0x%lx), free mem size(0x%lx)\n\r",
++				rsvmem_block->name,
++				memblock->page_num << PAGE_SHIFT,
++				numFreePages << PAGE_SHIFT);
++	}
++	es_seq_printf(s, "-----POOL CONFIG-----\n\r");
++	ret = idr_for_each(&partitions->pool_idr, mmz_vb_idr_iterate_show, s);
++	if (ret) {
++		dev_err(mmz_vb_dev, "%s %d, failed to iterate vb pool ret %d\n",
++			__func__,__LINE__, ret);
++		return ret;
++	}
++	return 0;
++}
++
++int mmz_vb_proc_store(struct es_proc_dir_entry *entry, const char *buf,
++		int count, long long *ppos)
++{
++	int ret;
++
++	ret = mmz_vb_pool_exit();
++	if (0 != ret) {
++		dev_err(mmz_vb_dev, "%s %d, failed to release vb pool "
++			"when exit, ret %d\n", __func__,__LINE__, ret);
++	}
++	return count;
++}
++
++void mmz_vb_vb_dbg_init(void)
++{
++	es_proc_entry_t *proc = NULL;
++
++	proc = es_create_proc_entry(PROC_ENTRY_VB, NULL);
++
++	if (proc == NULL) {
++		vb_err("Kernel: Register vb proc failed!\n");
++		return;
++	}
++	proc->read = mmz_vb_proc_show;
++	/*NULL means use the default routine*/
++	proc->write = mmz_vb_proc_store;
++	proc->open = NULL;
++}
++
++static int __init mmz_vb_init(void)
++{
++	int i;
++	int ret = 0;
++	struct device *dev;
++
++	g_mmz_vb_priv = kzalloc(sizeof(struct mmz_vb_priv), GFP_KERNEL);
++	if (!g_mmz_vb_priv) {
++		vb_err("Failed to alloc priv data for mmz_vb driver!!!\n");
++		return -ENOMEM;
++	}
++	ret = misc_register(&mmz_vb_miscdev);
++	if(ret) {
++		vb_err ("cannot register miscdev (err=%d)\n", ret);
++		goto free_vb_priv;
++	}
++	mmz_vb_dev = mmz_vb_miscdev.this_device;
++	g_mmz_vb_priv->dev = mmz_vb_dev;
++	for (i = 0; i < VB_UID_MAX; i++) {
++		hash_init(g_mmz_vb_priv->ht[i]);
++		mutex_init(&g_mmz_vb_priv->cfg_lock[i]);
++		init_rwsem(&g_mmz_vb_priv->pool_lock[i]);
++	}
++
++	ret = mmz_vb_init_partitions();
++	if (ret) {
++		goto deregister_vb;
++	}
++	atomic_set(&g_mmz_vb_priv->allocBlkcnt, 0);
++
++	mmz_vb_vb_dbg_init();
++
++	dev = mmz_vb_dev;
++	if (!dev->dma_mask) {
++		dev->dma_mask = &dev->coherent_dma_mask;
++	}
++	ret = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(48));
++	if (ret)
++		vb_err("Unable to set coherent mask\n");
++	return 0;
++
++deregister_vb:
++	misc_deregister(&mmz_vb_miscdev);
++free_vb_priv:
++	kfree(g_mmz_vb_priv);
++	return ret;
++}
++
++static int mmz_vb_pool_exit(void)
++{
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++	struct esVB_K_POOL_INFO_S *pool = NULL;
++	int ret = 0;
++	u32 id = 0;
++	int i;
++
++	down_write(&partitions->idr_lock);
++	idr_for_each_entry(&partitions->pool_idr, pool, id) {
++		ret = mmz_vb_do_destory_pool(pool, false, true);
++		if (ret) {
++			dev_err(mmz_vb_dev, "%s %d, failed to destory vb pool, ret %d\n",
++				__func__,__LINE__, ret);
++			continue;
++		}
++	}
++
++	up_write(&partitions->idr_lock);
++
++	atomic_set(&vb_priv->allocBlkcnt, 0);
++	for (i = 0; i < VB_UID_MAX; i++) {
++		if (NULL != vb_priv->pVbConfig[i]) {
++			devm_kfree(mmz_vb_dev, vb_priv->pVbConfig[i]);
++			vb_priv->pVbConfig[i] = NULL;
++		}
++	}
++	memset(vb_priv->cfg_flag, 0, sizeof(unsigned long) * VB_UID_MAX);
++	return 0;
++}
++
++static void __exit mmz_vb_exit(void)
++{
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	int ret = 0;
++
++	ret = mmz_vb_pool_exit();
++	if (0 != ret) {
++		dev_err(mmz_vb_dev, "%s %d, failed to release vb pool "
++			"when exit, ret %d\n", __func__,__LINE__, ret);
++	}
++	es_remove_proc_entry(PROC_ENTRY_VB, NULL);
++	misc_deregister(&mmz_vb_miscdev);
++	kfree(vb_priv);
++}
++
++module_init(mmz_vb_init);
++module_exit(mmz_vb_exit);
++
++MODULE_DESCRIPTION("MMZ VB Driver");
++MODULE_AUTHOR("Lin MIn <linmin@eswincomputing.com>");
++MODULE_LICENSE("GPL v2");
++
++
++static int vb_find_pool_by_id_unlock(VB_POOL poolId, struct esVB_K_POOL_INFO_S **ppPool)
++{
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++	struct esVB_K_POOL_INFO_S *pool = NULL;
++
++	pool = idr_find(&partitions->pool_idr, poolId);
++	if (!pool) {
++		dev_err(mmz_vb_dev, "%s %d, faild to find pool by id %d\n",
++			__func__,__LINE__, poolId);
++		return -EINVAL;
++	}
++	*ppPool = pool;
++	return 0;
++}
++
++static int vb_find_pool_by_id(VB_POOL poolId, struct esVB_K_POOL_INFO_S **ppPool)
++{
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++	int ret;
++
++	down_read(&partitions->idr_lock);
++	ret = vb_find_pool_by_id_unlock(poolId, ppPool);
++	up_read(&partitions->idr_lock);
++	return ret;
++}
++
++static int vb_pool_size(VB_POOL poolId, u64 *pPoolSize)
++{
++	int ret = 0;
++	struct esVB_K_POOL_INFO_S *pPool;
++
++	ret = vb_find_pool_by_id(poolId, &pPool);
++	if (ret) {
++		vb_info("failed to find pool %d\n", poolId);
++		return ret;
++	}
++
++	*pPoolSize = do_vb_pool_size(pPool);
++
++	return ret;
++}
++#if 0
++static int vb_flush_pool(struct esVB_FLUSH_POOL_CMD_S *flushPoolCmd)
++{
++	int ret = 0;
++	struct esVB_K_POOL_INFO_S *pPool = NULL;
++	struct esVB_K_BLOCK_INFO_S *pBlk = NULL;
++	u64 blkSize, poolSize = 0;
++	u64 offset_inPool = 0, offset_inBlk = 0, size, left_size = 0;
++	u64 phy_addr;
++	u32 i;
++
++	ret = vb_find_pool_by_id(flushPoolCmd->poolId, &pPool);
++	if (ret) {
++		vb_info("%s,failed to find pool %d\n", __func__, flushPoolCmd->poolId);
++		return ret;
++	}
++
++	poolSize = do_vb_pool_size(pPool);
++	if ((flushPoolCmd->offset + flushPoolCmd->size - 1) >= poolSize)
++		return -EINVAL;
++
++	// find the block according to the offset
++	blkSize = pPool->poolCfg.blkSize;
++	pBlk = pPool->blocks;
++	left_size = flushPoolCmd->size;
++	for (i = 0; i < pPool->poolCfg.blkCnt; i++) {
++		if ((offset_inPool + blkSize -1) >= flushPoolCmd->offset)
++			break;
++		offset_inPool += blkSize;
++		pBlk++;
++	}
++	offset_inBlk = flushPoolCmd->offset - offset_inPool;
++	for (; i < pPool->poolCfg.blkCnt; i++) {
++		struct page *page = pBlk->cma_pages;
++		size = min(left_size, (blkSize - offset_inBlk));
++		phy_addr = page_to_phys(page) + offset_inBlk;
++		arch_sync_dma_for_device(phy_addr, size, DMA_TO_DEVICE);
++		left_size -= size;
++		if (left_size == 0)
++			break;
++		pBlk++;
++		offset_inBlk = 0;
++	}
++
++	return ret;
++}
++#endif
++static int vb_pool_get_free_block_cnt_unlock(struct esVB_K_POOL_INFO_S *pool)
++{
++	int count = 0;
++	int start = 0;
++	struct esVB_POOL_CONFIG_S *pool_cfg = &pool->poolCfg;
++	int nr;
++
++	while (true) {
++		nr = find_next_zero_bit(pool->bitmap, pool_cfg->blkCnt, start);
++		if (likely(nr < pool_cfg->blkCnt)) {
++			count++;
++			start = nr + 1;
++		} else {
++			break;
++		}
++	}
++	return count;
++}
++
++static int vb_pool_get_block(struct esVB_K_POOL_INFO_S *pool,
++	struct esVB_K_BLOCK_INFO_S **ppBlk)
++{
++	unsigned int nr = -1U;
++	struct esVB_POOL_CONFIG_S *pool_cfg;
++	int ret = -EINVAL;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++
++	spin_lock(&pool->lock);
++	pool_cfg = &pool->poolCfg;
++	nr = find_next_zero_bit(pool->bitmap, pool_cfg->blkCnt, 0);
++	if (likely(nr < pool_cfg->blkCnt)) {
++		ret = 0;
++		*ppBlk = &pool->blocks[nr];
++		bitmap_set(pool->bitmap, nr, 1);
++		if (atomic_inc_return(&vb_priv->allocBlkcnt) == 1) {
++			__module_get(THIS_MODULE);
++		}
++	} else {
++		dev_warn(mmz_vb_dev, "%s %d, pool %d used up, blkSize 0x%llx,"
++			"blkCnt 0x%x\n",__func__,__LINE__, pool->poolId,
++			pool_cfg->blkSize, pool_cfg->blkCnt);
++	}
++	spin_unlock(&pool->lock);
++	return ret;
++}
++
++static int vb_get_block(struct esVB_GET_BLOCK_CMD_S *getBlkCmd,
++	struct esVB_K_BLOCK_INFO_S **ppBlk)
++{
++	int ret = -EINVAL;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++	struct esVB_GET_BLOCK_REQ_S *req = &getBlkCmd->getBlkReq;
++	struct esVB_K_POOL_INFO_S *pool = NULL, *pool_tmp = NULL;
++	struct esVB_POOL_CONFIG_S *pool_cfg;
++	unsigned long bkt = 0;
++
++	if (VB_UID_PRIVATE == req->uid) {
++		down_read(&partitions->idr_lock);
++		ret = vb_find_pool_by_id_unlock(req->poolId, &pool);
++		if (ret) {
++			up_read(&partitions->idr_lock);
++			dev_err(mmz_vb_dev, "%s %d, failed to find pool by id %d!\n",__func__,__LINE__, req->poolId);
++			return -EINVAL;
++		}
++		if (test_bit(MMZ_VB_POOL_FLAG_DESTORY, &pool->flag)) {
++			up_read(&partitions->idr_lock);
++			dev_err(mmz_vb_dev, "%s %d, pool %d is in destory state, not allow "
++				"to alloc block!\n",__func__,__LINE__, req->poolId);
++			return -ENOTSUPP;
++		}
++		pool_cfg = &pool->poolCfg;
++		if (req->blkSize > pool_cfg->blkSize) {
++			up_read(&partitions->idr_lock);
++			dev_err(mmz_vb_dev, "%s %d, pool blkSize 0x%llx is "
++				"smaller than request size 0x%llx\n",__func__,__LINE__,
++				pool_cfg->blkSize, req->blkSize);
++			return -EINVAL;
++		}
++		ret = vb_pool_get_block(pool, ppBlk);
++		up_read(&partitions->idr_lock);
++	} else if (req->uid >= VB_UID_COMMON && req->uid < VB_UID_MAX) {
++		down_read(&vb_priv->pool_lock[req->uid]);
++		/*try to get block for the exact block size */
++		hash_for_each_possible(vb_priv->ht[req->uid], pool, node, PAGE_ALIGN(req->blkSize)) {
++			pool_cfg = &pool->poolCfg;
++			if (PAGE_ALIGN(req->blkSize) == pool_cfg->blkSize &&
++				!strcmp(req->mmzName, pool_cfg->mmzName)) {
++					ret = vb_pool_get_block(pool, ppBlk);
++					if (0 == ret) {
++						break;
++					}
++			}
++		}
++		/*try to get block from the pool whose block size > req->blkSize*/
++		if (0 != ret) {
++			hash_for_each(vb_priv->ht[req->uid], bkt, pool, node) {
++				pool_cfg = &pool->poolCfg;
++				if (req->blkSize < pool_cfg->blkSize &&
++					!strcmp(req->mmzName, pool_cfg->mmzName)) {
++						/*get the pool size which is closest to the req->blkSize*/
++						if ((NULL == pool_tmp || (pool_tmp->poolCfg.blkSize > pool->poolCfg.blkSize))
++							&& vb_pool_get_free_block_cnt_unlock(pool)) {
++								pool_tmp = pool;
++						}
++				}
++			}
++			if (NULL != pool_tmp) {
++				ret = vb_pool_get_block(pool_tmp, ppBlk);
++			}
++		}
++		up_read(&vb_priv->pool_lock[req->uid]);
++	} else {
++        dev_err(mmz_vb_dev, "%s %d, invaild uid %d\n",__func__,__LINE__, req->uid);
++    }
++	return ret;
++}
++
++static void vb_release_block(struct esVB_K_BLOCK_INFO_S *pBlk)
++{
++	struct esVB_K_POOL_INFO_S *pool;
++	struct mmz_vb_priv *vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &vb_priv->partitions;
++	bool need_destory = false;
++	struct rw_semaphore *lock;
++	int ret;
++
++	pool = pBlk->pool;
++
++	lock = VB_UID_PRIVATE == pool->enVbUid ? \
++		&partitions->idr_lock : &vb_priv->pool_lock[pool->enVbUid];
++	/*
++	  usually we don't need to destory pool here.
++	  so just get read lock first.
++	*/
++	down_read(lock);
++	spin_lock(&pool->lock);
++	bitmap_clear(pool->bitmap, pBlk->nr, 1);
++	if (bitmap_empty(pool->bitmap, pool->poolCfg.blkCnt) &&
++		test_bit(MMZ_VB_POOL_FLAG_DESTORY, &pool->flag)) {
++			need_destory = true;
++	}
++	spin_unlock(&pool->lock);
++	up_read(lock);
++	if (atomic_dec_return(&vb_priv->allocBlkcnt) == 0) {
++		module_put(THIS_MODULE);
++	}
++
++	if (true == need_destory) {
++		down_write(lock);
++		ret = mmz_vb_do_destory_pool(pool, false, false);
++		if (ret) {
++			dev_err(mmz_vb_dev, "%s %d, faild to destory pool, enVbUid %d, PoolId %d, ret %d\n",
++				__func__,__LINE__, pool->enVbUid, pool->poolId, ret);
++		}
++		up_write(lock);
++	}
++}
++
++static int vb_is_splitted_blk(int fd, bool *isSplittedBlk)
++{
++	int ret = 0;
++	struct dma_buf *dmabuf;
++
++	/* get dmabuf handle */
++	dmabuf = dma_buf_get(fd);
++	if (IS_ERR(dmabuf)) {
++		return -EINVAL;
++	}
++
++	if (strncmp(dmabuf->exp_name, MMZ_VB_DMABUF_NAME, sizeof(MMZ_VB_DMABUF_NAME))) {
++		vb_err("It's NOT a mmz_vb buffer!!!\n");
++		dma_buf_put(dmabuf);
++		return -EINVAL;
++	}
++
++	if (!strncmp(dmabuf->exp_name, MMZ_VB_DMABUF_SPLITTED_NAME, sizeof(MMZ_VB_DMABUF_SPLITTED_NAME)))
++		*isSplittedBlk = true;
++	else
++		*isSplittedBlk = false;
++
++	dma_buf_put(dmabuf);
++	return ret;
++}
++
++static int vb_blk_to_pool(struct esVB_BLOCK_TO_POOL_CMD_S *blkToPoolCmd)
++{
++	int ret = 0;
++	struct dma_buf *dmabuf;
++	struct mmz_vb_buffer *buffer;
++	struct esw_export_buffer_info *splittedBuffer;
++	struct dma_buf *blkDmabuf;
++	bool isSplittedBlk;
++
++	/* get dmabuf handle */
++	dmabuf = dma_buf_get(blkToPoolCmd->fd);
++	if (IS_ERR(dmabuf)) {
++		return -EINVAL;
++	}
++
++	ret = vb_is_splitted_blk(blkToPoolCmd->fd, &isSplittedBlk);
++	if (ret) {
++		dma_buf_put(dmabuf);
++		ret = -EINVAL;
++		goto out_put_dmabuf;
++	}
++
++	if (true == isSplittedBlk) { // This is a splitted block
++		splittedBuffer = dmabuf->priv;
++		blkDmabuf = dma_buf_get(splittedBuffer->dbuf_fd);
++		if (IS_ERR(blkDmabuf)) {
++			ret = -EINVAL;
++			goto out_put_dmabuf;
++		}
++		buffer = blkDmabuf->priv;
++		blkToPoolCmd->poolId = buffer->pBlk->pool->poolId;
++		dma_buf_put(blkDmabuf);
++	}
++	else {	// This is a real block
++		buffer = dmabuf->priv;
++		blkToPoolCmd->poolId = buffer->pBlk->pool->poolId;
++	}
++
++out_put_dmabuf:
++	dma_buf_put(dmabuf);
++	return ret;
++}
++
++static int vb_get_blk_offset(struct esVB_GET_BLOCKOFFSET_CMD_S *getBlkOffsetCmd)
++{
++	int ret = 0;
++	struct dma_buf *dmabuf;
++	struct mmz_vb_buffer *buffer;
++	struct esw_export_buffer_info *splittedBuffer;
++	struct dma_buf *blkDmabuf;
++	__u64 blkSize, offsetInPool;
++
++	bool isSplittedBlk;
++
++	dmabuf = dma_buf_get(getBlkOffsetCmd->fd);
++	if (IS_ERR(dmabuf)) {
++		return -EINVAL;
++	}
++
++	ret = vb_is_splitted_blk(getBlkOffsetCmd->fd, &isSplittedBlk);
++	if (ret) {
++		ret = -EINVAL;
++		goto out_put_dmabuf;
++	}
++
++	if (true == isSplittedBlk) { // It's a splitted block
++		splittedBuffer = dmabuf->priv;
++		blkDmabuf = dma_buf_get(splittedBuffer->dbuf_fd);
++		if (IS_ERR(blkDmabuf)) {
++			ret = -EINVAL;
++			goto out_put_dmabuf;
++		}
++		buffer = blkDmabuf->priv;
++		blkSize = buffer->len;
++		offsetInPool = blkSize * buffer->pBlk->nr + splittedBuffer->slice.offset;
++		dma_buf_put(blkDmabuf);
++	}
++	else { // It's a real block
++		buffer = dmabuf->priv;
++		blkSize = buffer->len;
++		offsetInPool = blkSize * buffer->pBlk->nr;
++	}
++	getBlkOffsetCmd->offset = offsetInPool;
++
++out_put_dmabuf:
++	dma_buf_put(dmabuf);
++
++	return ret;
++}
++
++static int vb_split_dmabuf(struct esVB_SPLIT_DMABUF_CMD_S *splitDmabufCmd)
++{
++	int ret = 0;
++	struct dma_buf *dmabuf;
++	char splittedBuffer_ExpName[ES_MAX_MMZ_NAME_LEN];
++	int i;
++
++	if (!splitDmabufCmd->len)
++		return -EINVAL;
++
++	/* get dmabuf handle */
++	dmabuf = dma_buf_get(splitDmabufCmd->fd);
++	if (IS_ERR(dmabuf)) {
++		return -EINVAL;
++	}
++
++	if (strstr(dmabuf->exp_name, "_splitted")) { // It's a splitted dmabuf already, can't be splitted further
++		vb_err("Can't split a splitted buffer!!!\n");
++		ret = -EINVAL;
++		goto out_put_dmabuf;
++	}
++
++	/* offset and len must be paged aligned */
++	if (!PAGE_ALIGNED(splitDmabufCmd->offset) || !PAGE_ALIGNED(splitDmabufCmd->len)) {
++		vb_err("splitted offset or len is not page aligned!!!\n");
++		ret = -EINVAL;
++		goto out_put_dmabuf;
++	}
++
++	if (splitDmabufCmd->offset + splitDmabufCmd->len > dmabuf->size) {
++		vb_err("Splitted offset(0x%llx)+len(0x%llx) exceed the size(0x%llx) of the original buffer!!!\n",
++			splitDmabufCmd->offset, splitDmabufCmd->len, (__u64)dmabuf->size);
++		ret = -EINVAL;
++		goto out_put_dmabuf;
++	}
++
++	/* Apend "_splitted" to the splitted buffer expname, so that it is identified by the suffix */
++	i = snprintf(splittedBuffer_ExpName, sizeof(splittedBuffer_ExpName), "%s_splitted", dmabuf->exp_name);
++	if (i > sizeof(splittedBuffer_ExpName)) {
++		vb_err("Length of name(%d) for the the splitted buffer exceed the max name len(%ld)!!!\n",
++			i, sizeof(splittedBuffer_ExpName));
++		ret = -EINVAL;
++		goto out_put_dmabuf;
++	}
++
++	splitDmabufCmd->slice_fd = esw_common_dmabuf_split_export(splitDmabufCmd->fd, splitDmabufCmd->offset,
++						splitDmabufCmd->len, dmabuf->file->f_flags, splittedBuffer_ExpName);
++	if (splitDmabufCmd->slice_fd < 0) {
++		vb_err("Failed to split buffer, errVal %d\n", splitDmabufCmd->slice_fd);
++		ret = -EFAULT;
++		goto out_put_dmabuf;
++	}
++
++out_put_dmabuf:
++	dma_buf_put(dmabuf);
++
++	return ret;
++}
++
++static int vb_get_dmabuf_refcnt(struct esVB_DMABUF_REFCOUNT_CMD_S *getDmabufRefCntCmd)
++{
++	int ret = 0;
++	struct dma_buf *dmabuf;
++
++	/* get dmabuf handle */
++	dmabuf = dma_buf_get(getDmabufRefCntCmd->fd);
++	if (IS_ERR(dmabuf)) {
++		return -EINVAL;
++	}
++
++	/* minus 1 because it was +1 by dma_buf_get */
++	getDmabufRefCntCmd->refCnt = file_count(dmabuf->file) - 1;
++
++	dma_buf_put(dmabuf);
++	return ret;
++}
++
++#define PAGE_IN_SPRAM_DIE0(page) ((page_to_phys(page)>=0x59000000) && (page_to_phys(page)<0x59400000))
++#define PAGE_IN_SPRAM_DIE1(page) ((page_to_phys(page)>=0x79000000) && (page_to_phys(page)<0x79400000))
++static int do_vb_retrive_mem_node(struct dma_buf *dmabuf, int *nid)
++{
++	int ret = 0;
++	struct dma_buf_attachment *attach;
++	struct sg_table *sgt;
++	struct page *page = NULL;
++
++	get_dma_buf(dmabuf);
++	attach = dma_buf_attach(dmabuf, mmz_vb_dev);
++	if (IS_ERR(attach)) {
++		ret = PTR_ERR(attach);
++		/* put dmabuf back */
++		dma_buf_put(dmabuf);
++		return ret;
++	}
++
++	sgt = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
++	if (IS_ERR(sgt)) {
++		ret = PTR_ERR(sgt);
++		dma_buf_detach(dmabuf, attach);
++		dma_buf_put(dmabuf);
++		return ret;
++	}
++
++	page = sg_page(sgt->sgl);
++	if (unlikely(PAGE_IN_SPRAM_DIE0(page))) {
++		*nid = 0;
++	}
++	else if(unlikely(PAGE_IN_SPRAM_DIE1(page))) {
++		*nid = 1;
++	}
++	else
++		*nid = page_to_nid(page);
++
++	dma_buf_unmap_attachment(attach, sgt, DMA_BIDIRECTIONAL);
++	/* detach */
++	dma_buf_detach(dmabuf, attach);
++	/* put dmabuf back */
++	dma_buf_put(dmabuf);
++
++	pr_debug("%s, mem node is %d\n", __func__, *nid);
++	return ret;
++}
++
++static int vb_retrieve_mem_node(struct esVB_RETRIEVE_MEM_NODE_CMD_S *retrieveMemNodeCmd)
++{
++	int ret = 0;
++	struct dma_buf *dmabuf;
++	struct vm_area_struct *vma = NULL;
++	vm_flags_t vm_flags;
++	struct mm_struct *mm = current->mm;
++	u64 vaddr;
++
++	/* If cpu_vaddr is NULL, then try to retrieve mem node id by fd */
++	if (retrieveMemNodeCmd->cpu_vaddr == NULL) {
++		/* get dmabuf handle */
++		dmabuf = dma_buf_get(retrieveMemNodeCmd->fd);
++		if (IS_ERR(dmabuf)) {
++			return PTR_ERR(dmabuf);
++		}
++
++		ret = do_vb_retrive_mem_node(dmabuf, &retrieveMemNodeCmd->numa_node);
++		/* put dmabuf back */
++		dma_buf_put(dmabuf);
++	}
++	else {
++		vaddr = (u64)retrieveMemNodeCmd->cpu_vaddr;
++		mmap_read_lock(mm);
++		vma = vma_lookup(mm, vaddr & PAGE_MASK);
++		if (!vma) {
++			pr_err("Failed to vma_lookup!\n");
++			return -EFAULT;
++		}
++		vm_flags = vma->vm_flags;
++		mmap_read_unlock(mm);
++
++		if (!(vm_flags & (VM_IO | VM_PFNMAP)) || (NULL == vma->vm_private_data)) {
++			pr_debug("This vaddr is NOT mmapped with VM_PFNMAP!\n");
++			return -EFAULT;
++		}
++		dmabuf = vma->vm_private_data;
++		ret = do_vb_retrive_mem_node(dmabuf, &retrieveMemNodeCmd->numa_node);
++	}
++
++	return ret;
++}
++
++static int vb_get_dmabuf_size(struct esVB_DMABUF_SIZE_CMD_S *getDmabufSizeCmd)
++{
++	int ret = 0;
++	struct dma_buf *dmabuf;
++
++	/* get dmabuf handle */
++	dmabuf = dma_buf_get(getDmabufSizeCmd->fd);
++	if (IS_ERR(dmabuf)) {
++		return -EINVAL;
++	}
++
++	/* minus 1 because it was +1 by dma_buf_get */
++	getDmabufSizeCmd->size = dmabuf->size;
++
++	dma_buf_put(dmabuf);
++
++	return ret;
++}
++
++static int mmz_vb_init_memory_region(void)
++{
++	struct mmz_vb_priv *mmz_vb_priv = g_mmz_vb_priv;
++	struct esVB_K_MMZ_S *partitions = &mmz_vb_priv->partitions;
++	int nid, part = 0;
++	int partitionID = 0;
++	char blkName[BLOCK_MAX_NAME];
++	struct mem_block *memblock = NULL;
++
++	for (nid = 0; nid < 2; nid++) {
++		for (part = 0; part < 2; part++) {
++			snprintf(blkName, sizeof(blkName), "%s%d_part_%d", es_mmz_name_prefix, nid, part);
++			memblock = eswin_rsvmem_get_memblock(blkName);
++			if (memblock) {
++				partitions->mem_blocks[partitionID] = memblock;
++				dev_info(mmz_vb_dev, "%s was found successfully\n", blkName);
++				partitionID++;
++			}
++			else {
++				dev_dbg(mmz_vb_dev, "%s was NOT found\n", blkName);
++			}
++		}
++	}
++
++	/* Indicate how many VB memory block have been correctly initialized */
++	return partitionID;
++}
+diff --git a/drivers/memory/eswin/es_proc/Kconfig b/drivers/memory/eswin/es_proc/Kconfig
+new file mode 100644
+index 000000000000..d1a2f8220e9b
+--- /dev/null
++++ b/drivers/memory/eswin/es_proc/Kconfig
+@@ -0,0 +1,7 @@
++# SPDX-License-Identifier: GPL-2.0
++
++config ESWIN_PROC
++	tristate "ESWIN MMZ proc interface"
++	help
++	  MMZ proc interface for user space.
++
+diff --git a/drivers/memory/eswin/es_proc/Makefile b/drivers/memory/eswin/es_proc/Makefile
+new file mode 100644
+index 000000000000..2afd49103e81
+--- /dev/null
++++ b/drivers/memory/eswin/es_proc/Makefile
+@@ -0,0 +1,7 @@
++# SPDX-License-Identifier: GPL-2.0
++obj-$(CONFIG_ESWIN_PROC)	+= es_proc.o
++ccflags-y := -DDEBUG
++
++ES_PROC_HEADER := drivers/memory/eswin/es_proc/include/linux
++
++COPY_HEADERS := $(shell cp $(ES_PROC_HEADER)/*.h include/linux)
+diff --git a/drivers/memory/eswin/es_proc/es_proc.c b/drivers/memory/eswin/es_proc/es_proc.c
+new file mode 100644
+index 000000000000..b0eb521b247c
+--- /dev/null
++++ b/drivers/memory/eswin/es_proc/es_proc.c
+@@ -0,0 +1,233 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * ESWIN proc APIs for MMZ_VB
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    HuangYiFeng<huangyifeng@eswincomputing.com>
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/printk.h>
++#include <linux/fs.h>
++#include <linux/seq_file.h>
++#include <linux/proc_fs.h>
++#include <linux/slab.h>
++#include <asm/uaccess.h>
++#include "include/linux/es_proc.h"
++
++static struct list_head list;
++static es_proc_entry_t *proc_entry = NULL;
++
++static int es_seq_show(struct seq_file *s, void *p)
++{
++	es_proc_entry_t *oldsentry = s->private;
++	es_proc_entry_t sentry;
++
++	if (oldsentry == NULL) {
++		pr_err("%s %d- parameter invalid!\n", __func__,__LINE__);
++		return -1;
++	}
++	memset(&sentry, 0, sizeof(es_proc_entry_t));
++	/* only these two parameters are used */
++	sentry.seqfile = s;
++	sentry.private = oldsentry->private;
++	oldsentry->read(&sentry);
++	return 0;
++}
++
++static ssize_t es_procwrite(struct file *file, const char __user *buf,
++			      size_t count, loff_t *ppos)
++{
++	es_proc_entry_t *item = pde_data(file_inode(file));
++
++	if ((item != NULL) && (item->write != NULL)) {
++		return item->write(item, buf, count, (long long *)ppos);
++	}
++
++	return -ENOSYS;
++}
++
++static int es_procopen(struct inode *inode, struct file *file)
++{
++	es_proc_entry_t *sentry = pde_data(inode);
++
++	if ((sentry != NULL) && (sentry->open != NULL)) {
++		sentry->open(sentry);
++	}
++	return single_open(file, es_seq_show, sentry);
++}
++
++static const struct proc_ops es_proc_ops = {
++	.proc_open = es_procopen,
++	.proc_read = seq_read,
++	.proc_write = es_procwrite,
++	.proc_lseek = seq_lseek,
++	.proc_release = single_release
++};
++
++es_proc_entry_t *es_create_proc(const char *name, es_proc_entry_t *parent)
++{
++	struct proc_dir_entry *entry = NULL;
++	es_proc_entry_t *sentry = NULL;
++
++	sentry = kzalloc(sizeof(struct es_proc_dir_entry), GFP_KERNEL);
++	if (sentry == NULL) {
++		pr_err("%s %d - kmalloc failed!\n",__func__,__LINE__);
++		return NULL;
++	}
++
++	strncpy(sentry->name, name, sizeof(sentry->name) - 1);
++
++	if (parent == NULL) {
++		entry = proc_create_data(name, 0, NULL, &es_proc_ops, sentry);
++	} else {
++		entry = proc_create_data(name, 0, parent->proc_dir_entry, &es_proc_ops, sentry);
++	}
++	if (entry == NULL) {
++		pr_err("%s %d - create_proc_entry failed!\n",__func__,__LINE__);
++		kfree(sentry);
++		sentry = NULL;
++		return NULL;
++	}
++	sentry->proc_dir_entry = entry;
++	sentry->open = NULL;
++
++	list_add_tail(&(sentry->node), &list);
++	return sentry;
++}
++
++void es_remove_proc(const char *name, es_proc_entry_t *parent)
++{
++	struct es_proc_dir_entry *sproc = NULL;
++
++	if (name == NULL) {
++		pr_err("%s %d - parameter invalid!\n",__func__,__LINE__);
++		return;
++	}
++	if (parent != NULL) {
++		remove_proc_entry(name, parent->proc_dir_entry);
++	} else {
++		remove_proc_entry(name, NULL);
++	}
++	list_for_each_entry(sproc, &list, node) {
++		if (strncmp(sproc->name, name, sizeof(sproc->name)) == 0) {
++			list_del(&(sproc->node));
++			break;
++		}
++	}
++	if (sproc != NULL) {
++		kfree(sproc);
++	}
++}
++
++es_proc_entry_t *es_create_proc_entry(const char *name,
++					  es_proc_entry_t *parent)
++{
++	parent = proc_entry;
++
++	return es_create_proc(name, parent);
++}
++EXPORT_SYMBOL(es_create_proc_entry);
++
++void es_remove_proc_entry(const char *name, es_proc_entry_t *parent)
++{
++	parent = proc_entry;
++	es_remove_proc(name, parent);
++	return;
++}
++EXPORT_SYMBOL(es_remove_proc_entry);
++
++es_proc_entry_t *es_proc_mkdir(const char *name, es_proc_entry_t *parent)
++{
++	struct proc_dir_entry *proc = NULL;
++	struct es_proc_dir_entry *sproc = NULL;
++
++	sproc = kzalloc(sizeof(struct es_proc_dir_entry), GFP_KERNEL);
++	if (sproc == NULL) {
++		pr_err("%s %d - kmalloc failed!\n",__func__,__LINE__);
++		return NULL;
++	}
++
++	strncpy(sproc->name, name, sizeof(sproc->name) - 1);
++
++	if (parent != NULL) {
++		proc = proc_mkdir_data(name, 0, parent->proc_dir_entry, sproc);
++	} else {
++		proc = proc_mkdir_data(name, 0, NULL, sproc);
++	}
++	if (proc == NULL) {
++		pr_err("%s %d - proc_mkdir failed!\n",__func__,__LINE__);
++		kfree(sproc);
++		sproc = NULL;
++		return NULL;
++	}
++	sproc->proc_dir_entry = proc;
++
++	list_add_tail(&(sproc->node), &list);
++	return sproc;
++}
++EXPORT_SYMBOL(es_proc_mkdir);
++
++void es_remove_proc_root(const char *name, es_proc_entry_t *parent)
++{
++	struct es_proc_dir_entry *sproc = NULL;
++
++	if (name == NULL) {
++		pr_err("%s %d - parameter invalid!\n",__func__,__LINE__);
++		return;
++	}
++	if (parent != NULL) {
++		remove_proc_entry(name, parent->proc_dir_entry);
++	} else {
++		remove_proc_entry(name, NULL);
++	}
++	list_for_each_entry(sproc, &list, node) {
++		if (strncmp(sproc->name, name, sizeof(sproc->name)) == 0) {
++			list_del(&(sproc->node));
++			break;
++		}
++	}
++	if (sproc != NULL) {
++		kfree(sproc);
++	}
++}
++
++int es_seq_printf(es_proc_entry_t *entry, const char *fmt, ...)
++{
++	struct seq_file *s = (struct seq_file *)(entry->seqfile);
++	va_list args;
++	int r = 0;
++
++	va_start(args, fmt);
++	seq_vprintf(s, fmt, args);
++	va_end(args);
++
++	return r;
++}
++EXPORT_SYMBOL(es_seq_printf);
++
++static int __init es_proc_init(void)
++{
++	INIT_LIST_HEAD(&list);
++	proc_entry = es_proc_mkdir("umap", NULL);
++	if (proc_entry == NULL) {
++		pr_err("init, proc mkdir error!\n");
++		return -EPERM;
++	}
++	return 0;
++}
++
++static void __exit es_proc_exit(void)
++{
++	es_remove_proc_root("umap", NULL);
++}
++
++module_init(es_proc_init);
++module_exit(es_proc_exit);
++
++MODULE_DESCRIPTION("ES Procfile Driver");
++MODULE_AUTHOR("huangyifeng@eswincomputing.com");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/memory/eswin/es_proc/include/linux/es_proc.h b/drivers/memory/eswin/es_proc/include/linux/es_proc.h
+new file mode 100644
+index 000000000000..65c73460e11b
+--- /dev/null
++++ b/drivers/memory/eswin/es_proc/include/linux/es_proc.h
+@@ -0,0 +1,40 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Header file of es_proc.c
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    HuangYiFeng<huangyifeng@eswincomputing.com>
++ *
++ */
++
++#ifndef __ES_PROC__
++#define __ES_PROC__
++
++#define PROC_ENTRY_VI "vi"
++#define PROC_ENTRY_VO "vo"
++#define PROC_ENTRY_VB "vb"
++#define PROC_ENTRY_ISP "isp"
++
++// proc
++typedef struct es_proc_dir_entry {
++	char name[50];
++	void *proc_dir_entry;
++	int (*open)(struct es_proc_dir_entry *entry);
++	int (*read)(struct es_proc_dir_entry *entry);
++	int (*write)(struct es_proc_dir_entry *entry, const char *buf,
++		     int count, long long *);
++	void *private;
++	void *seqfile;
++	struct list_head node;
++} es_proc_entry_t;
++
++extern es_proc_entry_t *es_create_proc_entry(const char *name,
++					es_proc_entry_t *parent);
++extern es_proc_entry_t *es_proc_mkdir(const char *name,
++					es_proc_entry_t *parent);
++extern void es_remove_proc_entry(const char *name, es_proc_entry_t *parent);
++extern int es_seq_printf(es_proc_entry_t *entry, const char *fmt, ...)
++	__attribute__((format(printf, 2, 3)));
++
++#endif
+diff --git a/drivers/memory/eswin/es_rsvmem_heap/Kconfig b/drivers/memory/eswin/es_rsvmem_heap/Kconfig
+new file mode 100644
+index 000000000000..3b425da42e2f
+--- /dev/null
++++ b/drivers/memory/eswin/es_rsvmem_heap/Kconfig
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0
++
++config ESWIN_RSVMEM_HEAP
++	tristate "ESWIN reserved memory heap"
++	help
++	  ESWIN reserved memory heap device.
+diff --git a/drivers/memory/eswin/es_rsvmem_heap/Makefile b/drivers/memory/eswin/es_rsvmem_heap/Makefile
+new file mode 100644
+index 000000000000..e468c514bb7b
+--- /dev/null
++++ b/drivers/memory/eswin/es_rsvmem_heap/Makefile
+@@ -0,0 +1,8 @@
++# SPDX-License-Identifier: GPL-2.0
++obj-$(CONFIG_ESWIN_RSVMEM_HEAP)	+= eswin_rsvmem_heap.o eswin_rsvmem_common.o dmabuf-heap-import-helper.o
++
++
++ES_RSVMEM_HEADER := drivers/memory/eswin/es_rsvmem_heap/include/linux
++
++COPY_HEADERS := $(shell cp $(ES_RSVMEM_HEADER)/*.h include/linux)
++
+diff --git a/drivers/memory/eswin/es_rsvmem_heap/dmabuf-heap-import-helper.c b/drivers/memory/eswin/es_rsvmem_heap/dmabuf-heap-import-helper.c
+new file mode 100644
+index 000000000000..fdbcfe7e6c70
+--- /dev/null
++++ b/drivers/memory/eswin/es_rsvmem_heap/dmabuf-heap-import-helper.c
+@@ -0,0 +1,652 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * ESWIN DMABUF heap helper APIs
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#include <linux/export.h>
++#include <linux/slab.h>
++#include <linux/errno.h>
++#include <linux/fcntl.h>
++#include <linux/scatterlist.h>
++#include <linux/dma-heap.h>
++#include <linux/dmabuf-heap-import-helper.h>
++
++struct drm_prime_member {
++	struct dma_buf *dma_buf;
++	uint64_t handle;
++
++	struct rb_node dmabuf_rb;
++	struct rb_node handle_rb;
++};
++
++static int dmabuf_heap_add_buf_handle(struct dmaheap_file_private *prime_fpriv,
++				    struct dma_buf *dma_buf, uint64_t handle)
++{
++	struct drm_prime_member *member;
++	struct rb_node **p, *rb;
++
++	member = kmalloc(sizeof(*member), GFP_KERNEL);
++	if (!member)
++		return -ENOMEM;
++
++	get_dma_buf(dma_buf);
++	member->dma_buf = dma_buf;
++	member->handle = handle;
++
++	rb = NULL;
++	p = &prime_fpriv->dmabufs.rb_node;
++	while (*p) {
++		struct drm_prime_member *pos;
++
++		rb = *p;
++		pos = rb_entry(rb, struct drm_prime_member, dmabuf_rb);
++		if (dma_buf > pos->dma_buf)
++			p = &rb->rb_right;
++		else
++			p = &rb->rb_left;
++	}
++	rb_link_node(&member->dmabuf_rb, rb, p);
++	rb_insert_color(&member->dmabuf_rb, &prime_fpriv->dmabufs);
++
++	rb = NULL;
++	p = &prime_fpriv->handles.rb_node;
++	while (*p) {
++		struct drm_prime_member *pos;
++
++		rb = *p;
++		pos = rb_entry(rb, struct drm_prime_member, handle_rb);
++		if (handle > pos->handle)
++			p = &rb->rb_right;
++		else
++			p = &rb->rb_left;
++	}
++	rb_link_node(&member->handle_rb, rb, p);
++	rb_insert_color(&member->handle_rb, &prime_fpriv->handles);
++
++	return 0;
++}
++
++static int dmabuf_heap_lookup_buf_handle(struct dmaheap_file_private *prime_fpriv,
++				       struct dma_buf *dma_buf,
++				       uint64_t *handle)
++{
++	struct rb_node *rb;
++
++	rb = prime_fpriv->dmabufs.rb_node;
++	while (rb) {
++		struct drm_prime_member *member;
++
++		member = rb_entry(rb, struct drm_prime_member, dmabuf_rb);
++		if (member->dma_buf == dma_buf) {
++			*handle = member->handle;
++			return 0;
++		} else if (member->dma_buf < dma_buf) {
++			rb = rb->rb_right;
++		} else {
++			rb = rb->rb_left;
++		}
++	}
++
++	return -ENOENT;
++}
++
++static void _dmabuf_heap_remove_buf_handle(struct dmaheap_file_private *prime_fpriv,
++					struct dma_buf *dma_buf)
++{
++	struct rb_node *rb;
++
++	rb = prime_fpriv->dmabufs.rb_node;
++	while (rb) {
++		struct drm_prime_member *member;
++
++		member = rb_entry(rb, struct drm_prime_member, dmabuf_rb);
++		if (member->dma_buf == dma_buf) {
++			rb_erase(&member->handle_rb, &prime_fpriv->handles);
++			rb_erase(&member->dmabuf_rb, &prime_fpriv->dmabufs);
++
++			dma_buf_put(dma_buf);
++			kfree(member);
++			return;
++		} else if (member->dma_buf < dma_buf) {
++			rb = rb->rb_right;
++		} else {
++			rb = rb->rb_left;
++		}
++	}
++}
++
++void common_dmabuf_heap_import_init(struct heap_root *root, struct device *dev)
++{
++	memset(root, 0, sizeof(*root));
++
++	mutex_init(&root->lock);
++	INIT_LIST_HEAD(&root->header);
++
++	root->dev = dev;
++}
++EXPORT_SYMBOL(common_dmabuf_heap_import_init);
++
++void common_dmabuf_heap_import_uninit(struct heap_root *root)
++{
++	struct heap_mem *h, *tmp;
++
++	list_for_each_entry_safe(h, tmp, &root->header, list) {
++		common_dmabuf_heap_release(h);
++	}
++}
++EXPORT_SYMBOL(common_dmabuf_heap_import_uninit);
++
++static struct heap_mem *dmabuf_heap_import(struct heap_root *root, int fd)
++{
++    struct dma_buf *dma_buf;
++    struct dma_buf_attachment *attach;
++    struct sg_table *sgt;
++
++    uint64_t handle;
++    struct heap_mem *heap_obj;
++    int ret;
++
++    /* get dmabuf handle */
++    dma_buf = dma_buf_get(fd);
++	if (IS_ERR(dma_buf))
++		return ERR_CAST(dma_buf);
++
++    mutex_lock(&root->lock);
++
++    ret = dmabuf_heap_lookup_buf_handle(&root->fp, dma_buf, &handle);
++    if (ret == 0) {
++        heap_obj = (struct heap_mem *)handle;
++        dma_buf_put(dma_buf);
++        kref_get(&heap_obj->refcount);
++        mutex_unlock(&root->lock);
++	return heap_obj;
++    }
++
++    heap_obj = kzalloc(sizeof(*heap_obj), GFP_KERNEL);
++    if (!heap_obj) {
++        mutex_unlock(&root->lock);
++        dma_buf_put(dma_buf);
++        return ERR_PTR(-ENOMEM);
++    }
++
++    attach = dma_buf_attach(dma_buf, root->dev);
++	if (IS_ERR(attach)) {
++		ret = PTR_ERR(attach);
++        goto clean_up;
++    }
++
++    sgt = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
++	if (IS_ERR(sgt)) {
++		ret = PTR_ERR(sgt);
++		goto fail_detach;
++	}
++
++    heap_obj->dbuf_fd = fd;
++    heap_obj->dbuf = dma_buf;
++
++    heap_obj->import_attach = attach;
++    heap_obj->sgt = sgt;
++
++	heap_obj->root = root;
++	heap_obj->vaddr = NULL;
++	heap_obj->dir = DMA_BIDIRECTIONAL;
++
++	/* get_dma_buf was called in dmabuf_heap_add_buf_handle()*/
++    ret = dmabuf_heap_add_buf_handle(&root->fp, dma_buf, (uint64_t)heap_obj);
++    if (ret) {
++        goto fail_add_handle;
++    }
++
++    kref_init(&heap_obj->refcount);
++
++    list_add(&heap_obj->list, &root->header);
++
++    mutex_unlock(&root->lock);
++
++    dma_buf_put(dma_buf);
++
++    return heap_obj;
++
++fail_add_handle:
++fail_detach:
++    dma_buf_detach(dma_buf, attach);
++clean_up:
++    kfree(heap_obj);
++	mutex_unlock(&root->lock);
++    dma_buf_put(dma_buf);
++
++    return ERR_PTR(ret);
++}
++
++static struct heap_mem *dmabuf_heap_import_with_dma_buf_st(struct heap_root *root, struct dma_buf *dma_buf)
++{
++    struct dma_buf_attachment *attach;
++    struct sg_table *sgt;
++
++    uint64_t handle;
++    struct heap_mem *heap_obj;
++    int ret;
++
++    mutex_lock(&root->lock);
++
++    ret = dmabuf_heap_lookup_buf_handle(&root->fp, dma_buf, &handle);
++	if (ret == 0) {
++        heap_obj = (struct heap_mem *)handle;
++        kref_get(&heap_obj->refcount);
++        mutex_unlock(&root->lock);
++	return heap_obj;
++    }
++
++    heap_obj = kzalloc(sizeof(*heap_obj), GFP_KERNEL);
++    if (!heap_obj) {
++        mutex_unlock(&root->lock);
++        return ERR_PTR(-ENOMEM);
++    }
++
++    attach = dma_buf_attach(dma_buf, root->dev);
++	if (IS_ERR(attach)) {
++		ret = PTR_ERR(attach);
++        goto clean_up;
++    }
++
++    sgt = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
++	if (IS_ERR(sgt)) {
++		ret = PTR_ERR(sgt);
++		goto fail_detach;
++	}
++
++    heap_obj->dbuf_fd = -1;
++    heap_obj->dbuf = dma_buf;
++
++    heap_obj->import_attach = attach;
++    heap_obj->sgt = sgt;
++
++	heap_obj->root = root;
++	heap_obj->vaddr = NULL;
++	heap_obj->dir = DMA_BIDIRECTIONAL;
++
++	/* get_dma_buf was called in dmabuf_heap_add_buf_handle()*/
++    ret = dmabuf_heap_add_buf_handle(&root->fp, dma_buf, (uint64_t)heap_obj);
++    if (ret) {
++        goto fail_add_handle;
++    }
++
++    kref_init(&heap_obj->refcount);
++
++    list_add(&heap_obj->list, &root->header);
++
++    mutex_unlock(&root->lock);
++
++    return heap_obj;
++
++fail_add_handle:
++fail_detach:
++    dma_buf_detach(dma_buf, attach);
++clean_up:
++    kfree(heap_obj);
++    mutex_unlock(&root->lock);
++
++    return ERR_PTR(ret);
++}
++
++struct heap_mem *common_dmabuf_lookup_heapobj_by_fd(struct heap_root *root, int fd)
++{
++	int ret = 0;
++	struct dma_buf *dma_buf;
++	struct heap_mem *heap_obj;
++
++	/* get dmabuf handle */
++	dma_buf = dma_buf_get(fd);
++	if (IS_ERR(dma_buf))
++		return NULL;
++
++	mutex_lock(&root->lock);
++	ret = dmabuf_heap_lookup_buf_handle(&root->fp, dma_buf, (uint64_t *)&heap_obj);
++	mutex_unlock(&root->lock);
++
++	dma_buf_put(dma_buf);
++	if (0 == ret)
++		return heap_obj;
++	else
++		return NULL;
++}
++EXPORT_SYMBOL(common_dmabuf_lookup_heapobj_by_fd);
++
++struct heap_mem *common_dmabuf_lookup_heapobj_by_dma_buf_st(struct heap_root *root, struct dma_buf *dma_buf)
++{
++	int ret = 0;
++	struct heap_mem *heap_obj;
++
++	pr_debug("%s:dma_buf=0x%px, file_count=%ld\n",
++		__func__, dma_buf, file_count(dma_buf->file));
++	mutex_lock(&root->lock);
++	ret = dmabuf_heap_lookup_buf_handle(&root->fp, dma_buf, (uint64_t *)&heap_obj);
++	mutex_unlock(&root->lock);
++
++	if (0 == ret)
++		return heap_obj;
++	else
++		return NULL;
++}
++EXPORT_SYMBOL(common_dmabuf_lookup_heapobj_by_dma_buf_st);
++
++struct heap_mem *common_dmabuf_heap_import_from_user(struct heap_root *root, int fd)
++{
++	return dmabuf_heap_import(root, fd);
++}
++EXPORT_SYMBOL(common_dmabuf_heap_import_from_user);
++
++struct heap_mem *common_dmabuf_heap_import_from_user_with_dma_buf_st(struct heap_root *root, struct dma_buf *dma_buf)
++{
++	return dmabuf_heap_import_with_dma_buf_st(root, dma_buf);
++}
++EXPORT_SYMBOL(common_dmabuf_heap_import_from_user_with_dma_buf_st);
++
++static void __common_dmabuf_heap_release(struct kref *kref)
++{
++	struct heap_root *root;
++	struct heap_mem *heap_obj = container_of(kref, struct heap_mem, refcount);
++
++	WARN_ON(!heap_obj);
++	if (!heap_obj)
++		return;
++
++	root = heap_obj->root;
++	WARN_ON(!mutex_is_locked(&root->lock));
++	list_del(&heap_obj->list);
++
++	common_dmabuf_heap_umap_vaddr(heap_obj);
++
++	dma_buf_unmap_attachment(heap_obj->import_attach, heap_obj->sgt, heap_obj->dir);
++
++	dma_buf_detach(heap_obj->dbuf, heap_obj->import_attach);
++
++	/* dma_buf_put was called in _dmabuf_heap_remove_buf_handle()*/
++	_dmabuf_heap_remove_buf_handle(&root->fp, heap_obj->dbuf);
++
++	kfree(heap_obj);
++}
++
++void common_dmabuf_heap_release(struct heap_mem *heap_obj)
++{
++	struct heap_root *root = heap_obj->root;
++
++	mutex_lock(&root->lock);
++	kref_put(&heap_obj->refcount, __common_dmabuf_heap_release);
++	mutex_unlock(&root->lock);
++}
++EXPORT_SYMBOL(common_dmabuf_heap_release);
++
++void *common_dmabuf_heap_map_vaddr(struct heap_mem *heap_obj)
++{
++    struct dma_buf_map map;
++    int ret;
++
++	WARN_ON(!heap_obj);
++	if (!heap_obj)
++		return NULL;
++
++    if (heap_obj->vaddr)
++        return heap_obj->vaddr;
++
++    ret = dma_buf_vmap(heap_obj->dbuf, &map);
++    if (ret)
++        return NULL;
++
++    WARN_ON_ONCE(map.is_iomem);
++    heap_obj->vaddr = map.vaddr;
++
++    return heap_obj->vaddr;
++}
++EXPORT_SYMBOL(common_dmabuf_heap_map_vaddr);
++
++void common_dmabuf_heap_umap_vaddr(struct heap_mem *heap_obj)
++{
++	struct dma_buf_map map;
++
++	WARN_ON(!heap_obj);
++	if (heap_obj && heap_obj->vaddr) {
++        map.vaddr = heap_obj->vaddr;
++        map.is_iomem = 0;
++        dma_buf_vunmap(heap_obj->dbuf, &map);
++        heap_obj->vaddr = NULL;
++    }
++}
++EXPORT_SYMBOL(common_dmabuf_heap_umap_vaddr);
++
++struct heap_mem *
++common_dmabuf_heap_import_from_kernel(struct heap_root *root, char *name, size_t len, unsigned int fd_flags)
++{
++	int dbuf_fd;
++
++	dbuf_fd = eswin_heap_kalloc(name, len, O_RDWR | fd_flags, 0);
++	if (dbuf_fd < 0) {
++        return ERR_PTR(dbuf_fd);
++	}
++
++	return dmabuf_heap_import(root, dbuf_fd);
++}
++EXPORT_SYMBOL(common_dmabuf_heap_import_from_kernel);
++
++struct esw_exp_attachment {
++	struct heap_mem *hmem;
++	struct sg_table table;
++	struct device *dev;
++	struct heap_root root;
++};
++
++// #define PRINT_ORIGINAL_SPLITTERS 1
++static int esw_common_heap_attach(struct dma_buf *dmabuf,
++			   struct dma_buf_attachment *attachment)
++{
++	struct esw_export_buffer_info *buffer = dmabuf->priv;
++	struct esw_exp_attachment *a;
++	int out_mapped_nents[1];
++	int ret = 0;
++	struct sg_table *sgt = NULL;
++	struct scatterlist *sg;
++	int i;
++	size_t size, len;
++
++	a = kzalloc(sizeof(*a), GFP_KERNEL);
++	if (!a)
++		return -ENOMEM;
++
++	a->dev = attachment->dev;
++
++	common_dmabuf_heap_import_init(&a->root, a->dev);
++	a->hmem = common_dmabuf_heap_import_from_user(&a->root, buffer->dbuf_fd);
++	if (IS_ERR(a->hmem))
++		return PTR_ERR(a->hmem);
++
++	ret = sg_split(a->hmem->sgt->sgl, a->hmem->sgt->nents, buffer->slice.offset, 1, &buffer->slice.len,
++					&a->table.sgl, &out_mapped_nents[0], GFP_KERNEL);
++	if (ret) {
++		common_dmabuf_heap_release(a->hmem);
++		kfree(a);
++		return ret;
++	}
++	a->table.nents = out_mapped_nents[0];
++	a->table.orig_nents = out_mapped_nents[0];
++	sgt = &a->table;
++	#ifdef PRINT_ORIGINAL_SPLITTERS
++	{
++		pr_info("%s:orig:sgt->orig_nents=%d, out_mapped_nents[0]=%d\n",
++			__func__, sgt->orig_nents, out_mapped_nents[0]);
++		for_each_sg(sgt->sgl, sg, sgt->orig_nents, i) {
++			pr_info("orig[%d]:sg->length=0x%x, sg_dma_len=0x%x, sg_phys=0x%lx\n",
++				i, sg->length, sg_dma_len(sg), (unsigned long)sg_phys(sg));
++		}
++	}
++	#endif
++	/* Re-format the splitted sg list in the actual slice len */
++	{
++		size = buffer->slice.len;
++		for_each_sg(sgt->sgl, sg, sgt->orig_nents, i) {
++			if (sg->length >= size) {
++				sg->length = size;
++				sg_dma_len(sg) = size;
++				sg_mark_end(sg);
++				pr_debug("refmt[%d]:sg->length=0x%x, sg_dma_len=0x%x, sg_phys=0x%lx\n",
++					i, sg->length, sg_dma_len(sg), (unsigned long)sg_phys(sg));
++				break;
++			}
++			len = min_t(size_t, size, sg->length);
++			size -= len;
++			pr_debug("refmt[%d]:sg->length=0x%x, sg_dma_len=0x%x, sg_phys=0x%lx\n",
++				i, sg->length, sg_dma_len(sg), (unsigned long)sg_phys(sg));
++		}
++		sgt->orig_nents = sgt->nents = i + 1;
++	}
++
++	attachment->priv = a;
++
++	return ret;
++}
++
++static void esw_common_heap_detach(struct dma_buf *dmabuf,
++			    struct dma_buf_attachment *attachment)
++{
++	struct esw_exp_attachment *a = attachment->priv;
++
++	kfree(a->table.sgl);
++	common_dmabuf_heap_release(a->hmem);
++	common_dmabuf_heap_import_uninit(&a->root);
++	kfree(a);
++}
++
++static struct sg_table *esw_common_map_dma_buf(struct dma_buf_attachment *attachment,
++					     enum dma_data_direction direction)
++{
++	struct esw_exp_attachment *a = attachment->priv;
++	return &a->table;
++}
++
++static void esw_common_unmap_dma_buf(struct dma_buf_attachment *attachment,
++				   struct sg_table *table,
++				   enum dma_data_direction direction)
++{
++}
++
++static int esw_common_mmap(struct dma_buf *dmabuf, struct vm_area_struct *vma)
++{
++	struct esw_export_buffer_info *buffer = dmabuf->priv;
++	// printk("%s enter\n", __func__);
++	return dma_buf_mmap(buffer->dmabuf, vma, buffer->slice.offset >> PAGE_SHIFT);
++}
++
++static int esw_common_dma_buf_begin_cpu_access(struct dma_buf *dmabuf,
++					     enum dma_data_direction direction)
++{
++	struct esw_export_buffer_info *buffer = dmabuf->priv;
++	return dma_buf_begin_cpu_access(buffer->dmabuf, direction);
++}
++
++static int esw_common_dma_buf_end_cpu_access(struct dma_buf *dmabuf,
++					   enum dma_data_direction direction)
++{
++	struct esw_export_buffer_info *buffer = dmabuf->priv;
++	return dma_buf_end_cpu_access(buffer->dmabuf, direction);
++}
++
++static int esw_common_heap_vmap(struct dma_buf *dmabuf, struct dma_buf_map *map)
++{
++	struct esw_export_buffer_info *buffer = dmabuf->priv;
++	struct dma_buf_map pmap;
++	int ret;
++
++	ret = dma_buf_vmap(buffer->dmabuf, &pmap);
++
++	map->is_iomem = false;
++	map->vaddr_iomem = pmap.vaddr_iomem + buffer->slice.offset;
++
++	return ret;
++}
++
++static void esw_common_heap_vunmap(struct dma_buf *dmabuf, struct dma_buf_map *map)
++{
++	struct esw_export_buffer_info *buffer = dmabuf->priv;
++	struct dma_buf_map pmap = *map;
++
++	pmap.vaddr_iomem -= buffer->slice.offset;
++	dma_buf_vunmap(buffer->dmabuf, &pmap);
++}
++
++static void esw_common_dma_buf_release(struct dma_buf *dmabuf)
++{
++	struct esw_export_buffer_info *buffer = dmabuf->priv;
++
++	// printk("%s %d\n", __func__, __LINE__);
++
++	dma_buf_put(buffer->dmabuf);
++	kfree(buffer);
++}
++
++static const struct dma_buf_ops esw_common_buf_ops = {
++	.attach = esw_common_heap_attach,
++	.detach = esw_common_heap_detach,
++	.map_dma_buf = esw_common_map_dma_buf,
++	.unmap_dma_buf = esw_common_unmap_dma_buf,
++	.begin_cpu_access = esw_common_dma_buf_begin_cpu_access,
++	.end_cpu_access = esw_common_dma_buf_end_cpu_access,
++	.mmap = esw_common_mmap,
++	.vmap = esw_common_heap_vmap,
++	.vunmap = esw_common_heap_vunmap,
++	.release = esw_common_dma_buf_release,
++};
++
++int esw_common_dmabuf_split_export(int dbuf_fd, unsigned int offset, size_t len, int fd_flags, char *name)
++{
++	struct esw_export_buffer_info *buffer_info;
++	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
++	int fd;
++	struct dma_buf *dmabuf;
++
++	buffer_info = kzalloc(sizeof(*buffer_info), GFP_KERNEL);
++	if (!buffer_info)
++		return -ENOMEM;
++
++	buffer_info->dbuf_fd = dbuf_fd;
++	buffer_info->fd_flags = fd_flags;
++	buffer_info->slice.offset = offset;
++	buffer_info->slice.len = len;
++	snprintf(buffer_info->name, sizeof(buffer_info->name), "%s", name);
++
++	buffer_info->dmabuf = dma_buf_get(buffer_info->dbuf_fd);
++	if (IS_ERR(buffer_info->dmabuf))
++		return PTR_ERR(buffer_info->dmabuf);
++
++//	printk("input slice: oft=0x%d, len=%lu\n", buffer_info->slice.offset, buffer_info->slice.len);
++
++	buffer_info->slice.offset = PAGE_ALIGN(buffer_info->slice.offset);
++	buffer_info->slice.len = PAGE_ALIGN(buffer_info->slice.len);
++
++//	printk("align slice: oft=0x%d, len=%lu\n", buffer_info->slice.offset, buffer_info->slice.len);
++
++	/* create the dmabuf */
++	exp_info.exp_name = buffer_info->name;
++	exp_info.ops = &esw_common_buf_ops;
++	exp_info.size = buffer_info->slice.len;
++	exp_info.flags = buffer_info->fd_flags;
++	exp_info.priv = buffer_info;
++
++	dmabuf = dma_buf_export(&exp_info);
++	if (IS_ERR(dmabuf)) {
++		return PTR_ERR(dmabuf);
++	}
++
++	fd = dma_buf_fd(dmabuf, buffer_info->fd_flags);
++	if (fd < 0) {
++		dma_buf_put(dmabuf);
++		/* put the splitted dmabuf, the esw_common_dma_buf_release will be called,
++		   the parent dmabuf will be put and the buffer_info will be free at that time */
++	}
++	return fd;
++}
++
++EXPORT_SYMBOL(esw_common_dmabuf_split_export);
+diff --git a/drivers/memory/eswin/es_rsvmem_heap/eswin_rsvmem_common.c b/drivers/memory/eswin/es_rsvmem_heap/eswin_rsvmem_common.c
+new file mode 100644
+index 000000000000..067f30627a46
+--- /dev/null
++++ b/drivers/memory/eswin/es_rsvmem_heap/eswin_rsvmem_common.c
+@@ -0,0 +1,447 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * ESWIN heap APIs
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#include <linux/cdev.h>
++#include <linux/debugfs.h>
++#include <linux/device.h>
++#include <linux/dma-buf.h>
++#include <linux/err.h>
++#include <linux/xarray.h>
++#include <linux/list.h>
++#include <linux/slab.h>
++#include <linux/nospec.h>
++#include <linux/uaccess.h>
++#include <linux/syscalls.h>
++#include <linux/eswin_rsvmem_common.h>
++#include "include/uapi/linux/eswin_rsvmem_common.h"
++
++#define DEVNAME "eswin_heap"
++
++#define NUM_HEAP_MINORS 128
++
++/**
++ * struct eswin_heap - represents a dmabuf heap in the system
++ * @name:		used for debugging/device-node name
++ * @ops:		ops struct for this heap
++ * @heap_devt		heap device node
++ * @list		list head connecting to list of heaps
++ * @heap_cdev		heap char device
++ *
++ * Represents a heap of memory from which buffers can be made.
++ */
++struct eswin_heap {
++	const char *name;
++	const struct eswin_heap_ops *ops;
++	void *priv;
++	dev_t heap_devt;
++	struct list_head list;
++	struct cdev heap_cdev;
++};
++
++static LIST_HEAD(heap_list);
++static DEFINE_MUTEX(heap_list_lock);
++static dev_t eswin_heap_devt;
++static struct class *eswin_heap_class;
++static DEFINE_XARRAY_ALLOC(eswin_heap_minors);
++
++static int eswin_heap_buffer_alloc(struct eswin_heap *heap, size_t len,
++				 unsigned int fd_flags,
++				 unsigned int heap_flags)
++{
++	struct dma_buf *dmabuf;
++	int fd;
++
++	/*
++	 * Allocations from all heaps have to begin
++	 * and end on page boundaries.
++	 */
++	len = PAGE_ALIGN(len);
++	if (!len)
++		return -EINVAL;
++
++	dmabuf = heap->ops->allocate(heap, len, fd_flags, heap_flags);
++	if (IS_ERR(dmabuf))
++		return PTR_ERR(dmabuf);
++
++	fd = dma_buf_fd(dmabuf, fd_flags);
++	if (fd < 0) {
++		dma_buf_put(dmabuf);
++		/* just return, as put will call release and that will free */
++	}
++	return fd;
++}
++
++static int eswin_heap_open(struct inode *inode, struct file *file)
++{
++	struct eswin_heap *heap;
++
++	heap = xa_load(&eswin_heap_minors, iminor(inode));
++	if (!heap) {
++		pr_err("eswin_heap: minor %d unknown.\n", iminor(inode));
++		return -ENODEV;
++	}
++
++	/* instance data as context */
++	file->private_data = heap;
++	nonseekable_open(inode, file);
++
++	return 0;
++}
++
++static long eswin_heap_ioctl_allocate(struct file *file, void *data)
++{
++	struct eswin_heap_allocation_data *heap_allocation = data;
++	struct eswin_heap *heap = file->private_data;
++	int fd;
++
++	if (heap_allocation->fd)
++		return -EINVAL;
++
++	if (heap_allocation->fd_flags & ~ESWIN_HEAP_VALID_FD_FLAGS)
++		return -EINVAL;
++
++	if (heap_allocation->heap_flags & ~ESWIN_HEAP_VALID_HEAP_FLAGS)
++		return -EINVAL;
++
++	fd = eswin_heap_buffer_alloc(heap, heap_allocation->len,
++				   heap_allocation->fd_flags,
++				   heap_allocation->heap_flags);
++	if (fd < 0)
++		return fd;
++
++	heap_allocation->fd = fd;
++
++	return 0;
++}
++
++static unsigned int eswin_heap_ioctl_cmds[] = {
++	ESWIN_HEAP_IOCTL_ALLOC,
++};
++
++static long eswin_heap_ioctl(struct file *file, unsigned int ucmd,
++			   unsigned long arg)
++{
++	char stack_kdata[128];
++	char *kdata = stack_kdata;
++	unsigned int kcmd;
++	unsigned int in_size, out_size, drv_size, ksize;
++	int nr = _IOC_NR(ucmd);
++	int ret = 0;
++
++	if (nr >= ARRAY_SIZE(eswin_heap_ioctl_cmds))
++		return -EINVAL;
++
++	nr = array_index_nospec(nr, ARRAY_SIZE(eswin_heap_ioctl_cmds));
++	/* Get the kernel ioctl cmd that matches */
++	kcmd = eswin_heap_ioctl_cmds[nr];
++
++	/* Figure out the delta between user cmd size and kernel cmd size */
++	drv_size = _IOC_SIZE(kcmd);
++	out_size = _IOC_SIZE(ucmd);
++	in_size = out_size;
++	if ((ucmd & kcmd & IOC_IN) == 0)
++		in_size = 0;
++	if ((ucmd & kcmd & IOC_OUT) == 0)
++		out_size = 0;
++	ksize = max(max(in_size, out_size), drv_size);
++
++	/* If necessary, allocate buffer for ioctl argument */
++	if (ksize > sizeof(stack_kdata)) {
++		kdata = kmalloc(ksize, GFP_KERNEL);
++		if (!kdata)
++			return -ENOMEM;
++	}
++
++	if (copy_from_user(kdata, (void __user *)arg, in_size) != 0) {
++		ret = -EFAULT;
++		goto err;
++	}
++
++	/* zero out any difference between the kernel/user structure size */
++	if (ksize > in_size)
++		memset(kdata + in_size, 0, ksize - in_size);
++
++	switch (kcmd) {
++	case ESWIN_HEAP_IOCTL_ALLOC:
++		ret = eswin_heap_ioctl_allocate(file, kdata);
++		break;
++	default:
++		ret = -ENOTTY;
++		goto err;
++	}
++
++	if (copy_to_user((void __user *)arg, kdata, out_size) != 0)
++		ret = -EFAULT;
++err:
++	if (kdata != stack_kdata)
++		kfree(kdata);
++	return ret;
++}
++
++static const struct file_operations eswin_heap_fops = {
++	.owner          = THIS_MODULE,
++	.open		= eswin_heap_open,
++	.unlocked_ioctl = eswin_heap_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= eswin_heap_ioctl,
++#endif
++};
++
++/**
++ * eswin_heap_get_drvdata() - get per-subdriver data for the heap
++ * @heap: DMA-Heap to retrieve private data for
++ *
++ * Returns:
++ * The per-subdriver data for the heap.
++ */
++void *eswin_heap_get_drvdata(struct eswin_heap *heap)
++{
++	return heap->priv;
++}
++
++/**
++ * eswin_heap_get_name() - get heap name
++ * @heap: DMA-Heap to retrieve private data for
++ *
++ * Returns:
++ * The char* for the heap name.
++ */
++const char *eswin_heap_get_name(struct eswin_heap *heap)
++{
++	return heap->name;
++}
++
++struct eswin_heap *eswin_heap_add(const struct eswin_heap_export_info *exp_info)
++{
++	struct eswin_heap *heap, *h = NULL, *err_ret;
++	struct device *dev_ret;
++	unsigned int minor;
++	int ret;
++
++	if (!exp_info->name || !strcmp(exp_info->name, "")) {
++		pr_err("eswin_heap: Cannot add heap without a name\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	if (!exp_info->ops || !exp_info->ops->allocate) {
++		pr_err("eswin_heap: Cannot add heap with invalid ops struct\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	/* check the name is unique */
++	mutex_lock(&heap_list_lock);
++	list_for_each_entry(h, &heap_list, list) {
++		if (!strcmp(h->name, exp_info->name)) {
++			mutex_unlock(&heap_list_lock);
++			pr_err("eswin_heap: Already registered heap named %s\n",
++			       exp_info->name);
++			return ERR_PTR(-EINVAL);
++		}
++	}
++	mutex_unlock(&heap_list_lock);
++
++	heap = kzalloc(sizeof(*heap), GFP_KERNEL);
++	if (!heap)
++		return ERR_PTR(-ENOMEM);
++
++	heap->name = exp_info->name;
++	heap->ops = exp_info->ops;
++	heap->priv = exp_info->priv;
++
++	/* Find unused minor number */
++	ret = xa_alloc(&eswin_heap_minors, &minor, heap,
++		       XA_LIMIT(0, NUM_HEAP_MINORS - 1), GFP_KERNEL);
++	if (ret < 0) {
++		pr_err("eswin_heap: Unable to get minor number for heap\n");
++		err_ret = ERR_PTR(ret);
++		goto err0;
++	}
++
++	/* Create device */
++	heap->heap_devt = MKDEV(MAJOR(eswin_heap_devt), minor);
++
++	cdev_init(&heap->heap_cdev, &eswin_heap_fops);
++	ret = cdev_add(&heap->heap_cdev, heap->heap_devt, 1);
++	if (ret < 0) {
++		pr_err("eswin_heap: Unable to add char device\n");
++		err_ret = ERR_PTR(ret);
++		goto err1;
++	}
++
++	dev_ret = device_create(eswin_heap_class,
++				NULL,
++				heap->heap_devt,
++				NULL,
++				heap->name);
++	if (IS_ERR(dev_ret)) {
++		pr_err("eswin_heap: Unable to create device\n");
++		err_ret = ERR_CAST(dev_ret);
++		goto err2;
++	}
++	/* Add heap to the list */
++	mutex_lock(&heap_list_lock);
++	list_add(&heap->list, &heap_list);
++	mutex_unlock(&heap_list_lock);
++
++	return heap;
++
++err2:
++	cdev_del(&heap->heap_cdev);
++err1:
++	xa_erase(&eswin_heap_minors, minor);
++err0:
++	kfree(heap);
++	return err_ret;
++}
++
++int eswin_heap_delete(struct eswin_heap *heap)
++{
++	struct eswin_heap *h, *tmp;
++	int ret = -1;
++
++	if (!heap->name || !strcmp(heap->name, "")) {
++		pr_err("eswin_heap: Cannot delet heap without a name\n");
++		return -EINVAL;
++	}
++
++	/* find the heaplist by the heap name */
++	mutex_lock(&heap_list_lock);
++	list_for_each_entry_safe(h, tmp, &heap_list, list) {
++		if (!strcmp(h->name, heap->name)) {
++			pr_info("eswin_heap: deleted heap %s\n",
++			       heap->name);
++			device_destroy(eswin_heap_class, h->heap_devt);
++			cdev_del(&h->heap_cdev);
++			xa_erase(&eswin_heap_minors, MINOR(h->heap_devt));
++			list_del(&h->list);
++			kfree(h);
++			ret = 0;
++		}
++	}
++	mutex_unlock(&heap_list_lock);
++
++	if (ret) {
++		pr_err("eswin_heap: heap named %s NOT found!\n", heap->name);
++	}
++
++	return ret;
++
++}
++
++int eswin_heap_delete_by_name(const char *name)
++{
++	struct eswin_heap *h, *tmp;
++	int ret = -1;
++
++	if (!name || !strcmp(name, "")) {
++		pr_err("eswin_heap: Cannot delet heap without a name\n");
++		return -EINVAL;
++	}
++
++	/* find the heaplist by the heap name */
++	mutex_lock(&heap_list_lock);
++	list_for_each_entry_safe(h, tmp, &heap_list, list) {
++		if (!strcmp(h->name, name)) {
++			pr_info("eswin_heap: deleted heap %s\n",
++			       name);
++			device_destroy(eswin_heap_class, h->heap_devt);
++			cdev_del(&h->heap_cdev);
++			xa_erase(&eswin_heap_minors, MINOR(h->heap_devt));
++			list_del(&h->list);
++			kfree(h);
++			ret = 0;
++		}
++	}
++	mutex_unlock(&heap_list_lock);
++
++	if (ret) {
++		pr_err("eswin_heap: heap named %s NOT found!\n", name);
++	}
++
++	return ret;
++}
++
++int eswin_heap_kalloc(char *name, size_t len, unsigned int fd_flags, unsigned int heap_flags)
++{
++	struct eswin_heap *heap = NULL;
++#if 0
++	struct eswin_heap *h = NULL;
++	/* check the name is unique */
++	mutex_lock(&heap_list_lock);
++	list_for_each_entry(h, &heap_list, list) {
++		if (!strcmp(h->name, name)) {
++			heap = h;
++			break;
++		}
++	}
++	mutex_unlock(&heap_list_lock);
++#else
++	char *dev_path = NULL;
++	struct file *file;
++	int ret;
++
++	dev_path = kasprintf(GFP_KERNEL, "/dev/dma_heap/%s", name);
++	file = filp_open(dev_path, O_RDWR, 0);
++	if (IS_ERR(file)) {
++		ret = PTR_ERR(file);
++		pr_err("failed to open file %s: (%d)\n",
++			dev_path, ret);
++		return ret;
++	}
++	heap = file->private_data;
++#endif
++	if (!heap) {
++		printk("ERROR: Can't find this heap %s\n", name);
++		return -ENODEV;
++	}
++
++	return eswin_heap_buffer_alloc(heap, len, fd_flags, heap_flags);
++}
++EXPORT_SYMBOL(eswin_heap_kalloc);
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
++static char *eswin_heap_devnode(const struct device *dev, umode_t *mode)
++#else
++static char *eswin_heap_devnode(struct device *dev, umode_t *mode)
++#endif
++
++{
++	// return kasprintf(GFP_KERNEL, "eswin_heap/%s", dev_name(dev));
++	/* create device node under dma_heap instead of eswin_heap, so that memory lib can
++	   avoid the diverseness.
++	*/
++	return kasprintf(GFP_KERNEL, "dma_heap/%s", dev_name(dev));
++}
++
++int eswin_heap_init(void)
++{
++	int ret;
++
++	ret = alloc_chrdev_region(&eswin_heap_devt, 0, NUM_HEAP_MINORS, DEVNAME);
++	if (ret)
++		return ret;
++	#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
++	eswin_heap_class = class_create(DEVNAME);
++	#else
++	eswin_heap_class = class_create(THIS_MODULE, DEVNAME);
++	#endif
++	if (IS_ERR(eswin_heap_class)) {
++		unregister_chrdev_region(eswin_heap_devt, NUM_HEAP_MINORS);
++		return PTR_ERR(eswin_heap_class);
++	}
++	eswin_heap_class->devnode = eswin_heap_devnode;
++
++	return 0;
++}
++
++void eswin_heap_uninit(void)
++{
++	class_destroy(eswin_heap_class);
++}
+diff --git a/drivers/memory/eswin/es_rsvmem_heap/eswin_rsvmem_heap.c b/drivers/memory/eswin/es_rsvmem_heap/eswin_rsvmem_heap.c
+new file mode 100644
+index 000000000000..804258f5ec74
+--- /dev/null
++++ b/drivers/memory/eswin/es_rsvmem_heap/eswin_rsvmem_heap.c
+@@ -0,0 +1,634 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * ESWIN rerserved memory heap.
++ * eswin_rsvmem_heap creates heap for the reserved memory that has compatible = "eswin-reserve-memory";
++ * property and no-map property.
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#include <linux/dma-buf.h>
++#include <linux/dma-mapping.h>
++#include <linux/err.h>
++#include <linux/highmem.h>
++#include <linux/mm.h>
++#include <linux/module.h>
++#include <linux/scatterlist.h>
++#include <linux/slab.h>
++#include <linux/vmalloc.h>
++#include <linux/dma-map-ops.h>
++#include <linux/eswin_rsvmem_common.h>
++#include "../eswin_memblock.h"
++#include "../es_buddy/es_buddy.h"
++#include "include/uapi/linux/eswin_rsvmem_common.h"
++
++static const unsigned int orders[] = {MAX_ORDER-1, 9, 0};
++#define NUM_ORDERS ARRAY_SIZE(orders)
++
++struct eswin_rsvmem_heap {
++	struct eswin_heap *heap;
++	struct mem_block *memblock;
++};
++
++struct eswin_rsvmem_heap_buffer {
++	struct eswin_rsvmem_heap *heap;
++	struct list_head attachments;
++	struct mutex lock;
++	unsigned long len;
++	struct sg_table sg_table; // for buddy allocator
++	struct page **pages;
++	int vmap_cnt;
++	void *vaddr;
++	unsigned long fd_flags; // for vmap to determin the cache or non-cached mapping
++};
++
++struct eswin_heap_attachment {
++	struct device *dev;
++	struct sg_table *table;
++	struct list_head list;
++	bool mapped;
++};
++
++static struct sg_table *dup_sg_table(struct sg_table *table)
++{
++	struct sg_table *new_table;
++	int ret, i;
++	struct scatterlist *sg, *new_sg;
++
++	new_table = kzalloc(sizeof(*new_table), GFP_KERNEL);
++	if (!new_table)
++		return ERR_PTR(-ENOMEM);
++
++	ret = sg_alloc_table(new_table, table->orig_nents, GFP_KERNEL);
++	if (ret) {
++		kfree(new_table);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	new_sg = new_table->sgl;
++	for_each_sgtable_sg(table, sg, i) {
++		sg_set_page(new_sg, sg_page(sg), sg->length, sg->offset);
++		new_sg = sg_next(new_sg);
++	}
++
++	return new_table;
++}
++
++static int eswin_rsvmem_heap_attach(struct dma_buf *dmabuf,
++			   struct dma_buf_attachment *attachment)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++	struct eswin_heap_attachment *a;
++	struct sg_table *table;
++
++	a = kzalloc(sizeof(*a), GFP_KERNEL);
++	if (!a)
++		return -ENOMEM;
++
++	table = dup_sg_table(&buffer->sg_table);
++	if (IS_ERR(table)) {
++		kfree(a);
++		return -ENOMEM;
++	}
++
++	a->table = table;
++	a->dev = attachment->dev;
++	INIT_LIST_HEAD(&a->list);
++	a->mapped = false;
++
++	attachment->priv = a;
++
++	mutex_lock(&buffer->lock);
++	list_add(&a->list, &buffer->attachments);
++	mutex_unlock(&buffer->lock);
++
++	return 0;
++}
++
++static void eswin_rsvmem_heap_detach(struct dma_buf *dmabuf,
++			    struct dma_buf_attachment *attachment)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++	struct eswin_heap_attachment *a = attachment->priv;
++
++	mutex_lock(&buffer->lock);
++	list_del(&a->list);
++	mutex_unlock(&buffer->lock);
++
++	sg_free_table(a->table);
++	kfree(a->table);
++	kfree(a);
++}
++
++static struct sg_table *eswin_rsvmem_heap_map_dma_buf(struct dma_buf_attachment *attachment,
++					     enum dma_data_direction direction)
++{
++	struct eswin_heap_attachment *a = attachment->priv;
++	struct sg_table *table =a->table;
++	int ret;
++	unsigned long attrs = DMA_ATTR_SKIP_CPU_SYNC;
++
++	/* Skipt cache sync, since it takes a lot of time when import to device.
++	*  It's the user's responsibility for guaranteeing the cache coherency by
++	   flusing cache explicitly before importing to device.
++	*/
++	ret = dma_map_sgtable(attachment->dev, table, direction, attrs);
++
++	if (ret)
++		return ERR_PTR(-ENOMEM);
++	a->mapped = true;
++	return table;
++}
++
++static void eswin_rsvmem_heap_unmap_dma_buf(struct dma_buf_attachment *attachment,
++				   struct sg_table *table,
++				   enum dma_data_direction direction)
++{
++	struct eswin_heap_attachment *a = attachment->priv;
++	unsigned long attrs = DMA_ATTR_SKIP_CPU_SYNC;
++
++	a->mapped = false;
++
++	/* Skipt cache sync, since it takes a lot of time when unmap from device.
++	*  It's the user's responsibility for guaranteeing the cache coherency after
++	   the device has done processing the data.(For example, CPU do NOT read untill
++	   the device has done)
++	*/
++	dma_unmap_sgtable(attachment->dev, table, direction, attrs);
++}
++
++static int eswin_rsvmem_dma_buf_begin_cpu_access(struct dma_buf *dmabuf,
++					     enum dma_data_direction direction)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++	struct sg_table *table = &buffer->sg_table;
++	struct scatterlist *sg;
++	int i;
++
++	mutex_lock(&buffer->lock);
++
++	if (buffer->vmap_cnt)
++		invalidate_kernel_vmap_range(buffer->vaddr, buffer->len);
++
++	/* Since the cache sync was skipped when eswin_rsvmem_heap_map_dma_buf/eswin_rsvmem_heap_unmap_dma_buf,
++	   So force cache sync here when user call ES_SYS_MemFlushCache, eventhough there
++	   is no device attached to this dmabuf.
++	*/
++	#ifndef QEMU_DEBUG
++	for_each_sg(table->sgl, sg, table->orig_nents, i)
++		arch_sync_dma_for_cpu(sg_phys(sg), sg->length, direction);
++
++	#endif
++	mutex_unlock(&buffer->lock);
++
++	return 0;
++}
++
++static int eswin_rsvmem_dma_buf_end_cpu_access(struct dma_buf *dmabuf,
++					   enum dma_data_direction direction)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++	struct sg_table *table = &buffer->sg_table;
++	struct scatterlist *sg;
++	int i;
++
++	mutex_lock(&buffer->lock);
++
++	if (buffer->vmap_cnt)
++		flush_kernel_vmap_range(buffer->vaddr, buffer->len);
++
++	/* Since the cache sync was skipped while eswin_rsvmem_heap_map_dma_buf/eswin_rsvmem_heap_unmap_dma_buf,
++	   So force cache sync here when user call ES_SYS_MemFlushCache, eventhough there
++	   is no device attached to this dmabuf.
++	*/
++	#ifndef QEMU_DEBUG
++	for_each_sg(table->sgl, sg, table->orig_nents, i)
++		arch_sync_dma_for_device(sg_phys(sg), sg->length, direction);
++	#endif
++	mutex_unlock(&buffer->lock);
++
++	return 0;
++}
++
++#if 0
++static int eswin_rsvmem_sync_cache_internal(struct dma_buf *dmabuf, enum dma_data_direction direction)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++	struct sg_table *table = &buffer->sg_table;
++	struct scatterlist *sg;
++	int i;
++
++	for_each_sg(table->sgl, sg, table->orig_nents, i)
++		arch_sync_dma_for_device(sg_phys(sg), sg->length, direction);
++
++
++	return 0;
++}
++#endif
++
++static int eswin_rsvmem_heap_mmap(struct dma_buf *dmabuf, struct vm_area_struct *vma)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++	struct eswin_heap *heap = buffer->heap->heap;
++	struct sg_table *table = &buffer->sg_table;
++	unsigned long addr = vma->vm_start;
++	unsigned long pgoff = vma->vm_pgoff, mapsize = 0;
++	unsigned long size_remaining = vma->vm_end - vma->vm_start;//vma_pages(vma);
++	struct scatterlist *sg;
++	struct page *page = NULL;
++	unsigned int nents = 0;
++	int i;
++	int ret;
++	const char *heap_name = NULL;
++
++	/* Mapping secure_memory with cached proprty to user space for CPU is NOT permitted */
++	heap_name = eswin_heap_get_name(heap);
++	if (unlikely(!strncmp("secure_memory", heap_name, 13))) {
++		if (!(vma->vm_flags & VM_NORESERVE))
++			return -EPERM;
++	}
++
++	if ((vma->vm_flags & (VM_SHARED | VM_MAYSHARE)) == 0)
++		return -EINVAL;
++
++	/* vm_private_data will be used by eswin-ipc-scpu.c.
++	    ipc will import this dmabuf to get iova.
++	*/
++	vma->vm_private_data = dmabuf;
++
++	/* support mman flag MAP_SHARED_VALIDATE | VM_NORESERVE, used to map uncached memory to user space.
++	   Users should guarantee this buffer has been flushed to cache already.
++	 */
++	if (vma->vm_flags & VM_NORESERVE) {
++		vm_flags_clear(vma, VM_NORESERVE);
++		#ifndef QEMU_DEBUG
++		vma->vm_page_prot = pgprot_dmacoherent(vma->vm_page_prot);
++		#endif
++		/* skip sync cache, users should guarantee the cache is clean after done using it in
++		   cached mode(i.e, ES_SYS_Mmap(SYS_CACHE_MODE_CACHED))
++		*/
++	}
++	pr_debug("%s, size_remaining:0x%lx, pgoff:0x%lx, dmabuf->size:0x%lx, start_phys:0x%llx\n",
++		__func__, size_remaining, pgoff, dmabuf->size, sg_phys(table->sgl));
++	for_each_sg(table->sgl, sg, table->orig_nents, i) {
++		pr_debug("sgl:%d, phys:0x%llx\n", i, sg_phys(sg));
++		if (pgoff >= (sg->length >> PAGE_SHIFT)) {
++			pgoff -= (sg->length >> PAGE_SHIFT);
++			continue;
++		}
++
++		page = sg_page(sg);
++		if (nents == 0) {
++			mapsize = sg->length - (pgoff << PAGE_SHIFT);
++			mapsize = min(size_remaining, mapsize);
++			ret = remap_pfn_range(vma, addr, page_to_pfn(page) + pgoff, mapsize,
++					vma->vm_page_prot);
++			pr_debug("nents:%d, sgl:%d, pgoff:0x%lx, mapsize:0x%lx, phys:0x%llx\n",
++				nents, i, pgoff, mapsize, pfn_to_phys(page_to_pfn(page) + pgoff));
++		}
++		else {
++			mapsize = min((unsigned int)size_remaining, (sg->length));
++			ret = remap_pfn_range(vma, addr, page_to_pfn(page), mapsize,
++					vma->vm_page_prot);
++			pr_debug("nents:%d, sgl:%d, mapsize:0x%lx, phys:0x%llx\n", nents, i, mapsize, page_to_phys(page));
++		}
++		pgoff = 0;
++		nents++;
++
++		if (ret)
++			return ret;
++
++		addr += mapsize;
++		size_remaining -= mapsize;
++		if (size_remaining == 0)
++			return 0;
++	}
++
++	return 0;
++}
++
++static void *eswin_rsvmem_heap_do_vmap(struct dma_buf *dmabuf)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++	pgprot_t prot = PAGE_KERNEL;
++	struct sg_table *table = &buffer->sg_table;
++	int npages = PAGE_ALIGN(buffer->len) / PAGE_SIZE;
++	struct page **pages = vmalloc(sizeof(struct page *) * npages);
++	struct page **tmp = pages;
++	struct sg_page_iter piter;
++	void *vaddr;
++
++	if (!pages)
++		return ERR_PTR(-ENOMEM);
++
++	for_each_sgtable_page(table, &piter, 0) {
++		WARN_ON(tmp - pages >= npages);
++		*tmp++ = sg_page_iter_page(&piter);
++	}
++
++	/* The property of this dmabuf in kernel space is determined by heap alloc with fd_flag. */
++	if (buffer->fd_flags & O_DSYNC) {
++		#ifndef QEMU_DEBUG
++		prot = pgprot_dmacoherent(PAGE_KERNEL);
++		#endif
++		pr_debug("%s syport uncached kernel dmabuf!, prot=0x%x\n", __func__, (unsigned int)pgprot_val(prot));
++	}
++	else {
++		pr_debug("%s memport cached kernel dmabuf!\n", __func__);
++	}
++
++	vaddr = vmap(pages, npages, VM_MAP, prot);
++	vfree(pages);
++
++	if (!vaddr)
++		return ERR_PTR(-ENOMEM);
++
++	return vaddr;
++}
++
++static int eswin_rsvmem_heap_vmap(struct dma_buf *dmabuf, struct dma_buf_map *map)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++	void *vaddr;
++	int ret = 0;
++
++	mutex_lock(&buffer->lock);
++	if (buffer->vmap_cnt) {
++		buffer->vmap_cnt++;
++		dma_buf_map_set_vaddr(map, buffer->vaddr);
++		goto out;
++	}
++
++	vaddr = eswin_rsvmem_heap_do_vmap(dmabuf);
++	if (IS_ERR(vaddr)) {
++		ret = PTR_ERR(vaddr);
++		goto out;
++	}
++	buffer->vaddr = vaddr;
++	buffer->vmap_cnt++;
++	dma_buf_map_set_vaddr(map, buffer->vaddr);
++out:
++	mutex_unlock(&buffer->lock);
++
++	return ret;
++}
++
++static void eswin_rsvmem_heap_vunmap(struct dma_buf *dmabuf, struct dma_buf_map *map)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++
++	mutex_lock(&buffer->lock);
++	if (!--buffer->vmap_cnt) {
++		vunmap(buffer->vaddr);
++		buffer->vaddr = NULL;
++	}
++	mutex_unlock(&buffer->lock);
++	dma_buf_map_clear(map);
++}
++
++static void eswin_rsvmem_heap_dma_buf_release(struct dma_buf *dmabuf)
++{
++	struct eswin_rsvmem_heap_buffer *buffer = dmabuf->priv;
++	struct sg_table *table;
++	struct scatterlist *sg;
++	int i;
++
++	table = &buffer->sg_table;
++	if (buffer->vmap_cnt > 0) {
++		WARN(1, "%s: buffer still mapped in the kernel\n", __func__);
++		vunmap(buffer->vaddr);
++		buffer->vaddr = NULL;
++	}
++
++	for_each_sgtable_sg(table, sg, i) {
++		struct page *page = sg_page(sg);
++		// pr_debug("%s:%d,page_size(page)=0x%lx, phys_addr=0x%llx\n",
++			// __func__, __LINE__, page_size(page), page_to_phys(page));
++		es_free_pages(buffer->heap->memblock, page);
++	}
++	sg_free_table(table);
++
++	kfree(buffer);
++}
++
++static const struct dma_buf_ops eswin_rsvmem_heap_buf_ops = {
++	.attach = eswin_rsvmem_heap_attach,
++	.detach = eswin_rsvmem_heap_detach,
++	.map_dma_buf = eswin_rsvmem_heap_map_dma_buf,
++	.unmap_dma_buf = eswin_rsvmem_heap_unmap_dma_buf,
++	.begin_cpu_access = eswin_rsvmem_dma_buf_begin_cpu_access,
++	.end_cpu_access = eswin_rsvmem_dma_buf_end_cpu_access,
++	.mmap = eswin_rsvmem_heap_mmap,
++	.vmap = eswin_rsvmem_heap_vmap,
++	.vunmap = eswin_rsvmem_heap_vunmap,
++	.release = eswin_rsvmem_heap_dma_buf_release,
++};
++
++static struct page *alloc_largest_available(struct mem_block *memblock,
++						unsigned long size,
++						unsigned int max_order)
++{
++	struct page *page;
++	int i;
++
++	for (i = 0; i < NUM_ORDERS; i++) {
++		if (size <  (PAGE_SIZE << orders[i]))
++			continue;
++		if (max_order < orders[i])
++			continue;
++
++		page = es_alloc_pages(memblock, orders[i]);
++		if (!page)
++			continue;
++		return page;
++	}
++	return NULL;
++}
++
++static struct dma_buf *eswin_rsvmem_heap_allocate(struct eswin_heap *heap,
++					    unsigned long len,
++					    unsigned long fd_flags,
++					    unsigned long heap_flags)
++{
++	struct eswin_rsvmem_heap *rsvmem_heap = eswin_heap_get_drvdata(heap);
++	struct eswin_rsvmem_heap_buffer *buffer;
++	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
++	unsigned long size_remaining = len;
++	unsigned int max_order = orders[0];
++	struct dma_buf *dmabuf;
++	struct sg_table *table;
++	struct scatterlist *sg;
++	struct list_head pages;
++	struct page *page, *tmp_page;
++	int i, ret = -ENOMEM;
++	const char *heap_name = NULL;
++
++	/* Mapping secure_memory with cached proprty to kernel space for CPU is NOT permitted */
++	heap_name = eswin_heap_get_name(rsvmem_heap->heap);
++	if (unlikely(!strncmp("secure_memory", heap_name, 13))) {
++		if (!(fd_flags & O_DSYNC))
++			return ERR_PTR(-EINVAL);
++	}
++
++	buffer = kzalloc(sizeof(*buffer), GFP_KERNEL);
++	if (!buffer)
++		return ERR_PTR(-ENOMEM);
++
++	INIT_LIST_HEAD(&buffer->attachments);
++	mutex_init(&buffer->lock);
++	buffer->heap = rsvmem_heap;
++	buffer->len = len;
++	buffer->fd_flags = fd_flags;
++
++	INIT_LIST_HEAD(&pages);
++	i = 0;
++	while (size_remaining > 0) {
++		/*
++		 * Avoid trying to allocate memory if the process
++		 * has been killed by SIGKILL
++		 */
++		if (fatal_signal_pending(current)) {
++			ret = -EINTR;
++			goto free_buffer;
++		}
++
++		page = alloc_largest_available(rsvmem_heap->memblock, size_remaining, max_order);
++		if (!page)
++			goto free_buffer;
++
++		list_add_tail(&page->lru, &pages);
++		size_remaining -= page_size(page);
++		max_order = compound_order(page);
++		i++;
++	}
++
++	table = &buffer->sg_table;
++	if (sg_alloc_table(table, i, GFP_KERNEL))
++		goto free_buffer;
++
++	sg = table->sgl;
++	list_for_each_entry_safe(page, tmp_page, &pages, lru) {
++		sg_set_page(sg, page, page_size(page), 0);
++		sg = sg_next(sg);
++		list_del(&page->lru);
++	}
++
++	/* create the dmabuf */
++	exp_info.exp_name = eswin_heap_get_name(heap);
++	exp_info.ops = &eswin_rsvmem_heap_buf_ops;
++	exp_info.size = buffer->len;
++	exp_info.flags = O_RDWR | O_CLOEXEC;
++	exp_info.priv = buffer;
++	dmabuf = dma_buf_export(&exp_info);
++	if (IS_ERR(dmabuf)) {
++		ret = PTR_ERR(dmabuf);
++		goto free_pages;
++	}
++	return dmabuf;
++
++free_pages:
++	for_each_sgtable_sg(table, sg, i) {
++		struct page *p = sg_page(sg);
++
++		es_free_pages(rsvmem_heap->memblock, p);
++	}
++	sg_free_table(table);
++free_buffer:
++	list_for_each_entry_safe(page, tmp_page, &pages, lru)
++		es_free_pages(rsvmem_heap->memblock, page);
++	kfree(buffer);
++
++	return ERR_PTR(ret);
++}
++
++static const struct eswin_heap_ops eswin_rsvmem_heap_ops = {
++	.allocate = eswin_rsvmem_heap_allocate,
++};
++
++static int __add_eswin_rsvmem_heap(struct mem_block *memblock, void *data)
++{
++	struct eswin_rsvmem_heap *rsvmem_heap;
++	struct eswin_heap_export_info exp_info;
++
++	rsvmem_heap = kzalloc(sizeof(*rsvmem_heap), GFP_KERNEL);
++	if (!rsvmem_heap)
++		return -ENOMEM;
++	rsvmem_heap->memblock = memblock;
++
++	exp_info.name = eswin_rsvmem_get_name(memblock);
++	exp_info.ops = &eswin_rsvmem_heap_ops;
++	exp_info.priv = rsvmem_heap;
++
++	rsvmem_heap->heap = eswin_heap_add(&exp_info);
++	if (IS_ERR(rsvmem_heap->heap)) {
++		int ret = PTR_ERR(rsvmem_heap->heap);
++
++		kfree(rsvmem_heap);
++		return ret;
++	}
++
++	pr_info("%s for %s successfully!\n", __func__, exp_info.name);
++
++	return 0;
++}
++
++static char *es_heap_name_prefix[] = {
++						"mmz_nid_",
++						"secure_memory"
++};
++#define NUM_ESWIN_RSVMEM_HEAPS ARRAY_SIZE(es_heap_name_prefix)
++
++static int do_add_eswin_rsvmem_heap(struct mem_block *memblock, void *data)
++{
++	int ret = 0;
++	char *prefix = data;
++	const char *rsvmem_name = eswin_rsvmem_get_name(memblock);
++
++	if (strncmp(rsvmem_name, prefix, strlen(prefix)) == 0)
++		ret = __add_eswin_rsvmem_heap(memblock, NULL);
++
++	return ret;
++}
++static int add_eswin_rsvmem_heaps(void)
++{
++	int i;
++	int ret;
++
++	ret = eswin_heap_init();
++	if (ret)
++		return ret;
++
++	for (i = 0; i < NUM_ESWIN_RSVMEM_HEAPS; i++) {
++		eswin_rsvmem_for_each_block(do_add_eswin_rsvmem_heap, es_heap_name_prefix[i]);
++	}
++
++	return 0;
++}
++
++static int do_delete_eswin_rsvmem_heap(struct mem_block *memblock, void *data)
++{
++	int ret = 0;
++	char *prefix = data;
++	const char *rsvmem_name = eswin_rsvmem_get_name(memblock);
++
++	if (strncmp(rsvmem_name, prefix, strlen(prefix)) == 0)
++		ret = eswin_heap_delete_by_name(rsvmem_name);
++
++	return ret;
++}
++static void __exit delete_eswin_rsvmem_heaps(void)
++{
++	int i;
++
++	for (i = 0; i < NUM_ESWIN_RSVMEM_HEAPS; i++) {
++		eswin_rsvmem_for_each_block(do_delete_eswin_rsvmem_heap, es_heap_name_prefix[i]);
++	}
++	eswin_heap_uninit();
++}
++module_init(add_eswin_rsvmem_heaps);
++module_exit(delete_eswin_rsvmem_heaps);
++MODULE_IMPORT_NS(DMA_BUF);
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/memory/eswin/es_rsvmem_heap/include/linux/mem_perf_api.h b/drivers/memory/eswin/es_rsvmem_heap/include/linux/mem_perf_api.h
+new file mode 100644
+index 000000000000..a0357b43d914
+--- /dev/null
++++ b/drivers/memory/eswin/es_rsvmem_heap/include/linux/mem_perf_api.h
+@@ -0,0 +1,123 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Performance test APIs for ESWIN memory
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++#ifndef __MEM_PERF_API_H__
++#define __MEM_PERF_API_H__
++
++#define IN_KERNEL   1
++
++#if IN_KERNEL
++#include <linux/list.h>
++#define alloc_mem_perf_info(size)   kmalloc(size, GFP_KERNEL)
++#define free_mem_perf_info(info)    kfree(info)
++#define PRINT_INFO(fmt, ...)     pr_info(fmt, ##__VA_ARGS__)
++#else
++#include <stdlib.h>
++#include <stdio.h>
++#include <string.h>
++#include "list.h"
++#define alloc_mem_perf_info(size)   malloc(size)
++#define free_mem_perf_info(info)    free(info)
++#define PRINT_INFO(fmt, ...)     printf("%s" fmt, "[ES_DMA_INF]", ##__VA_ARGS__)
++#endif
++
++typedef unsigned long long uint64; 
++
++struct mem_perf_info {
++    struct list_head node;
++    char    func_name[64];
++    uint64     cycles_start;
++    uint64     cycles_end;
++    uint64     cycles_elapased;
++};
++
++#if defined(CONFIG_RISCV)
++static inline int metal_timer_get_cyclecount(unsigned long long *mcc)
++{
++    unsigned long cycles;
++    asm volatile ("rdtime %0" : "=r" (cycles));
++    *mcc = cycles;
++
++    return 0;
++}
++#else
++static inline int metal_timer_get_cyclecount(unsigned long long *mcc)
++{
++	return 0;
++}
++#endif
++
++//struct mem_perf_info *lookup_mem_api_from_list()
++static inline struct mem_perf_info *memperf_record_cycle_start(const char *func_name, struct list_head *mem_perf_list_head)
++{
++    struct mem_perf_info *m_perf_i;
++
++    m_perf_i = alloc_mem_perf_info(sizeof(*m_perf_i));
++    if (!m_perf_i) {
++        PRINT_INFO("mem perf info alloc failed!\n");
++        return NULL;
++    }
++
++    sprintf(m_perf_i->func_name, "%s", func_name);
++    list_add_tail(&m_perf_i->node, mem_perf_list_head);
++    metal_timer_get_cyclecount(&m_perf_i->cycles_start);
++    m_perf_i->cycles_end = m_perf_i->cycles_start;
++
++    return m_perf_i;
++}
++
++static inline int memperf_record_cycle_end(struct mem_perf_info *m_perf_i)
++{
++    if (NULL == m_perf_i)
++        return -1;
++
++    metal_timer_get_cyclecount(&m_perf_i->cycles_end);
++
++    return 0;
++}
++
++#if defined(CONFIG_RISCV)
++static inline int memperf_print_records(struct list_head *mem_perf_list_head)
++{
++    struct mem_perf_info *m_perf_i;
++    uint64 total_cycles = 0;
++
++    list_for_each_entry(m_perf_i, mem_perf_list_head, node) {
++        m_perf_i->cycles_elapased = m_perf_i->cycles_end - m_perf_i->cycles_start;
++        total_cycles += m_perf_i->cycles_elapased;
++    }
++    PRINT_INFO("Total cycles:%lld, %lld us\n", total_cycles, total_cycles*1000*1000/32768);
++    list_for_each_entry(m_perf_i, mem_perf_list_head, node) {
++        PRINT_INFO("cycle_elapsed:%lld---%%\%lld.%2lld, %s\n",
++            m_perf_i->cycles_elapased, (100*m_perf_i->cycles_elapased)/total_cycles,
++            (10000*m_perf_i->cycles_elapased)%total_cycles, m_perf_i->func_name);
++    }
++
++    return 0;
++}
++#else
++static inline int memperf_print_records(struct list_head *mem_perf_list_head)
++{
++	return 0;
++}
++#endif
++
++static inline int memperf_free_records_list(struct list_head *mem_perf_list_head)
++{
++    struct mem_perf_info *m_perf_i, *tmp;
++
++	list_for_each_entry_safe(m_perf_i, tmp, mem_perf_list_head, node) {
++		list_del(&m_perf_i->node);
++		free_mem_perf_info(m_perf_i);
++	}
++
++    return 0;
++}
++
++#endif
+diff --git a/drivers/memory/eswin/es_rsvmem_heap/include/uapi/linux/eswin_rsvmem_common.h b/drivers/memory/eswin/es_rsvmem_heap/include/uapi/linux/eswin_rsvmem_common.h
+new file mode 100644
+index 000000000000..7d863001cfc3
+--- /dev/null
++++ b/drivers/memory/eswin/es_rsvmem_heap/include/uapi/linux/eswin_rsvmem_common.h
+@@ -0,0 +1,56 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * ESWIN Heaps Userspace API
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *   Authors:
++ *    LinMin<linmin@eswincomputing.com>
++ *
++ */
++
++#ifndef _UAPI_ESWIN_HEAPS_H
++#define _UAPI_ESWIN_HEAPS_H
++
++#include <linux/ioctl.h>
++#include <linux/types.h>
++
++/**
++ * DOC: DMABUF Heaps Userspace API
++ */
++/* Valid FD_FLAGS are O_CLOEXEC, O_RDONLY, O_WRONLY, O_RDWR, O_SYNC */
++#define ESWIN_HEAP_VALID_FD_FLAGS (O_CLOEXEC | O_ACCMODE | O_SYNC)
++
++/* Add HEAP_SPRAM_FORCE_CONTIGUOUS heap flags for ESWIN SPRAM HEAP */
++#define HEAP_FLAGS_SPRAM_FORCE_CONTIGUOUS	(1 << 0)
++#define ESWIN_HEAP_VALID_HEAP_FLAGS (HEAP_FLAGS_SPRAM_FORCE_CONTIGUOUS)
++
++/**
++ * struct eswin_heap_allocation_data - metadata passed from userspace for
++ *                                      allocations
++ * @len:		size of the allocation
++ * @fd:			will be populated with a fd which provides the
++ *			handle to the allocated dma-buf
++ * @fd_flags:		file descriptor flags used when allocating
++ * @heap_flags:		flags passed to heap
++ *
++ * Provided by userspace as an argument to the ioctl
++ */
++struct eswin_heap_allocation_data {
++	__u64 len;
++	__u32 fd;
++	__u32 fd_flags;
++	__u64 heap_flags;
++};
++
++#define ESWIN_HEAP_IOC_MAGIC		'H'
++
++/**
++ * DOC: ESWIN_HEAP_IOCTL_ALLOC - allocate memory from pool
++ *
++ * Takes a eswin_heap_allocation_data struct and returns it with the fd field
++ * populated with the dmabuf handle of the allocation.
++ */
++#define ESWIN_HEAP_IOCTL_ALLOC	_IOWR(ESWIN_HEAP_IOC_MAGIC, 0x0,\
++				      struct eswin_heap_allocation_data)
++
++#endif /* _UAPI_ESWIN_HEAPS_H */
+diff --git a/include/linux/dmabuf-heap-import-helper.h b/include/linux/dmabuf-heap-import-helper.h
+new file mode 100644
+index 000000000000..6fd339ee8ff3
+--- /dev/null
++++ b/include/linux/dmabuf-heap-import-helper.h
+@@ -0,0 +1,100 @@
++#ifndef _DMABUF_HEAP_IMPORT_H_
++#define _DMABUF_HEAP_IMPORT_H_
++
++#include <linux/rbtree.h>
++#include <linux/dma-buf.h>
++#include <linux/mutex.h>
++#include <linux/types.h>
++#include <linux/scatterlist.h>
++#include <linux/eswin_rsvmem_common.h>
++
++#define SYSTEM_DEV_NODE "system"
++#define CMA_DEV_NODE_RES "reserved"
++#define CMA_DEV_NODE_DFT "linux,cma"
++#define SYSTEM_COHERENT_DEV_NODE "system_coherent"
++
++struct dmaheap_file_private {
++	/* private: */
++	struct rb_root dmabufs;
++	struct rb_root handles;
++};
++
++struct heap_root {
++	struct dmaheap_file_private fp;
++	struct device *dev;
++	struct list_head header;
++	struct mutex lock;
++};
++
++struct heap_mem {
++	/* refcount is also protected by lock in the struct heap_root */
++	struct kref refcount;
++
++	int dbuf_fd;
++	struct dma_buf *dbuf;
++	struct dma_buf_attachment *import_attach;
++
++	struct heap_root *root;
++	struct list_head list;
++	struct rb_node *rb;
++
++	struct sg_table *sgt;
++	void *vaddr;
++
++	enum dma_data_direction dir;
++};
++
++struct esw_export_buffer_info {
++	char name[64];
++	int fd_flags;
++
++	int dbuf_fd;
++	struct dma_buf *dmabuf;
++
++	struct esw_slice_buffer {
++		__u64 offset;
++		size_t len;
++	} slice;
++};
++
++static int inline common_dmabuf_heap_begin_cpu_access(struct heap_mem *heap_obj)
++{
++	return dma_buf_begin_cpu_access(heap_obj->dbuf, heap_obj->dir);
++}
++
++static int inline common_dmabuf_heap_end_cpu_access(struct heap_mem *heap_obj)
++{
++	return dma_buf_end_cpu_access(heap_obj->dbuf, heap_obj->dir);
++}
++
++static inline size_t common_dmabuf_heap_get_size(struct heap_mem *heap_obj)
++{
++	WARN_ON(!heap_obj);
++	return (heap_obj != NULL) ? heap_obj->dbuf->size : 0;
++}
++
++static inline void common_dmabuf_heap_set_dir(struct heap_mem *heap_obj, enum dma_data_direction dir)
++{
++	WARN_ON(!heap_obj);
++	if (heap_obj)
++		heap_obj->dir = dir;
++}
++
++void common_dmabuf_heap_import_init(struct heap_root *root, struct device *dev);
++void common_dmabuf_heap_import_uninit(struct heap_root *root);
++
++struct heap_mem *common_dmabuf_lookup_heapobj_by_fd(struct heap_root *root, int fd);
++struct heap_mem *common_dmabuf_lookup_heapobj_by_dma_buf_st(struct heap_root *root, struct dma_buf *dma_buf);
++
++struct heap_mem *common_dmabuf_heap_import_from_user(struct heap_root *root, int fd);
++struct heap_mem *common_dmabuf_heap_import_from_user_with_dma_buf_st(struct heap_root *root, struct dma_buf *dma_buf);
++void common_dmabuf_heap_release(struct heap_mem *heap_obj);
++
++void *common_dmabuf_heap_map_vaddr(struct heap_mem *heap_obj);
++void common_dmabuf_heap_umap_vaddr(struct heap_mem *heap_obj);
++
++struct heap_mem *common_dmabuf_heap_import_from_kernel(struct heap_root *root, char *name, size_t len, unsigned int fd_flags);
++
++int esw_common_dmabuf_split_export(int dbuf_fd, unsigned int offset, size_t len, int fd_flags, char *name);
++
++#endif
+diff --git a/include/linux/eswin_rsvmem_common.h b/include/linux/eswin_rsvmem_common.h
+new file mode 100644
+index 000000000000..33862d7292d7
+--- /dev/null
++++ b/include/linux/eswin_rsvmem_common.h
+@@ -0,0 +1,94 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * DMABUF Heaps Allocation Infrastructure
++ *
++ * Copyright (C) 2011 Google, Inc.
++ * Copyright (C) 2019 Linaro Ltd.
++ */
++
++#ifndef _ESWIN_HEAPS_H
++#define _ESWIN_HEAPS_H
++
++#include <linux/cdev.h>
++#include <linux/types.h>
++#include <linux/version.h>
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
++#define dma_buf_map		iosys_map
++#define dma_buf_map_set_vaddr	iosys_map_set_vaddr
++#define dma_buf_map_clear	iosys_map_clear
++#else
++#define vm_flags_clear(vma, flags)	(vma->vm_flags &= ~flags)
++#endif
++
++struct eswin_heap;
++
++/**
++ * struct eswin_heap_ops - ops to operate on a given heap
++ * @allocate:		allocate dmabuf and return struct dma_buf ptr
++ *
++ * allocate returns dmabuf on success, ERR_PTR(-errno) on error.
++ */
++struct eswin_heap_ops {
++	struct dma_buf *(*allocate)(struct eswin_heap *heap,
++				    unsigned long len,
++				    unsigned long fd_flags,
++				    unsigned long heap_flags);
++};
++
++/**
++ * struct eswin_heap_export_info - information needed to export a new dmabuf heap
++ * @name:	used for debugging/device-node name
++ * @ops:	ops struct for this heap
++ * @priv:	heap exporter private data
++ *
++ * Information needed to export a new dmabuf heap.
++ */
++struct eswin_heap_export_info {
++	const char *name;
++	const struct eswin_heap_ops *ops;
++	void *priv;
++};
++
++/**
++ * eswin_heap_get_drvdata() - get per-heap driver data
++ * @heap: DMA-Heap to retrieve private data for
++ *
++ * Returns:
++ * The per-heap data for the heap.
++ */
++void *eswin_heap_get_drvdata(struct eswin_heap *heap);
++
++/**
++ * eswin_heap_get_name() - get heap name
++ * @heap: DMA-Heap to retrieve private data for
++ *
++ * Returns:
++ * The char* for the heap name.
++ */
++const char *eswin_heap_get_name(struct eswin_heap *heap);
++
++/**
++ * eswin_heap_add - adds a heap to dmabuf heaps
++ * @exp_info:		information needed to register this heap
++ */
++struct eswin_heap *eswin_heap_add(const struct eswin_heap_export_info *exp_info);
++
++/**
++ * eswin_heap_delete - delete a heap from dmabuf heaps
++ * @heap:		heap needed to delete
++ */
++int eswin_heap_delete(struct eswin_heap *heap);
++
++/**
++ * eswin_heap_delete_by_name - find and delete a heap from dmabuf heaps by name
++ * @name:		heap name needed to delete
++ */
++int eswin_heap_delete_by_name(const char *name);
++
++int eswin_heap_kalloc(char *name, size_t len, unsigned int fd_flags, unsigned int heap_flags);
++
++int eswin_heap_init(void);
++void eswin_heap_uninit(void);
++#define dma_heap_kalloc(name, len, fd_flags, heap_flags)  eswin_heap_kalloc(name, len, fd_flags, heap_flags)
++#endif /* _ESWIN_HEAPS_H */
+diff --git a/include/uapi/linux/es_vb_user.h b/include/uapi/linux/es_vb_user.h
+new file mode 100644
+index 000000000000..db3bda6d0d69
+--- /dev/null
++++ b/include/uapi/linux/es_vb_user.h
+@@ -0,0 +1,58 @@
++#ifndef ES_VB_USER_H
++#define ES_VB_USER_H
++
++/**
++ * mmz vb configurations
++*/
++#define ES_VB_MAX_MMZs		4
++
++#define ES_VB_INVALID_POOLID	(-1U)
++
++#define ES_VB_MAX_MOD_POOL	16
++
++#define ES_MAX_MMZ_NAME_LEN	64
++
++/**
++ * mmz vb pool or block struct definition
++ */
++typedef enum esVB_UID_E {
++     VB_UID_PRIVATE = 0,
++     VB_UID_COMMON,
++     VB_UID_VI,
++     VB_UID_VO,
++     VB_UID_VPS,
++     VB_UID_VENC,
++     VB_UID_VDEC,
++     VB_UID_HAE,
++     VB_UID_USER,
++     VB_UID_BUTT,
++     VB_UID_MAX,
++} VB_UID_E;
++
++typedef enum {
++    SYS_CACHE_MODE_NOCACHE = 0,
++    SYS_CACHE_MODE_CACHED = 1,
++    SYS_CACHE_MODE_LLC = 2,
++    SYS_CACHE_MODE_BUTT,
++} SYS_CACHE_MODE_E;
++
++typedef struct esVB_POOL_CONFIG_S {
++    ES_U64 blkSize;
++    ES_U32 blkCnt;
++    SYS_CACHE_MODE_E enRemapMode;
++    ES_CHAR mmzName[ES_MAX_MMZ_NAME_LEN];
++} VB_POOL_CONFIG_S;
++
++typedef struct esVB_CONFIG_S {
++    ES_U32 poolCnt;
++    VB_POOL_CONFIG_S poolCfgs[ES_VB_MAX_MOD_POOL];
++} VB_CONFIG_S;
++
++typedef struct ES_DEV_BUF {
++    ES_U64 memFd;
++    ES_U64 offset;
++    ES_U64 size;
++    ES_U64 reserve;
++} ES_DEV_BUF_S;
++
++#endif
+diff --git a/include/uapi/linux/mmz_vb.h b/include/uapi/linux/mmz_vb.h
+new file mode 100644
+index 000000000000..49ebac96f6e1
+--- /dev/null
++++ b/include/uapi/linux/mmz_vb.h
+@@ -0,0 +1,175 @@
++#ifndef _MMZ_VB_UAPI_H_
++#define _MMZ_VB_UAPI_H_
++
++#include <linux/types.h>
++
++/*vb cfg flag*/
++#define MMZ_VB_CFG_FLAG_INIT	(1 << 0)
++
++/*vb pool flag*/
++#define MMZ_VB_POOL_FLAG_DESTORY	(1 << 0)
++
++/*set cfg cmd*/
++typedef struct esVB_SET_CFG_REQ_S {
++	enum esVB_UID_E uid;
++	struct esVB_CONFIG_S cfg;
++}VB_SET_CFG_REQ_S;
++
++typedef struct esVB_SET_CFG_CMD_S {
++	struct esVB_SET_CFG_REQ_S CfgReq;
++}VB_SET_CFG_CMD_S;
++
++/*get cfg cmd*/
++typedef struct esVB_GET_CFG_REQ_S {
++	enum esVB_UID_E uid;
++}VB_Get_CFG_REQ_S;
++
++typedef struct esVB_GET_CFG_RSP_S {
++	struct esVB_CONFIG_S cfg;
++}VB_Get_CFG_RSP_S;
++
++typedef struct esVB_GET_CFG_CMD_S {
++	struct esVB_GET_CFG_REQ_S req;
++	struct esVB_GET_CFG_RSP_S rsp;
++}VB_GET_CFG_CMD_S;
++
++/*Init cfg cmd*/
++typedef struct esVB_INIT_CFG_REQ_S {
++	enum esVB_UID_E uid;
++}VB_INIT_CFG_REQ_S;
++
++typedef struct esVB_INIT_CFG_CMD_S {
++	struct esVB_INIT_CFG_REQ_S req;
++}VB_INIT_CFG_CMD_S;
++
++/*UnInit cfg cmd*/
++typedef struct esVB_UNINIT_CFG_REQ_S {
++	enum esVB_UID_E uid;
++}VB_UNINIT_CFG_REQ_S;
++
++typedef struct esVB_UNINIT_CFG_CMD_S {
++	struct esVB_UNINIT_CFG_REQ_S req;
++}VB_UNINIT_CFG_CMD_S;
++
++/*create pool cmd*/
++typedef struct esVB_CREATE_POOL_REQ_S {
++	struct esVB_POOL_CONFIG_S req;
++}VB_CREATE_POOL_REQ_S;
++
++typedef struct esVB_CREATE_POOL_RESP_S {
++	__u32 PoolId;
++} VB_CREATE_POOL_RESP_S;
++
++typedef struct esVB_CREATE_POOL_CMD_S {
++	struct esVB_CREATE_POOL_REQ_S PoolReq;
++	struct esVB_CREATE_POOL_RESP_S PoolResp;
++}VB_CREATE_POOL_CMD_S;
++
++/*destory pool cmd*/
++typedef struct esVB_DESTORY_POOL_REQ_S {
++	__u32 PoolId;
++}VB_DESTORY_POOL_REQ_S;
++
++typedef struct esVB_DESTORY_POOL_RESP_S {
++	__u32 Result;
++}VB_DESTORY_POOL_RESP_S;
++
++typedef struct esVB_DESTORY_POOL_CMD_S {
++	struct esVB_DESTORY_POOL_REQ_S req;
++	struct esVB_DESTORY_POOL_RESP_S rsp;
++}VB_DESTORY_POOL_CMD_S;
++
++typedef struct esVB_GET_BLOCK_REQ_S {
++	enum esVB_UID_E uid;
++	VB_POOL poolId;
++	__u64 blkSize;
++	char mmzName[ES_MAX_MMZ_NAME_LEN];
++}VB_GET_BLOCK_REQ_S;
++typedef struct esVB_GET_BLOCK_RESP_S {
++	__u64 actualBlkSize;
++	int fd;
++	int nr; /*bitmap index in the pool*/
++}VB_GET_BLOCK_RESP_S;
++typedef struct esVB_GET_BLOCK_CMD_S
++{
++	struct esVB_GET_BLOCK_REQ_S getBlkReq;
++	struct esVB_GET_BLOCK_RESP_S getBlkResp;
++}VB_GET_BLOCK_CMD_S;
++
++//corresponding to MMZ_VB_IOCTL_POOL_SIZE
++typedef struct esVB_GET_POOLSIZE_CMD_S
++{
++	VB_POOL poolId;
++	__u64 poolSize;
++}VB_GET_POOLSIZE_CMD_S;
++
++//corresponding to MMZ_VB_IOCTL_FLUSH_POOL
++typedef struct esVB_FLUSH_POOL_CMD_S
++{
++	VB_POOL poolId;
++	__u64 offset; // offset addr in the pool
++	__u64 size; // size to be flushed
++}VB_FLUSH_POOL_CMD_S;
++
++//corresponding to MMZ_VB_IOCTL_BLOCK_TO_POOL
++typedef struct esVB_BLOCK_TO_POOL_CMD_S
++{
++	int fd;	// Input: The dmabuf_fd of the block
++	VB_POOL poolId; //Output: The pool which the block belongs to;
++}VB_BLOCK_TO_POOL_CMD_S;
++
++//corresponding to MMZ_VB_IOCTL_GET_BLOCK_OFFSET
++typedef struct esVB_GET_BLOCKOFFSET_CMD_S
++{
++	int fd;	// Input: The dmabuf_fd, it might be the real block or the splittedBlock
++	__u64 offset; // Output: The offset in pool
++}VB_GET_BLOCKOFFSET_CMD_S;
++
++//corresponding to MMZ_VB_IOCTL_SPLIT_DMABUF
++typedef struct esVB_SPLIT_DMABUF_CMD_S {
++	int fd; /* Input: The original dmabuf fd to be splitted */
++	int slice_fd; /* Outpu: splitted dmabuf fd */
++	__u64 offset; /* Input: offset of the buffer relative to the original dmabuf */
++	__u64 len; /* size of the buffer to be splitted */
++}VB_BLOCK_SPLIT_CMD_S;
++
++//corresponding to MMZ_VB_IOCTL_DMABUF_REFCOUNT
++typedef struct esVB_DMABUF_REFCOUNT_CMD_S
++{
++	int fd;	// Input: The dmabuf_fd
++	__u64 refCnt; // Output: The file_count of the dmabuf
++}VB_DMABUF_REFCOUNT_CMD_S;
++
++//corresponding to MMZ_VB_IOCTL_RETRIEVE_MEM_NODE
++typedef struct esVB_RETRIEVE_MEM_NODE_CMD_S
++{
++	int fd;	// Input: The dmabuf_fd
++	void *cpu_vaddr; // Input: The virtual addr of cpu in user space
++	int numa_node; // Ouput: return the NUMA node id of the memory
++}VB_RETRIEVE_MEM_NODE_CMD_S;
++
++//corresponding to MMZ_VB_IOCTL_DMABUF_SIZE
++typedef struct esVB_DMABUF_SIZE_CMD_S
++{
++	int fd;	// Input: The dmabuf_fd
++	__u64 size; // Output: The size of the dmabuf
++}VB_DMABUF_SIZE_CMD_S;
++
++#define MMZ_VB_IOC_MAGIC 		'M'
++#define MMZ_VB_IOCTL_GET_BLOCK		_IOWR(MMZ_VB_IOC_MAGIC, 0x0, struct esVB_GET_BLOCK_CMD_S)
++#define MMZ_VB_IOCTL_SET_CFG		_IOWR(MMZ_VB_IOC_MAGIC, 0x1, struct esVB_SET_CFG_CMD_S)
++#define MMZ_VB_IOCTL_GET_CFG		_IOWR(MMZ_VB_IOC_MAGIC, 0x2, struct esVB_GET_CFG_CMD_S)
++#define MMZ_VB_IOCTL_INIT_CFG		_IOWR(MMZ_VB_IOC_MAGIC, 0x3, struct esVB_INIT_CFG_CMD_S)
++#define MMZ_VB_IOCTL_UNINIT_CFG		_IOWR(MMZ_VB_IOC_MAGIC, 0x4, struct esVB_UNINIT_CFG_CMD_S)
++#define MMZ_VB_IOCTL_CREATE_POOL	_IOWR(MMZ_VB_IOC_MAGIC, 0x5, struct esVB_CREATE_POOL_CMD_S)
++#define MMZ_VB_IOCTL_DESTORY_POOL	_IOWR(MMZ_VB_IOC_MAGIC, 0x6, struct esVB_DESTORY_POOL_CMD_S)
++#define MMZ_VB_IOCTL_POOL_SIZE		_IOR(MMZ_VB_IOC_MAGIC, 0x7, struct esVB_GET_POOLSIZE_CMD_S)
++#define MMZ_VB_IOCTL_FLUSH_POOL		_IOW(MMZ_VB_IOC_MAGIC, 0x8, struct esVB_FLUSH_POOL_CMD_S)
++#define MMZ_VB_IOCTL_BLOCK_TO_POOL	_IOR(MMZ_VB_IOC_MAGIC, 0x9, struct esVB_BLOCK_TO_POOL_CMD_S)
++#define MMZ_VB_IOCTL_GET_BLOCK_OFFSET	_IOR(MMZ_VB_IOC_MAGIC, 0xa, struct esVB_GET_BLOCKOFFSET_CMD_S)
++#define MMZ_VB_IOCTL_SPLIT_DMABUF	_IOWR(MMZ_VB_IOC_MAGIC, 0xb, struct esVB_SPLIT_DMABUF_CMD_S)
++#define MMZ_VB_IOCTL_DMABUF_REFCOUNT	_IOR(MMZ_VB_IOC_MAGIC, 0xc, struct esVB_DMABUF_REFCOUNT_CMD_S)
++#define MMZ_VB_IOCTL_RETRIEVE_MEM_NODE	_IOR(MMZ_VB_IOC_MAGIC, 0xd, struct esVB_RETRIEVE_MEM_NODE_CMD_S)
++#define MMZ_VB_IOCTL_DMABUF_SIZE	_IOR(MMZ_VB_IOC_MAGIC, 0xe, struct esVB_DMABUF_SIZE_CMD_S)
++
++#endif
+-- 
+2.47.0
+

@@ -1,0 +1,63 @@
+From 6e39042f5caa46f837310cf1bbdcbc58d0078e03 Mon Sep 17 00:00:00 2001
+From: huangyifeng <huangyifeng@eswincomputing.com>
+Date: Fri, 19 Jul 2024 10:11:52 +0800
+Subject: [PATCH 112/215] fix(cpu pll): enable cpu low power clk when use it.
+
+Changelogs:
+    When the CPU switches frequency, it will first switch to the CPU
+low power clock. At this time, it is necessary to enable it first to
+ensure
+it is turned on
+
+Signed-off-by: huangyifeng <huangyifeng@eswincomputing.com>
+---
+ drivers/clk/eswin/clk.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/clk/eswin/clk.c b/drivers/clk/eswin/clk.c
+index 685f6377d9f8..06569c72ba37 100755
+--- a/drivers/clk/eswin/clk.c
++++ b/drivers/clk/eswin/clk.c
+@@ -308,9 +308,16 @@ static int clk_pll_set_rate(struct clk_hw *hw,
+ 			pr_err("%s %d, failed to get %s\n",__func__,__LINE__, clk_cpu_lp_pll_name);
+ 			return -EINVAL;
+ 		}
++		ret = clk_prepare_enable(clk_cpu_lp_pll);
++		if (ret) {
++			pr_err("%s %d, failed to enable %s, ret %d\n",__func__,__LINE__,
++				clk_cpu_lp_pll_name, ret);
++			return ret;
++		}
+ 		clk_cpu_pll = __clk_lookup(clk_cpu_pll_name);
+ 		if (!clk_cpu_pll) {
+ 			pr_err("%s %d, failed to get %s\n",__func__,__LINE__, clk_cpu_pll_name);
++			clk_disable_unprepare(clk_cpu_lp_pll);
+ 			return -EINVAL;
+ 		}
+ 
+@@ -318,6 +325,7 @@ static int clk_pll_set_rate(struct clk_hw *hw,
+ 		if (ret) {
+ 			pr_err("%s %d, faild to switch %s to %s, ret %d\n",__func__,__LINE__, clk_cpu_mux_name,
+ 				clk_cpu_lp_pll_name, ret);
++			clk_disable_unprepare(clk_cpu_lp_pll);
+ 			return -EPERM;
+ 		}
+ 	}
+@@ -371,11 +379,12 @@ static int clk_pll_set_rate(struct clk_hw *hw,
+ 		ret = clk_set_parent(clk_cpu_mux, clk_cpu_pll);
+ 		if (ret) {
+ 			pr_err("%s %d, faild to switch %s to %s, ret %d\n",__func__,__LINE__,
+-				clk_cpu_mux_name, clk_cpu_pll_name, ret);
++				 clk_cpu_mux_name, clk_cpu_pll_name, ret);
+ 			return -EPERM;
+ 		}
++		clk_disable_unprepare(clk_cpu_lp_pll);
+ 	}
+-	return  0;
++	return 0;
+ }
+ 
+ static unsigned long clk_pll_recalc_rate(struct clk_hw *hw,
+-- 
+2.47.0
+

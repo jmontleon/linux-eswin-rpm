@@ -1,0 +1,75 @@
+From b98022581a4d1245cf519eb766eedcef8bde61ad Mon Sep 17 00:00:00 2001
+From: liangshuang <liangshuang@eswincomputing.com>
+Date: Wed, 18 Sep 2024 11:10:06 +0800
+Subject: [PATCH 173/215] feat:support bluetooth.
+
+Changelogs:
+1.support bluetooth.
+
+Signed-off-by: liangshuang <liangshuang@eswincomputing.com>
+---
+ arch/riscv/configs/eic7700_defconfig | 17 ++++++++++-------
+ drivers/tty/serial/8250/8250_dw.c    |  1 +
+ 2 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/arch/riscv/configs/eic7700_defconfig b/arch/riscv/configs/eic7700_defconfig
+index 4de22fc5228a..020bae903781 100644
+--- a/arch/riscv/configs/eic7700_defconfig
++++ b/arch/riscv/configs/eic7700_defconfig
+@@ -286,12 +286,17 @@ CONFIG_NET_CLS_CGROUP=m
+ CONFIG_NET_CLS_ACT=y
+ CONFIG_NETLINK_DIAG=m
+ CONFIG_CGROUP_NET_PRIO=y
+-CONFIG_BT=m
+-CONFIG_BT_RFCOMM=m
+-CONFIG_BT_BNEP=m
++CONFIG_BT=y
++CONFIG_BT_RFCOMM=y
++CONFIG_BT_RFCOMM_TTY=y
++CONFIG_BT_BNEP=y
+ CONFIG_BT_BNEP_MC_FILTER=y
+ CONFIG_BT_BNEP_PROTO_FILTER=y
+-CONFIG_BT_HIDP=m
++CONFIG_BT_HIDP=y
++CONFIG_BT_HS=y
++CONFIG_BT_HCIUART=y
++CONFIG_BT_HCIUART_BCM=y
++CONFIG_BT_HCIUART_RTL=y
+ CONFIG_MCTP=y
+ CONFIG_CFG80211=y
+ CONFIG_CFG80211_WEXT=y
+@@ -432,6 +437,7 @@ CONFIG_SERIAL_8250_DW=y
+ CONFIG_SERIAL_OF_PLATFORM=y
+ CONFIG_SERIAL_EARLYCON_RISCV_SBI=y
+ CONFIG_HVC_RISCV_SBI=y
++CONFIG_SERIAL_DEV_BUS=y
+ CONFIG_VIRTIO_CONSOLE=y
+ CONFIG_HW_RANDOM=y
+ CONFIG_HW_RANDOM_VIRTIO=y
+@@ -791,11 +797,8 @@ CONFIG_DEFAULT_SECURITY_APPARMOR=y
+ CONFIG_LSM="landlock,lockdown,yama,integrity,apparmor"
+ CONFIG_CRYPTO_CBC=m
+ # CONFIG_CRYPTO_CTS is not set
+-CONFIG_CRYPTO_ECB=m
+ # CONFIG_CRYPTO_XTS is not set
+-CONFIG_CRYPTO_HMAC=m
+ CONFIG_CRYPTO_MD5=y
+-CONFIG_CRYPTO_SHA512=m
+ CONFIG_CRYPTO_DEV_VIRTIO=y
+ CONFIG_CRC_ITU_T=y
+ CONFIG_CRC7=y
+diff --git a/drivers/tty/serial/8250/8250_dw.c b/drivers/tty/serial/8250/8250_dw.c
+index 8aed33be2ebf..6230d68f098d 100644
+--- a/drivers/tty/serial/8250/8250_dw.c
++++ b/drivers/tty/serial/8250/8250_dw.c
+@@ -767,6 +767,7 @@ static const struct dev_pm_ops dw8250_pm_ops = {
+ 
+ static const struct dw8250_platform_data dw8250_dw_apb = {
+ 	.usr_reg = DW_UART_USR,
++	.cpr_val = 0x22232,
+ };
+ 
+ static const struct dw8250_platform_data dw8250_octeon_3860_data = {
+-- 
+2.47.0
+

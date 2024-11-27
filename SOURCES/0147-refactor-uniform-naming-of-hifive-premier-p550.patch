@@ -1,0 +1,35 @@
+From 76dc1179e7b44cac74c4d0cc78643351d1f6c486 Mon Sep 17 00:00:00 2001
+From: ningyu <ningyu@eswincomputing.com>
+Date: Mon, 12 Aug 2024 13:10:39 +0800
+Subject: [PATCH 147/215] refactor:uniform naming of hifive premier p550
+
+Changelogs:
+Unified use of hifive premier p550 dts file
+
+Signed-off-by: ningyu <ningyu@eswincomputing.com>
+---
+ arch/riscv/boot/dts/eswin/Makefile                              | 2 +-
+ .../eswin/{hifive-premier-550.dts => hifive-premier-p550.dts}   | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ rename arch/riscv/boot/dts/eswin/{hifive-premier-550.dts => hifive-premier-p550.dts} (100%)
+
+diff --git a/arch/riscv/boot/dts/eswin/Makefile b/arch/riscv/boot/dts/eswin/Makefile
+index 83f22c56ae87..3812da5bbdce 100644
+--- a/arch/riscv/boot/dts/eswin/Makefile
++++ b/arch/riscv/boot/dts/eswin/Makefile
+@@ -2,7 +2,7 @@
+ dtb-$(CONFIG_SOC_SIFIVE) += eswin-win2030.dtb \
+ 							eic7700-evb.dtb \
+ 							eic7700-evb-a2.dtb \
+-							hifive-premier-550.dtb \
++							hifive-premier-p550.dtb \
+ 							eic7702-evb-a1-d0.dtb \
+ 							eic7702-evb-a1-d1.dtb
+ 
+diff --git a/arch/riscv/boot/dts/eswin/hifive-premier-550.dts b/arch/riscv/boot/dts/eswin/hifive-premier-p550.dts
+similarity index 100%
+rename from arch/riscv/boot/dts/eswin/hifive-premier-550.dts
+rename to arch/riscv/boot/dts/eswin/hifive-premier-p550.dts
+-- 
+2.47.0
+

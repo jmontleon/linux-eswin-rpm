@@ -1,0 +1,47 @@
+From a0f56f5cbe3be87c5204a602e5557f7e4e74556a Mon Sep 17 00:00:00 2001
+From: chenshuo <chenshuo@eswincomputing.com>
+Date: Tue, 23 Jul 2024 14:38:55 +0800
+Subject: [PATCH 110/215] refactor:remove 1.5GHz~1.8GHz cpu freq
+
+Changelogs:
+	remove 1.5GHz~1.8GHz from d0_cpu_opp_table because evb not support dynamic voltage regulation.
+
+Signed-off-by: chenshuo <chenshuo@eswincomputing.com>
+---
+ .../dts/eswin/eswin-win2030-die0-soc.dtsi     | 20 -------------------
+ 1 file changed, 20 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index fea1f577fddc..3b2961f29389 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -103,26 +103,6 @@ opp-1400000000 {
+ 			opp-microvolt = <800000>;
+ 			clock-latency-ns = <70000>;
+ 		};
+-		opp-1500000000 {
+-			opp-hz = /bits/ 64 <CLK_FREQ_1500M>;
+-			opp-microvolt = <800000>;
+-			clock-latency-ns = <70000>;
+-		};
+-		opp-1600000000 {
+-			opp-hz = /bits/ 64 <CLK_FREQ_1600M>;
+-			opp-microvolt = <800000>;
+-			clock-latency-ns = <70000>;
+-		};
+-		opp-1700000000 {
+-			opp-hz = /bits/ 64 <CLK_FREQ_1700M>;
+-			opp-microvolt = <800000>;
+-			clock-latency-ns = <70000>;
+-		};
+-		opp-1800000000 {
+-			opp-hz = /bits/ 64 <CLK_FREQ_1800M>;
+-			opp-microvolt = <800000>;
+-			clock-latency-ns = <70000>;
+-		};
+ 	};
+ };
+ 
+-- 
+2.47.0
+

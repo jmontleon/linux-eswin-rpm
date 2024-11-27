@@ -1,0 +1,82 @@
+From 1b7d707cbd1ffde2560e6ee5e88b06f85daa7701 Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Tue, 2 Jul 2024 14:36:11 +0800
+Subject: [PATCH 061/215] fix:add audio sound card name.
+
+Changelogs:
+	add audio sound card name.
+---
+ arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts     | 3 +++
+ arch/riscv/boot/dts/eswin/eic7700-evb.dts        | 3 +++
+ arch/riscv/boot/dts/eswin/hifive-premier-550.dts | 2 ++
+ 3 files changed, 8 insertions(+)
+
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+index 71c26495502d..c95b68dafe7c 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+@@ -421,16 +421,19 @@ d0_i2s2_endpoint: endpoint {
+ 
+ &d0_graphcard0 {
+ 	status = "okay";
++	label = "Analog Audio-0";
+ 	dais = <&d0_i2s1_port>;
+ };
+ 
+ &d0_graphcard1 {
+ 	status = "okay";
++	label = "Analog Audio-1";
+ 	dais = <&d0_i2s2_port>;
+ };
+ 
+ &d0_graphcard2 {
+ 	status = "okay";
++	label = "HDMI Audio";
+ 	dais = <&d0_i2s0_port>;
+ };
+ 
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb.dts b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+index 896895768139..bbabd938baef 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+@@ -394,16 +394,19 @@ d0_i2s2_endpoint: endpoint {
+ 
+ &d0_graphcard0 {
+ 	status = "okay";
++	label = "Analog Audio-0";
+ 	dais = <&d0_i2s1_port>;
+ };
+ 
+ &d0_graphcard1 {
+ 	status = "okay";
++	label = "Analog Audio-1";
+ 	dais = <&d0_i2s2_port>;
+ };
+ 
+ &d0_graphcard2 {
+ 	status = "okay";
++	label = "HDMI Audio";
+ 	dais = <&d0_i2s0_port0>, <&d0_i2s0_port1>;
+ };
+ 
+diff --git a/arch/riscv/boot/dts/eswin/hifive-premier-550.dts b/arch/riscv/boot/dts/eswin/hifive-premier-550.dts
+index 70b720d094c3..8bd614757b01 100644
+--- a/arch/riscv/boot/dts/eswin/hifive-premier-550.dts
++++ b/arch/riscv/boot/dts/eswin/hifive-premier-550.dts
+@@ -356,11 +356,13 @@ &d0_i2s2 {
+ 
+ &d0_graphcard0 {
+ 	status = "okay";
++	label = "Analog Audio";
+ 	dais = <&d0_i2s1_port>;
+ };
+ 
+ &d0_graphcard1 {
+ 	status = "okay";
++	label = "HDMI Audio";
+ 	dais = <&d0_i2s0_port>;
+ };
+ 
+-- 
+2.47.0
+

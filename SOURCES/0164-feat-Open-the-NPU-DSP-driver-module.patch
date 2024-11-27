@@ -1,0 +1,197 @@
+From 63a52b20ff0ebd27310516e1150d2aab27ff6e6f Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Tue, 3 Sep 2024 13:40:45 +0800
+Subject: [PATCH 164/215] feat:Open the NPU & DSP driver module.
+
+Changelogs:
+	Default to enable DSP & NPU driver compilation.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ arch/riscv/configs/eic7700_dbg_defconfig       | 2 ++
+ arch/riscv/configs/eic7700_defconfig           | 2 ++
+ arch/riscv/configs/win2030_defconfig           | 2 ++
+ drivers/soc/eswin/ai_driver/dsp/Makefile       | 2 ++
+ drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c    | 2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_platform.c | 2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_sram.c     | 2 +-
+ drivers/soc/eswin/ai_driver/npu/Makefile       | 2 ++
+ drivers/soc/eswin/ai_driver/npu/dla_buffer.h   | 2 +-
+ drivers/soc/eswin/ai_driver/npu/engine.c       | 2 +-
+ drivers/soc/eswin/ai_driver/npu/npu_e31.c      | 2 +-
+ drivers/soc/eswin/ai_driver/npu/npu_main.c     | 2 +-
+ drivers/soc/eswin/ai_driver/npu/nvdla_hw.c     | 2 +-
+ 13 files changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/arch/riscv/configs/eic7700_dbg_defconfig b/arch/riscv/configs/eic7700_dbg_defconfig
+index 16397c4ba2f4..328c51187781 100644
+--- a/arch/riscv/configs/eic7700_dbg_defconfig
++++ b/arch/riscv/configs/eic7700_dbg_defconfig
+@@ -733,6 +733,8 @@ CONFIG_ESWIN_LPCPU=m
+ CONFIG_ARM_SMMU_V3=y
+ CONFIG_RPMSG_VIRTIO=y
+ CONFIG_ARCH_ESWIN_EIC770X_SOC_FAMILY=y
++CONFIG_ESWIN_DSP=m
++CONFIG_ESWIN_NPU=m
+ CONFIG_EXTCON=y
+ CONFIG_MEMORY=y
+ CONFIG_ESWIN_BUDDY=y
+diff --git a/arch/riscv/configs/eic7700_defconfig b/arch/riscv/configs/eic7700_defconfig
+index b87608ed3c65..4de22fc5228a 100644
+--- a/arch/riscv/configs/eic7700_defconfig
++++ b/arch/riscv/configs/eic7700_defconfig
+@@ -733,6 +733,8 @@ CONFIG_ESWIN_LPCPU=m
+ CONFIG_ARM_SMMU_V3=y
+ CONFIG_RPMSG_VIRTIO=y
+ CONFIG_ARCH_ESWIN_EIC770X_SOC_FAMILY=y
++CONFIG_ESWIN_DSP=m
++CONFIG_ESWIN_NPU=m
+ CONFIG_EXTCON=y
+ CONFIG_MEMORY=y
+ CONFIG_ESWIN_BUDDY=y
+diff --git a/arch/riscv/configs/win2030_defconfig b/arch/riscv/configs/win2030_defconfig
+index 0cfccd32280c..f0d832fcd112 100644
+--- a/arch/riscv/configs/win2030_defconfig
++++ b/arch/riscv/configs/win2030_defconfig
+@@ -737,6 +737,8 @@ CONFIG_ESWIN_LPCPU=m
+ CONFIG_ARM_SMMU_V3=y
+ CONFIG_RPMSG_VIRTIO=y
+ CONFIG_ARCH_ESWIN_EIC770X_SOC_FAMILY=y
++CONFIG_ESWIN_DSP=m
++CONFIG_ESWIN_NPU=m
+ CONFIG_EXTCON=y
+ CONFIG_MEMORY=y
+ CONFIG_ESWIN_BUDDY=y
+diff --git a/drivers/soc/eswin/ai_driver/dsp/Makefile b/drivers/soc/eswin/ai_driver/dsp/Makefile
+index 465f11f3e688..22f9cf76b86e 100755
+--- a/drivers/soc/eswin/ai_driver/dsp/Makefile
++++ b/drivers/soc/eswin/ai_driver/dsp/Makefile
+@@ -29,6 +29,8 @@ DEBUG_LEVEL ?= 0
+ 
+ ccflags-y := -I$(src)/
+ ccflags-y += -I$(srctree)/drivers/soc/eswin
++ccflags-y += -I$(srctree)/drivers/memory/eswin/es_dev_buf/include/linux
++ccflags-y += -I$(srctree)/drivers/memory/eswin/es_iommu_rsv/include/linux
+ ccflags-y += -I$(srctree)/$(src)/../include
+ 
+ obj-$(CONFIG_ESWIN_DSP) += eic7700_dsp.o
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
+index dee6ec9d8da0..5bfd429001bb 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
+@@ -11,7 +11,7 @@
+ #include <linux/dma-direct.h>
+ #include <linux/slab.h>
+ #include "eswin-khandle.h"
+-#include <linux/dsp_dma_buf.h>
++#include "dsp_dma_buf.h"
+ #include <linux/list.h>
+ #include <linux/poll.h>
+ #include "dsp_platform.h"
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+index 14c8ed7c2350..5051f7585dc8 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+@@ -23,7 +23,7 @@
+ #include <linux/clk.h>
+ #include <linux/slab.h>
+ #include <linux/iommu.h>
+-#include <linux/es_iommu_rsv.h>
++#include "es_iommu_rsv.h"
+ #include "eswin-dsp-subsys.h"
+ 
+ #include "dsp_platform.h"
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c b/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c
+index 1639727bb118..46bc9b79ca1f 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c
+@@ -6,7 +6,7 @@
+ // modified, adapted, translated, or created derivative work of, in whole or in part.
+ 
+ #include <linux/dma-buf.h>
+-#include <linux/dsp_dma_buf.h>
++#include "dsp_dma_buf.h"
+ #include <linux/device.h>
+ #include "dsp_main.h"
+ 
+diff --git a/drivers/soc/eswin/ai_driver/npu/Makefile b/drivers/soc/eswin/ai_driver/npu/Makefile
+index bcf99a489815..29de4587ff04 100644
+--- a/drivers/soc/eswin/ai_driver/npu/Makefile
++++ b/drivers/soc/eswin/ai_driver/npu/Makefile
+@@ -9,6 +9,8 @@ ccflags-y += -I$(srctree)/drivers/memory/eswin/codacache/
+ ccflags-y += -I$(srctree)/$(src)/include
+ ccflags-y += -I$(srctree)/$(src)/../dsp
+ ccflags-y += -I$(srctree)/$(src)/../include
++ccflags-y += -I$(srctree)/drivers/memory/eswin/es_iommu_rsv/include/linux
++ccflags-y += -I$(srctree)/drivers/memory/eswin/es_dev_buf/include/linux
+ 
+ ccflags-y += -DNPU_DEV_SIM=$(NPU_DEV_SIM)
+ ccflags-y += -DENABLE_PROGRAM_CORE=$(ENABLE_PROGRAM_CORE)
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_buffer.h b/drivers/soc/eswin/ai_driver/npu/dla_buffer.h
+index 7fa41c8c4f98..68424d415be8 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_buffer.h
++++ b/drivers/soc/eswin/ai_driver/npu/dla_buffer.h
+@@ -17,7 +17,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/dma-map-ops.h>
+ #include "internal_interface.h"
+-#include <linux/dsp_dma_buf.h>
++#include "dsp_dma_buf.h"
+ 
+ struct user_model;
+ 
+diff --git a/drivers/soc/eswin/ai_driver/npu/engine.c b/drivers/soc/eswin/ai_driver/npu/engine.c
+index f51eacae6f10..49cad9c3e451 100644
+--- a/drivers/soc/eswin/ai_driver/npu/engine.c
++++ b/drivers/soc/eswin/ai_driver/npu/engine.c
+@@ -10,7 +10,7 @@
+ #include <linux/delay.h>
+ #include <linux/of.h>
+ #include <linux/iommu.h>
+-#include <linux/es_iommu_rsv.h>
++#include "es_iommu_rsv.h"
+ #include <dla_err.h>
+ #include <dla_interface.h>
+ #include "dla_engine.h"
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_e31.c b/drivers/soc/eswin/ai_driver/npu/npu_e31.c
+index 3494f170fc68..c44cef95d451 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_e31.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_e31.c
+@@ -21,7 +21,7 @@
+ #include <linux/clk.h>
+ #include <linux/reset.h>
+ #include <linux/iommu.h>
+-#include <linux/es_iommu_rsv.h>
++#include "es_iommu_rsv.h"
+ #include <asm/io.h>
+ #include "dla_log.h"
+ #include "hetero_host.h"
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_main.c b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+index 309e6b6bafef..a5455fcffd01 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_main.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+@@ -36,7 +36,7 @@
+ #include <linux/eswin-win2030-sid-cfg.h>
+ #include <linux/win2030_noc.h>
+ #include <linux/iommu.h>
+-#include <linux/es_iommu_rsv.h>
++#include "es_iommu_rsv.h"
+ #include "dla_log.h"
+ #include "dla_engine.h"
+ #include "dla_engine_internal.h"
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c b/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c
+index 3ccaec7130fd..70665817d93d 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c
+@@ -27,7 +27,7 @@
+ #include <linux/version.h>
+ #include <asm/cacheflush.h>
+ #include <linux/iommu.h>
+-#include <linux/es_iommu_rsv.h>
++#include "es_iommu_rsv.h"
+ #include "dla_interface.h"
+ // TODO(yuzaiqiang) The header files dla_interface.h and llc_spram.h both define the same
+ // macro CACHE_LINE_SIZE, resulting in a riscv compilation error.
+-- 
+2.47.0
+

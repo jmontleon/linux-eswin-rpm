@@ -1,0 +1,37 @@
+From c80bc289c8fbc571c51babf5b719bc55c3135ab6 Mon Sep 17 00:00:00 2001
+From: liangshuang <liangshuang@eswincomputing.com>
+Date: Thu, 23 May 2024 16:53:55 +0800
+Subject: [PATCH 021/215] feat:Select emmc/sdio/wireless drivers by default.
+
+Changelogs:
+1.Select emmc/sdio/wireless drivers by default.
+---
+ arch/riscv/configs/win2030_defconfig | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/arch/riscv/configs/win2030_defconfig b/arch/riscv/configs/win2030_defconfig
+index 7f8075d825bc..d3524b132481 100644
+--- a/arch/riscv/configs/win2030_defconfig
++++ b/arch/riscv/configs/win2030_defconfig
+@@ -47,7 +47,8 @@ CONFIG_IP_PNP_BOOTP=y
+ # CONFIG_IPV6 is not set
+ CONFIG_NET_SCHED=y
+ CONFIG_NET_CLS_ACT=y
+-# CONFIG_WIRELESS is not set
++CONFIG_CFG80211=y
++CONFIG_CFG80211_WEXT=y
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
+ CONFIG_PCIEAER=y
+@@ -228,6 +229,8 @@ CONFIG_MMC_TEST=y
+ CONFIG_MMC_DEBUG=y
+ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_PLTFM=y
++CONFIG_MMC_SDHCI_OF_ESWIN=y
++CONFIG_MMC_SDHCI_OF_SDIO_ESWIN=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+ CONFIG_LEDS_GPIO=y
+-- 
+2.47.0
+

@@ -1,0 +1,29 @@
+From cf5b9c80f9e1fa56460ecef40f4cd125501c503e Mon Sep 17 00:00:00 2001
+From: xuxiang <xuxiang@eswincomputing.com>
+Date: Fri, 12 Jul 2024 16:12:45 +0800
+Subject: [PATCH 095/215] perf:dw-axi-dmac print
+
+Changelogs:
+1. Change source code :	dev_err(chip->dev, "apb_regs not initialized\n"); to dev_dbg(...);
+
+Signed-off-by: xuxiang <xuxiang@eswincomputing.com>
+---
+ drivers/dma/dw-axi-dmac/dw-axi-dmac-platform.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/dma/dw-axi-dmac/dw-axi-dmac-platform.c b/drivers/dma/dw-axi-dmac/dw-axi-dmac-platform.c
+index 54c1396d974b..cddc9a612ee3 100644
+--- a/drivers/dma/dw-axi-dmac/dw-axi-dmac-platform.c
++++ b/drivers/dma/dw-axi-dmac/dw-axi-dmac-platform.c
+@@ -550,7 +550,7 @@ static void dw_axi_dma_set_hw_channel(struct axi_dma_chan *chan, bool set)
+ 	unsigned long reg_value, val;
+ 
+ 	if (!chip->apb_regs) {
+-		dev_err(chip->dev, "apb_regs not initialized\n");
++		dev_dbg(chip->dev, "apb_regs not initialized\n");
+ 		return;
+ 	}
+ 
+-- 
+2.47.0
+

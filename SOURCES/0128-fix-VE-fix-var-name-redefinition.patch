@@ -1,0 +1,52 @@
+From 60a6bf5661a95cd6e8ffe7495e4b99f79fb0717c Mon Sep 17 00:00:00 2001
+From: zouxiaojun <zouxiaojun@eswincomputing.com>
+Date: Tue, 30 Jul 2024 15:42:23 +0800
+Subject: [PATCH 128/215] fix(VE): fix var name redefinition
+
+Changelogs:
+	fix the compilation error:name redefinition
+
+Signed-off-by: zouxiaojun <zouxiaojun@eswincomputing.com>
+---
+ drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c | 2 +-
+ drivers/staging/media/eswin/venc/vc8000e_driver.c     | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c b/drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c
+index 9e5e388ef990..0d6ac28f9981 100644
+--- a/drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c
++++ b/drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c
+@@ -4078,7 +4078,7 @@ static int check_dev_idle(struct hantrovcmd_dev *dev)
+ 	return idle;
+ }
+ 
+-int hantrovcmd_wait_core_idle(u32 core_id)
++int vc8000e_vcmd_wait_core_idle(u32 core_id)
+ {
+ 	struct hantrovcmd_dev *dev = NULL;
+     int ret;
+diff --git a/drivers/staging/media/eswin/venc/vc8000e_driver.c b/drivers/staging/media/eswin/venc/vc8000e_driver.c
+index b66055e26c3b..09c4195a60af 100644
+--- a/drivers/staging/media/eswin/venc/vc8000e_driver.c
++++ b/drivers/staging/media/eswin/venc/vc8000e_driver.c
+@@ -72,7 +72,7 @@ extern void hantroenc_normal_cleanup(void);
+ extern int hantroenc_wait_core_idle(u32 core_id);
+ extern int vc8000e_vcmd_init(void);
+ extern int vc8000e_vcmd_cleanup(void);
+-extern int hantrovcmd_wait_core_idle(u32 core_id);
++extern int vc8000e_vcmd_wait_core_idle(u32 core_id);
+ 
+ static int venc_dev_open(struct device *dev);
+ static int venc_dev_close(struct device *dev);
+@@ -106,7 +106,7 @@ int venc_wait_core_idle(u32 core_id) {
+ 	if (0 == vcmd_supported) {
+ 		return hantroenc_wait_core_idle(core_id);
+ 	} else {
+-		return hantrovcmd_wait_core_idle(core_id);
++		return vc8000e_vcmd_wait_core_idle(core_id);
+ 	}
+ }
+ 
+-- 
+2.47.0
+

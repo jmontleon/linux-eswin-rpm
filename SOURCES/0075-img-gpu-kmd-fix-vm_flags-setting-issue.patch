@@ -1,0 +1,80 @@
+From 7e3cf1926bd131c09baaf468cbae004431eeefc1 Mon Sep 17 00:00:00 2001
+From: Sakura286 <sakura286@outlook.com>
+Date: Fri, 5 Jul 2024 11:34:07 +0800
+Subject: [PATCH 075/215] img gpu kmd: fix vm_flags setting issue
+
+ref: https://gist.github.com/vejeta/9078219f082d2bfd62b08b6eada780e6
+---
+ .../img-volcanic/services/server/env/linux/osfunc.c |  4 ++--
+ .../img-volcanic/services/server/env/linux/pmr_os.c | 13 +++++++------
+ 2 files changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/osfunc.c b/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/osfunc.c
+index 1a7d406fb085..6d060ddc97d7 100644
+--- a/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/osfunc.c
++++ b/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/osfunc.c
+@@ -1796,7 +1796,7 @@ PVRSRV_ERROR OSChangeSparseMemCPUAddrMap(void **psPageArray,
+ 
+ 	if ((psVMA->vm_flags & VM_MIXEDMAP) || bIsLMA)
+ 	{
+-		psVMA->vm_flags |= VM_MIXEDMAP;
++		vm_flags_set(psVMA, VM_MIXEDMAP);
+ 		bMixedMap = IMG_TRUE;
+ 	}
+ 	else
+@@ -1818,7 +1818,7 @@ PVRSRV_ERROR OSChangeSparseMemCPUAddrMap(void **psPageArray,
+ #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)) */
+ 				{
+ 					bMixedMap = IMG_TRUE;
+-					psVMA->vm_flags |= VM_MIXEDMAP;
++					vm_flags_set(psVMA, VM_MIXEDMAP);
+ 					break;
+ 				}
+ 			}
+diff --git a/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/pmr_os.c b/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/pmr_os.c
+index fac2bd45a371..7cf4df444089 100644
+--- a/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/pmr_os.c
++++ b/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/pmr_os.c
+@@ -393,19 +393,20 @@ OSMMapPMRGeneric(PMR *psPMR, PMR_MMAP_DATA pOSMMapData)
+ 	}
+ 	ps_vma->vm_page_prot = sPageProt;
+ 
+-	ps_vma->vm_flags |= VM_IO;
++	vm_flags_set(ps_vma, VM_IO);
+ 
+ 	/* Don't include the mapping in core dumps */
+-	ps_vma->vm_flags |= VM_DONTDUMP;
++	vm_flags_set(ps_vma, VM_DONTDUMP);
+ 
+ 	/*
+ 	 * Disable mremap because our nopage handler assumes all
+ 	 * page requests have already been validated.
+ 	 */
+-	ps_vma->vm_flags |= VM_DONTEXPAND;
++	vm_flags_set(ps_vma, VM_DONTEXPAND);
++
+ 
+ 	/* Don't allow mapping to be inherited across a process fork */
+-	ps_vma->vm_flags |= VM_DONTCOPY;
++	vm_flags_set(ps_vma, VM_DONTCOPY);
+ 
+ 	uiLength = ps_vma->vm_end - ps_vma->vm_start;
+ 
+@@ -492,12 +493,12 @@ OSMMapPMRGeneric(PMR *psPMR, PMR_MMAP_DATA pOSMMapData)
+ 
+ 		if (bUseMixedMap)
+ 		{
+-			ps_vma->vm_flags |= VM_MIXEDMAP;
++			vm_flags_set(ps_vma, VM_MIXEDMAP);
+ 		}
+ 	}
+ 	else
+ 	{
+-		ps_vma->vm_flags |= VM_PFNMAP;
++		vm_flags_set(ps_vma, VM_PFNMAP);
+ 	}
+ 
+ 	/* For each PMR page-size contiguous bytes, map page(s) into user VMA */
+-- 
+2.47.0
+

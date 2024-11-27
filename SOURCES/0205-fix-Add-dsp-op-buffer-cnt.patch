@@ -1,0 +1,57 @@
+From d9b49c10b395c89fc9ad2e8dd50ab36c18b846ca Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Mon, 28 Oct 2024 19:37:10 +0800
+Subject: [PATCH 205/215] fix:Add dsp op buffer cnt.
+
+Changelogs:
+	add dsp op buffer cnt.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ drivers/soc/eswin/ai_driver/common/dla_interface.h   | 2 +-
+ drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h | 2 +-
+ drivers/soc/eswin/ai_driver/common/es_dsp_types.h    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/soc/eswin/ai_driver/common/dla_interface.h b/drivers/soc/eswin/ai_driver/common/dla_interface.h
+index fcabd9f85765..7c72caca94b0 100644
+--- a/drivers/soc/eswin/ai_driver/common/dla_interface.h
++++ b/drivers/soc/eswin/ai_driver/common/dla_interface.h
+@@ -644,7 +644,7 @@ struct dla_rubik_op_desc {
+ 
+ #define KERNEL_NAME_MAXLEN 128
+ #define KERNEL_LIB_NAME_MAXLEN 128
+-#define BUFFER_CNT_MAXSIZE 32
++#define BUFFER_CNT_MAXSIZE 64
+ 
+ struct dsp_op_desc {
+     /* *
+diff --git a/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h b/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
+index ccbb41bb2de7..0fa4b8a62fe8 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
++++ b/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
+@@ -28,7 +28,7 @@
+ #define CACHE_LINE_SIZE 64
+ #define KERNEL_NAME_MAXLEN 128
+ #define KERNEL_LIB_NAME_MAXLEN 128
+-#define BUFFER_CNT_MAXSIZE 32
++#define BUFFER_CNT_MAXSIZE 64
+ 
+ // tensor shape info in dsp ping pong tiling
+ typedef struct {
+diff --git a/drivers/soc/eswin/ai_driver/common/es_dsp_types.h b/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
+index 7b9c84c14ed3..ad0b3f2105e2 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
++++ b/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
+@@ -83,7 +83,7 @@ typedef enum DSP_PRI_E {
+     ES_DSP_PRI_BUTT
+ } ES_DSP_PRI_E;
+ 
+-#define BUFFER_CNT_MAXSIZE 32
++#define BUFFER_CNT_MAXSIZE 64
+ 
+ typedef struct DEVICE_BUFFER_GROUP_S {
+     ES_DEV_BUF_S *buffers;
+-- 
+2.47.0
+

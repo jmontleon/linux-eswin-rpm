@@ -1,0 +1,1305 @@
+From 38b2955177ab5cd85f83189fffb990fb966b9540 Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Tue, 5 Nov 2024 15:51:38 +0800
+Subject: [PATCH 206/215] fix:DSP driver add license claim.
+
+Changelogs:
+	DSP driver add license claim.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ .../ai_driver/common/devices/cdma_regs.h      |  2 +-
+ .../ai_driver/common/devices/conv_regs.h      |  2 +-
+ .../eswin/ai_driver/common/devices/drp_regs.h |  2 +-
+ .../ai_driver/common/devices/edma_regs.h      |  2 +-
+ .../ai_driver/common/devices/mailbox_regs.h   |  2 +-
+ .../ai_driver/common/devices/npu_base_regs.h  |  2 +-
+ .../eswin/ai_driver/common/devices/pdp_regs.h |  2 +-
+ .../eswin/ai_driver/common/devices/pec_reg.h  |  2 +-
+ .../ai_driver/common/devices/rubik_regs.h     |  2 +-
+ .../eswin/ai_driver/common/devices/sdp_regs.h |  2 +-
+ .../eswin/ai_driver/common/devices/sys_regs.h |  2 +-
+ .../eswin/ai_driver/common/dla_interface.h    |  2 +-
+ .../eswin/ai_driver/common/es_dsp_internal.h  |  2 +-
+ .../eswin/ai_driver/common/es_dsp_op_types.h  |  2 +-
+ .../soc/eswin/ai_driver/common/es_dsp_types.h |  2 +-
+ .../soc/eswin/ai_driver/common/es_nn_common.h |  2 +-
+ drivers/soc/eswin/ai_driver/common/es_type.h  |  2 +-
+ .../soc/eswin/ai_driver/common/hetero_arch.h  |  2 +-
+ .../eswin/ai_driver/common/hetero_common.h    |  2 +-
+ .../soc/eswin/ai_driver/common/hetero_env.h   |  2 +-
+ .../soc/eswin/ai_driver/common/hetero_host.h  |  2 +-
+ .../soc/eswin/ai_driver/common/hetero_ioctl.h |  2 +-
+ .../soc/eswin/ai_driver/common/hetero_ipc.h   |  2 +-
+ .../soc/eswin/ai_driver/common/hetero_perf.h  |  2 +-
+ .../eswin/ai_driver/common/hetero_processor.h |  2 +-
+ .../soc/eswin/ai_driver/common/hetero_types.h |  2 +-
+ drivers/soc/eswin/ai_driver/common/md5.h      |  2 +-
+ .../soc/eswin/ai_driver/dsp/dsp_firmware.c    |  2 +-
+ .../soc/eswin/ai_driver/dsp/dsp_firmware.h    |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_hw.h      |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h   |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c   |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h   |  2 +-
+ .../soc/eswin/ai_driver/dsp/dsp_ioctl_if.h    |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_log.c     |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_log.h     |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_main.c    | 23 ++++++++++---------
+ drivers/soc/eswin/ai_driver/dsp/dsp_main.h    |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_perf.h    |  2 +-
+ .../soc/eswin/ai_driver/dsp/dsp_platform.c    | 15 ++++++------
+ .../soc/eswin/ai_driver/dsp/dsp_platform.h    |  2 +-
+ .../eswin/ai_driver/dsp/dsp_platform_sim.c    |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_pool.c    | 22 ++++++++++++++++++
+ drivers/soc/eswin/ai_driver/dsp/dsp_pool.h    | 22 ++++++++++++++++++
+ drivers/soc/eswin/ai_driver/dsp/dsp_proc.c    |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_proc.h    |  2 +-
+ drivers/soc/eswin/ai_driver/dsp/dsp_sram.c    |  2 +-
+ drivers/soc/eswin/ai_driver/npu/common.c      |  2 +-
+ drivers/soc/eswin/ai_driver/npu/common.h      |  2 +-
+ drivers/soc/eswin/ai_driver/npu/conv.c        |  2 +-
+ drivers/soc/eswin/ai_driver/npu/conv.h        |  2 +-
+ drivers/soc/eswin/ai_driver/npu/debug.c       |  2 +-
+ drivers/soc/eswin/ai_driver/npu/debug.h       |  2 +-
+ drivers/soc/eswin/ai_driver/npu/dla_buffer.c  |  2 +-
+ drivers/soc/eswin/ai_driver/npu/dla_buffer.h  |  2 +-
+ drivers/soc/eswin/ai_driver/npu/dla_driver.c  |  2 +-
+ drivers/soc/eswin/ai_driver/npu/dla_driver.h  |  2 +-
+ .../eswin/ai_driver/npu/dla_engine_internal.h |  2 +-
+ drivers/soc/eswin/ai_driver/npu/dla_log.c     |  2 +-
+ drivers/soc/eswin/ai_driver/npu/dla_log.h     |  2 +-
+ drivers/soc/eswin/ai_driver/npu/dsp.c         |  2 +-
+ drivers/soc/eswin/ai_driver/npu/dsp.h         |  2 +-
+ drivers/soc/eswin/ai_driver/npu/edma.c        |  2 +-
+ drivers/soc/eswin/ai_driver/npu/edma.h        |  2 +-
+ drivers/soc/eswin/ai_driver/npu/engine.c      |  2 +-
+ drivers/soc/eswin/ai_driver/npu/event.c       |  2 +-
+ .../eswin/ai_driver/npu/include/dla_engine.h  |  2 +-
+ .../eswin/ai_driver/npu/include/npu_top_csr.h |  2 +-
+ .../ai_driver/npu/include/nvdla_interface.h   |  2 +-
+ .../eswin/ai_driver/npu/include/nvdla_linux.h |  2 +-
+ .../eswin/ai_driver/npu/internal_interface.h  |  2 +-
+ drivers/soc/eswin/ai_driver/npu/npu_e31.c     |  2 +-
+ drivers/soc/eswin/ai_driver/npu/npu_frame.c   |  2 +-
+ drivers/soc/eswin/ai_driver/npu/npu_main.c    |  2 +-
+ drivers/soc/eswin/ai_driver/npu/npu_spram.c   |  2 +-
+ drivers/soc/eswin/ai_driver/npu/npu_spram.h   |  2 +-
+ drivers/soc/eswin/ai_driver/npu/nvdla_hw.c    |  2 +-
+ .../soc/eswin/ai_driver/npu/nvdla_lowlevel.h  |  2 +-
+ drivers/soc/eswin/ai_driver/npu/nvdla_proc.c  |  2 +-
+ drivers/soc/eswin/ai_driver/npu/nvdla_proc.h  |  2 +-
+ drivers/soc/eswin/ai_driver/npu/nvdla_sim.c   |  2 +-
+ drivers/soc/eswin/ai_driver/npu/parse_dep.c   |  2 +-
+ drivers/soc/eswin/ai_driver/npu/pdp.c         |  2 +-
+ drivers/soc/eswin/ai_driver/npu/post_drp.h    |  2 +-
+ drivers/soc/eswin/ai_driver/npu/rubik.c       |  2 +-
+ drivers/soc/eswin/ai_driver/npu/scheduler.c   |  2 +-
+ drivers/soc/eswin/ai_driver/npu/sdp.c         |  2 +-
+ drivers/soc/eswin/ai_driver/npu/sdp.h         |  2 +-
+ .../soc/eswin/ai_driver/npu/user_context.c    |  2 +-
+ 90 files changed, 149 insertions(+), 105 deletions(-)
+
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h b/drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h
+index 62023dd7c49f..646db14a0959 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/conv_regs.h b/drivers/soc/eswin/ai_driver/common/devices/conv_regs.h
+index 81c4f141e75a..8fe8f9a5c6c1 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/conv_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/conv_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h b/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h
+index 5dc253d33b23..28a7579155e7 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/edma_regs.h b/drivers/soc/eswin/ai_driver/common/devices/edma_regs.h
+index 5ae6332ae6a2..1ecb8b3d0b2e 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/edma_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/edma_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h b/drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h
+index a247096e8029..98558ecf0af5 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h b/drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h
+index 6ff00201ec7d..cea2c9335305 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h b/drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h
+index 62f45518e294..bbc29e5fd69e 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h b/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h
+index 16394963331c..12428f0850c3 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h b/drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h
+index 9fc21d991d9d..6e5ccfc2e5b7 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h b/drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h
+index 28d8ee717b44..008cf86549e6 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/sys_regs.h b/drivers/soc/eswin/ai_driver/common/devices/sys_regs.h
+index 185589b5b2ed..62dd38df24af 100644
+--- a/drivers/soc/eswin/ai_driver/common/devices/sys_regs.h
++++ b/drivers/soc/eswin/ai_driver/common/devices/sys_regs.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/dla_interface.h b/drivers/soc/eswin/ai_driver/common/dla_interface.h
+index 7c72caca94b0..550dd165b57d 100644
+--- a/drivers/soc/eswin/ai_driver/common/dla_interface.h
++++ b/drivers/soc/eswin/ai_driver/common/dla_interface.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/es_dsp_internal.h b/drivers/soc/eswin/ai_driver/common/es_dsp_internal.h
+index 1454935a34d8..79d6a1b501b4 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_dsp_internal.h
++++ b/drivers/soc/eswin/ai_driver/common/es_dsp_internal.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h b/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
+index 0fa4b8a62fe8..203fbde5714b 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
++++ b/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/es_dsp_types.h b/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
+index ad0b3f2105e2..90b2deaf0810 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
++++ b/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/es_nn_common.h b/drivers/soc/eswin/ai_driver/common/es_nn_common.h
+index 9a618fb4bc0a..9d53a0fb1a40 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_nn_common.h
++++ b/drivers/soc/eswin/ai_driver/common/es_nn_common.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/es_type.h b/drivers/soc/eswin/ai_driver/common/es_type.h
+index 330eeb5b87cc..008543285492 100644
+--- a/drivers/soc/eswin/ai_driver/common/es_type.h
++++ b/drivers/soc/eswin/ai_driver/common/es_type.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_arch.h b/drivers/soc/eswin/ai_driver/common/hetero_arch.h
+index 70b55b9d4977..e577200853af 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_arch.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_arch.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_common.h b/drivers/soc/eswin/ai_driver/common/hetero_common.h
+index 2119c2e02401..18297aae7002 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_common.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_common.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_env.h b/drivers/soc/eswin/ai_driver/common/hetero_env.h
+index eac954fa37de..006dcbe4095b 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_env.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_env.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_host.h b/drivers/soc/eswin/ai_driver/common/hetero_host.h
+index ad790176c55a..f36a0fbd0041 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_host.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_host.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h b/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h
+index 94f41117952b..8858e6863ab1 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_ipc.h b/drivers/soc/eswin/ai_driver/common/hetero_ipc.h
+index ed0e2c5b2e4e..c255d5cd371b 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_ipc.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_ipc.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_perf.h b/drivers/soc/eswin/ai_driver/common/hetero_perf.h
+index afda052cd119..5e96bcc4f760 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_perf.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_perf.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_processor.h b/drivers/soc/eswin/ai_driver/common/hetero_processor.h
+index 333d804fe174..aaf2ac02c4ed 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_processor.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_processor.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/hetero_types.h b/drivers/soc/eswin/ai_driver/common/hetero_types.h
+index 89ac2ce05f56..a0bb913c61f6 100644
+--- a/drivers/soc/eswin/ai_driver/common/hetero_types.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_types.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/common/md5.h b/drivers/soc/eswin/ai_driver/common/md5.h
+index c78ab427c1dd..bdc076504d38 100644
+--- a/drivers/soc/eswin/ai_driver/common/md5.h
++++ b/drivers/soc/eswin/ai_driver/common/md5.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.c b/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.c
+index ead266d8c016..d0b0b1388956 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.h b/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.h
+index 494c8f1c9beb..6a2c9ec275ac 100755
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_firmware.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_hw.h b/drivers/soc/eswin/ai_driver/dsp/dsp_hw.h
+index 63446d205d28..abfcecc50526 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_hw.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_hw.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h b/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h
+index 1e81181e4a2d..252fcf0f199b 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_hw_if.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
+index 371d6f738f21..1e7871eb56b0 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h
+index cdf8b255d11f..177ee55ff001 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl_if.h b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl_if.h
+index 33bd46dd61e7..31cb775d5173 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl_if.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_ioctl_if.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_log.c b/drivers/soc/eswin/ai_driver/dsp/dsp_log.c
+index b59cb359501f..edb41d60283b 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_log.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_log.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_log.h b/drivers/soc/eswin/ai_driver/dsp/dsp_log.h
+index 8ccdaf549931..20f6e0dc735b 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_log.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_log.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h b/drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h
+index 9cfed6fdaf12..e40dfc1b0ea8 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_mailbox.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+index 77546cff84d3..b32ffba9dcc8 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+@@ -517,8 +517,9 @@ static void dsp_task_work(struct work_struct *work)
+ 	spin_unlock_irqrestore(&dsp->complete_lock, flags);
+ }
+ 
+-/* 1. 如果任务已经执行过了prepare，那么就给dsp发送一个消息，去执行eval;
+- * 2. 如果任务没有执行，那么就发送消息，让dsp core去执行prepare和eval，中间prepare执行后，不用等待。
++/* 1. If the task has already executed prepare, then send a message to DSP to execute eval;
++ * 2. If the task has not been executed, then send a message to let the DSP core execute prepare and eval. 
++ *    After prepare is executed, there is no need to wait.
+  */
+ 
+ int start_eval(struct device *dsp_dev, dsp_request_t *req)
+@@ -535,11 +536,12 @@ void dsp_set_flat_func(struct es_dsp_flat1_desc *flat, u64 handle)
+ 	memcpy((void *)&flat->funcs, (void *)&op->funcs, sizeof(op->funcs));
+ }
+ EXPORT_SYMBOL(dsp_set_flat_func);
+-/* 把任务提交到dsp的任务队列上排队;
+- * 1. 如果没有任务在运行，那么就运行该任务的prepare，并且告诉dsp core，需要在prepare进行等待，但是prepare不需要发送通知。
+- * 2. 如果有任务在运行，那么就是挂接。
+- */
+ 
++/* Submit the task to the DSP's task queue:
++ * 1. If no task is running, then run the prepare of this task and inform the DSP core to wait during prepare, 
++ *    but do not send a notification after prepare.
++ * 2. If a task is running, then put this task on hold.
++ */
+ int submit_task(struct device *dsp_dev, dsp_request_t *req)
+ {
+ 	struct es_dsp *dsp = dev_get_drvdata(dsp_dev);
+@@ -588,10 +590,9 @@ struct es_dsp *es_proc_get_dsp(int dieid, int dspid)
+ /*
+  * input: die_id, dspId, subscrib.
+  * output: dsp_dev.
+- * 注意: 很可能是, npu调用这个接口的时候, 我们的dsp驱动的probe还没有调用.这是可能的.
+- * 所以需要返回EPROBE_DEFED.
+- * */
+-
++ * Note: It is very likely that when the NPU calls this interface, our DSP driver's probe has not yet been called. 
++ * This is possible. Therefore, it is necessary to return EPROBE_DEFER. 
++ */
+ static int check_device_node_status(u32 die_id, u32 dspid)
+ {
+ 	int ret;
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_main.h b/drivers/soc/eswin/ai_driver/dsp/dsp_main.h
+index 3fbc261016d4..af85e992634f 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_main.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_main.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_perf.h b/drivers/soc/eswin/ai_driver/dsp/dsp_perf.h
+index f3cd75147591..5dd44b52f6e2 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_perf.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_perf.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+index 652b640be2cc..83c309dcae5a 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+@@ -452,7 +452,7 @@ static int dsp_send_msg_by_mbx(struct es_dsp *dsp, void *data)
+ 
+ 	tmp_data = (u32)(msg->data >> 32) | BIT(31);
+ 	writel(tmp_data, dsp->mbox_tx_base + ESWIN_MBOX_WR_DATA1);
+-	// 写中断enable bit.
++	// write interrupt enable bit.
+ 
+ 	writel(dsp->mbox_irq_bit, dsp->mbox_tx_base + ESWIN_MBOX_INT_CTRL);
+ 
+@@ -497,8 +497,8 @@ int es_dsp_send_irq(struct es_dsp_hw *hw, dsp_request_t *req)
+ }
+ 
+ /*
+-	获取elf段对应的cpu虚拟地址
+-*/
++ *	Obtain the CPU virtual address corresponding to the ELF segment
++ */
+ static void *translate_to_cpu_va(struct es_dsp *dsp, Elf32_Phdr *phdr)
+ {
+ 	if ((long)dsp->firmware_addr > (long)dsp->firmware_dev_addr) {
+@@ -532,8 +532,8 @@ static phys_addr_t translate_to_cpu_pa(struct es_dsp *dsp, Elf32_Phdr *phdr)
+ }
+ 
+ /*
+-	将elf段加载到DDR
+-*/
++ * Load the ELF segment to DDR.
++ */
+ static int load_segment_to_sysmem(struct es_dsp *dsp, Elf32_Phdr *phdr)
+ {
+ 	void *va = translate_to_cpu_va(dsp, phdr);
+@@ -543,8 +543,7 @@ static int load_segment_to_sysmem(struct es_dsp *dsp, Elf32_Phdr *phdr)
+ }
+ 
+ /*
+- * 将elf段加载到DSP local memory
+- *
++ * Load the ELF segment to DSP local memory
+  */
+ static int load_segment_to_iomem(struct es_dsp *dsp, Elf32_Phdr *phdr)
+ {
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
+index 6790660e3af7..d538a9727242 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c
+index 42a3788e4d41..ea9471381e02 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform_sim.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_pool.c b/drivers/soc/eswin/ai_driver/dsp/dsp_pool.c
+index 9295b9ee0d99..5da8214d8605 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_pool.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_pool.c
+@@ -1,3 +1,25 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN AI driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
++
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/list.h>
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_pool.h b/drivers/soc/eswin/ai_driver/dsp/dsp_pool.h
+index 946bf3840680..1a5b37818416 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_pool.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_pool.h
+@@ -1,3 +1,25 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN AI driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: Lu XiangFeng <luxiangfeng@eswincomputing.com>
++ */
++
+ #ifndef __DSP_POOL_H_
+ #define __DSP_POOL_H_
+ #include <linux/list.h>
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c
+index f234f3cf9842..54d9169a3515 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.h b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.h
+index 94e9158de9fd..c739e8192ed9 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_proc.h
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_proc.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c b/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c
+index df4f8abf1c2a..6b41fd861886 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_sram.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/common.c b/drivers/soc/eswin/ai_driver/npu/common.c
+index a294bb196dc0..2b96401397fa 100644
+--- a/drivers/soc/eswin/ai_driver/npu/common.c
++++ b/drivers/soc/eswin/ai_driver/npu/common.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/common.h b/drivers/soc/eswin/ai_driver/npu/common.h
+index 08d5dad54b35..ae8696fe9965 100644
+--- a/drivers/soc/eswin/ai_driver/npu/common.h
++++ b/drivers/soc/eswin/ai_driver/npu/common.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/conv.c b/drivers/soc/eswin/ai_driver/npu/conv.c
+index fb00776642fb..b8eac2a1b551 100644
+--- a/drivers/soc/eswin/ai_driver/npu/conv.c
++++ b/drivers/soc/eswin/ai_driver/npu/conv.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/conv.h b/drivers/soc/eswin/ai_driver/npu/conv.h
+index a290b7696526..a2c57b546e59 100644
+--- a/drivers/soc/eswin/ai_driver/npu/conv.h
++++ b/drivers/soc/eswin/ai_driver/npu/conv.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/debug.c b/drivers/soc/eswin/ai_driver/npu/debug.c
+index 45ebb8328bbb..489bbbdec743 100644
+--- a/drivers/soc/eswin/ai_driver/npu/debug.c
++++ b/drivers/soc/eswin/ai_driver/npu/debug.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/debug.h b/drivers/soc/eswin/ai_driver/npu/debug.h
+index a62586a85034..0368fa788199 100644
+--- a/drivers/soc/eswin/ai_driver/npu/debug.h
++++ b/drivers/soc/eswin/ai_driver/npu/debug.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_buffer.c b/drivers/soc/eswin/ai_driver/npu/dla_buffer.c
+index 7f12c6e36ed6..8aea165e53ec 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_buffer.c
++++ b/drivers/soc/eswin/ai_driver/npu/dla_buffer.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_buffer.h b/drivers/soc/eswin/ai_driver/npu/dla_buffer.h
+index 6deddea6d2db..f6afe68f912e 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_buffer.h
++++ b/drivers/soc/eswin/ai_driver/npu/dla_buffer.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_driver.c b/drivers/soc/eswin/ai_driver/npu/dla_driver.c
+index 6a18ffe3572a..8e470db4a163 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_driver.c
++++ b/drivers/soc/eswin/ai_driver/npu/dla_driver.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_driver.h b/drivers/soc/eswin/ai_driver/npu/dla_driver.h
+index 9ab56b2ec0e5..f497ada38f56 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_driver.h
++++ b/drivers/soc/eswin/ai_driver/npu/dla_driver.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_engine_internal.h b/drivers/soc/eswin/ai_driver/npu/dla_engine_internal.h
+index 455f6da4ccb0..f1269cbf89e7 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_engine_internal.h
++++ b/drivers/soc/eswin/ai_driver/npu/dla_engine_internal.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_log.c b/drivers/soc/eswin/ai_driver/npu/dla_log.c
+index b723cf5368f0..a215530f5d55 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_log.c
++++ b/drivers/soc/eswin/ai_driver/npu/dla_log.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/dla_log.h b/drivers/soc/eswin/ai_driver/npu/dla_log.h
+index b9c5a368a0ea..410f8240e881 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dla_log.h
++++ b/drivers/soc/eswin/ai_driver/npu/dla_log.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/dsp.c b/drivers/soc/eswin/ai_driver/npu/dsp.c
+index c8334fcc9dc4..8c91949cb9da 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dsp.c
++++ b/drivers/soc/eswin/ai_driver/npu/dsp.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/dsp.h b/drivers/soc/eswin/ai_driver/npu/dsp.h
+index 4d370fac875b..a0e584af0122 100644
+--- a/drivers/soc/eswin/ai_driver/npu/dsp.h
++++ b/drivers/soc/eswin/ai_driver/npu/dsp.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/edma.c b/drivers/soc/eswin/ai_driver/npu/edma.c
+index cc3e365dee4f..f720be48c277 100644
+--- a/drivers/soc/eswin/ai_driver/npu/edma.c
++++ b/drivers/soc/eswin/ai_driver/npu/edma.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/edma.h b/drivers/soc/eswin/ai_driver/npu/edma.h
+index 69abc05cc361..697efc33841f 100644
+--- a/drivers/soc/eswin/ai_driver/npu/edma.h
++++ b/drivers/soc/eswin/ai_driver/npu/edma.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/engine.c b/drivers/soc/eswin/ai_driver/npu/engine.c
+index 53805e20d485..479628628177 100644
+--- a/drivers/soc/eswin/ai_driver/npu/engine.c
++++ b/drivers/soc/eswin/ai_driver/npu/engine.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/event.c b/drivers/soc/eswin/ai_driver/npu/event.c
+index 11cd3f2be059..67cacae5c475 100644
+--- a/drivers/soc/eswin/ai_driver/npu/event.c
++++ b/drivers/soc/eswin/ai_driver/npu/event.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/include/dla_engine.h b/drivers/soc/eswin/ai_driver/npu/include/dla_engine.h
+index 8a8cca1c7cd8..90c6be9b9aef 100644
+--- a/drivers/soc/eswin/ai_driver/npu/include/dla_engine.h
++++ b/drivers/soc/eswin/ai_driver/npu/include/dla_engine.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/include/npu_top_csr.h b/drivers/soc/eswin/ai_driver/npu/include/npu_top_csr.h
+index a3daffbdc12e..ecdf488e114e 100644
+--- a/drivers/soc/eswin/ai_driver/npu/include/npu_top_csr.h
++++ b/drivers/soc/eswin/ai_driver/npu/include/npu_top_csr.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/include/nvdla_interface.h b/drivers/soc/eswin/ai_driver/npu/include/nvdla_interface.h
+index 16aedf2056db..8f041a495321 100644
+--- a/drivers/soc/eswin/ai_driver/npu/include/nvdla_interface.h
++++ b/drivers/soc/eswin/ai_driver/npu/include/nvdla_interface.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/include/nvdla_linux.h b/drivers/soc/eswin/ai_driver/npu/include/nvdla_linux.h
+index ef11f3a642f0..1d8f1727b02e 100644
+--- a/drivers/soc/eswin/ai_driver/npu/include/nvdla_linux.h
++++ b/drivers/soc/eswin/ai_driver/npu/include/nvdla_linux.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/internal_interface.h b/drivers/soc/eswin/ai_driver/npu/internal_interface.h
+index 149805f15838..b215769d3249 100644
+--- a/drivers/soc/eswin/ai_driver/npu/internal_interface.h
++++ b/drivers/soc/eswin/ai_driver/npu/internal_interface.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_e31.c b/drivers/soc/eswin/ai_driver/npu/npu_e31.c
+index 67484cba570f..c32249e6dd48 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_e31.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_e31.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_frame.c b/drivers/soc/eswin/ai_driver/npu/npu_frame.c
+index e006710be1cb..6c4ad357cf86 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_frame.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_frame.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_main.c b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+index 3ffeb5001ed9..f75e70fc4549 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_main.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_spram.c b/drivers/soc/eswin/ai_driver/npu/npu_spram.c
+index 3a5ba558a54b..27da16f2d241 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_spram.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_spram.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_spram.h b/drivers/soc/eswin/ai_driver/npu/npu_spram.h
+index fa4203a43951..cf88e3417201 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_spram.h
++++ b/drivers/soc/eswin/ai_driver/npu/npu_spram.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c b/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c
+index 11d7a8ef6560..c81d0a3b3b93 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_hw.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_lowlevel.h b/drivers/soc/eswin/ai_driver/npu/nvdla_lowlevel.h
+index f833987cfeea..ed2b392aeda2 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_lowlevel.h
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_lowlevel.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_proc.c b/drivers/soc/eswin/ai_driver/npu/nvdla_proc.c
+index 93bc993fe849..16af8d0eeac7 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_proc.c
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_proc.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_proc.h b/drivers/soc/eswin/ai_driver/npu/nvdla_proc.h
+index afa6c7906b0a..677e67cdf84c 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_proc.h
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_proc.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/nvdla_sim.c b/drivers/soc/eswin/ai_driver/npu/nvdla_sim.c
+index 1e318f786c0f..e856f71778c9 100644
+--- a/drivers/soc/eswin/ai_driver/npu/nvdla_sim.c
++++ b/drivers/soc/eswin/ai_driver/npu/nvdla_sim.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/parse_dep.c b/drivers/soc/eswin/ai_driver/npu/parse_dep.c
+index b7829b0f08d5..acdbe89ac814 100644
+--- a/drivers/soc/eswin/ai_driver/npu/parse_dep.c
++++ b/drivers/soc/eswin/ai_driver/npu/parse_dep.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/pdp.c b/drivers/soc/eswin/ai_driver/npu/pdp.c
+index c1fe8839bbb1..f3547c884da5 100644
+--- a/drivers/soc/eswin/ai_driver/npu/pdp.c
++++ b/drivers/soc/eswin/ai_driver/npu/pdp.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/post_drp.h b/drivers/soc/eswin/ai_driver/npu/post_drp.h
+index e56861b9ea32..6061676fc692 100644
+--- a/drivers/soc/eswin/ai_driver/npu/post_drp.h
++++ b/drivers/soc/eswin/ai_driver/npu/post_drp.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/rubik.c b/drivers/soc/eswin/ai_driver/npu/rubik.c
+index 6771a121b604..ceff84b76284 100644
+--- a/drivers/soc/eswin/ai_driver/npu/rubik.c
++++ b/drivers/soc/eswin/ai_driver/npu/rubik.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/scheduler.c b/drivers/soc/eswin/ai_driver/npu/scheduler.c
+index 2c01649a0612..8d81d8665a6d 100644
+--- a/drivers/soc/eswin/ai_driver/npu/scheduler.c
++++ b/drivers/soc/eswin/ai_driver/npu/scheduler.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/sdp.c b/drivers/soc/eswin/ai_driver/npu/sdp.c
+index 792e87a2e1e2..dbef535052b8 100644
+--- a/drivers/soc/eswin/ai_driver/npu/sdp.c
++++ b/drivers/soc/eswin/ai_driver/npu/sdp.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/sdp.h b/drivers/soc/eswin/ai_driver/npu/sdp.h
+index b4af8cb07642..27eca7ce4b8a 100644
+--- a/drivers/soc/eswin/ai_driver/npu/sdp.h
++++ b/drivers/soc/eswin/ai_driver/npu/sdp.h
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/soc/eswin/ai_driver/npu/user_context.c b/drivers/soc/eswin/ai_driver/npu/user_context.c
+index bef308e8dccb..a1b4d007cef4 100644
+--- a/drivers/soc/eswin/ai_driver/npu/user_context.c
++++ b/drivers/soc/eswin/ai_driver/npu/user_context.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ESWIN PCIe root complex driver
++ * ESWIN AI driver
+  *
+  * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
+  * SPDX-License-Identifier: GPL-2.0
+-- 
+2.47.0
+

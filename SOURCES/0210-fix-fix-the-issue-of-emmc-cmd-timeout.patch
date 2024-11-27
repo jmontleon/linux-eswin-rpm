@@ -1,0 +1,30 @@
+From e38ec85bb0d62c02a9cef9c52b48f65917213333 Mon Sep 17 00:00:00 2001
+From: liangshuang <liangshuang@eswincomputing.com>
+Date: Thu, 7 Nov 2024 17:53:24 +0800
+Subject: [PATCH 210/215] fix:fix the issue of emmc cmd timeout.
+
+Changelogs:
+1.fix the issue of emmc cmd timeout.
+
+Signed-off-by: liangshuang <liangshuang@eswincomputing.com>
+---
+ drivers/mmc/host/sdhci-of-eswin.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/mmc/host/sdhci-of-eswin.c b/drivers/mmc/host/sdhci-of-eswin.c
+index 585d30259cdd..b9881798fc4e 100644
+--- a/drivers/mmc/host/sdhci-of-eswin.c
++++ b/drivers/mmc/host/sdhci-of-eswin.c
+@@ -448,7 +448,8 @@ static const struct sdhci_ops eswin_sdhci_cqe_ops = {
+ 
+ static const struct sdhci_pltfm_data eswin_sdhci_cqe_pdata = {
+ 	.ops = &eswin_sdhci_cqe_ops,
+-	.quirks = SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN,
++	.quirks = SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN |
++		SDHCI_QUIRK_BROKEN_TIMEOUT_VAL,
+ 	.quirks2 = SDHCI_QUIRK2_PRESET_VALUE_BROKEN |
+ #if defined(__DISABLE_HS200)
+ 		SDHCI_QUIRK2_BROKEN_HS200 |
+-- 
+2.47.0
+

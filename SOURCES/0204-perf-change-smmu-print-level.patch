@@ -1,0 +1,33 @@
+From 4af41b321a32574c589b96aa83bc3cb1dab4563e Mon Sep 17 00:00:00 2001
+From: linmin <linmin@eswincomputing.com>
+Date: Thu, 31 Oct 2024 13:35:58 +0800
+Subject: [PATCH 204/215] perf:change smmu print level
+
+Changelogs:
+1.Changed the smmu event print level to dev_dbg for reducing the log
+  when dsp cache prediction access to the invalid iova.
+
+Signed-off-by: linmin <linmin@eswincomputing.com>
+---
+ drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+index c383426a0655..77d37ee6e71f 100644
+--- a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
++++ b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+@@ -1661,9 +1661,9 @@ static irqreturn_t arm_smmu_evtq_thread(int irq, void *dev)
+ 			if (!ret || !__ratelimit(&rs))
+ 				continue;
+ 
+-			dev_info(smmu->dev, "event 0x%02x received:\n", id);
++			dev_dbg(smmu->dev, "event 0x%02x received:\n", id);
+ 			for (i = 0; i < ARRAY_SIZE(evt); ++i)
+-				dev_info(smmu->dev, "\t0x%016llx\n",
++				dev_dbg(smmu->dev, "\t0x%016llx\n",
+ 					 (unsigned long long)evt[i]);
+ 
+ 			cond_resched();
+-- 
+2.47.0
+

@@ -1,0 +1,108 @@
+From 94109bb7f2905466e4dbf76af629e023a336c1a7 Mon Sep 17 00:00:00 2001
+From: liangshuang <liangshuang@eswincomputing.com>
+Date: Fri, 8 Nov 2024 14:27:18 +0800
+Subject: [PATCH 211/215] fix:remove csr clk from eth driver.
+
+Changelogs:
+1.remove csr clk from eth driver.
+
+Signed-off-by: liangshuang <liangshuang@eswincomputing.com>
+---
+ .../boot/dts/eswin/eswin-win2030-die0-soc.dtsi     |  4 ++--
+ .../boot/dts/eswin/eswin-win2030-die1-soc.dtsi     |  4 ++--
+ .../net/ethernet/stmicro/stmmac/dwmac-win2030.c    | 14 --------------
+ 3 files changed, 4 insertions(+), 18 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index 244d3b3424a8..9de7c694998a 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -482,7 +482,7 @@ d0_gmac0: ethernet@50400000 {
+ 			clocks = <&d0_clock WIN2030_CLK_HSP_ETH_APP_CLK>,
+ 					 <&d0_clock WIN2030_CLK_HSP_ETH_CSR_CLK>,
+ 					 <&d0_clock WIN2030_CLK_HSP_ETH0_CORE_CLK>;
+-			clock-names = "app", "csr","tx";
++			clock-names = "app", "stmmaceth","tx";
+ 			resets = <&d0_reset HSPDMA_RST_CTRL SW_HSP_ETH0_ARSTN>;
+ 			reset-names = "ethrst";
+ 			// iommus = <&smmu0 WIN2030_SID_ETH0>;
+@@ -512,7 +512,7 @@ d0_gmac1: ethernet@50410000 {
+ 			clocks = <&d0_clock WIN2030_CLK_HSP_ETH_APP_CLK>,
+ 					 <&d0_clock WIN2030_CLK_HSP_ETH_CSR_CLK>,
+ 					 <&d0_clock WIN2030_CLK_HSP_ETH1_CORE_CLK>;
+-			clock-names = "app", "csr","tx";
++			clock-names = "app", "stmmaceth","tx";
+ 			resets = <&d0_reset HSPDMA_RST_CTRL SW_HSP_ETH1_ARSTN>;
+ 			reset-names = "ethrst";
+ 			// iommus = <&smmu0 WIN2030_SID_ETH1>;
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index 1a275707a259..d271b6843621 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -1501,7 +1501,7 @@ d1_gmac0: ethernet@70400000 {
+ 			clocks = <&d1_clock WIN2030_CLK_HSP_ETH_APP_CLK>,
+ 					 <&d1_clock WIN2030_CLK_HSP_ETH_CSR_CLK>,
+ 					 <&d1_clock WIN2030_CLK_HSP_ETH0_CORE_CLK>;
+-			clock-names = "app", "csr","tx";
++			clock-names = "app", "stmmaceth","tx";
+ 			resets = <&d1_reset HSPDMA_RST_CTRL SW_HSP_ETH0_ARSTN>;
+ 			reset-names = "ethrst";
+ 			// iommus = <&smmu1 WIN2030_SID_ETH0>;
+@@ -1531,7 +1531,7 @@ d1_gmac1: ethernet@70410000 {
+ 			clocks = <&d1_clock WIN2030_CLK_HSP_ETH_APP_CLK>,
+ 					 <&d1_clock WIN2030_CLK_HSP_ETH_CSR_CLK>,
+ 					 <&d1_clock WIN2030_CLK_HSP_ETH1_CORE_CLK>;
+-			clock-names = "app", "csr","tx";
++			clock-names = "app", "stmmaceth","tx";
+ 			resets = <&d1_reset HSPDMA_RST_CTRL SW_HSP_ETH1_ARSTN>;
+ 			reset-names = "ethrst";
+ 			// iommus = <&smmu1 WIN2030_SID_ETH1>;
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-win2030.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-win2030.c
+index e80061c95639..66e0cc12ce44 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-win2030.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-win2030.c
+@@ -61,7 +61,6 @@ struct dwc_qos_priv {
+ 	struct regmap *hsp_regmap;
+ 	struct reset_control *rst;
+ 	struct clk *clk_app;
+-	struct clk *clk_csr;
+ 	struct clk *clk_tx;
+ 	struct regmap *rgmii_sel;
+ 	struct gpio_desc *phy_reset;
+@@ -290,12 +289,6 @@ static int dwc_clks_config(void *priv, bool enabled)
+ 			return ret;
+ 		}
+ 
+-		ret = clk_prepare_enable(dwc_priv->clk_csr);
+-		if (ret< 0) {
+-			dev_err(dwc_priv->dev, "failed to enable csr clk: %d\n", ret);
+-			return ret;
+-		}
+-
+ 		ret = clk_prepare_enable(dwc_priv->clk_tx);
+ 		if (ret < 0) {
+ 			dev_err(dwc_priv->dev, "failed to enable tx clock: %d\n", ret);
+@@ -316,7 +309,6 @@ static int dwc_clks_config(void *priv, bool enabled)
+ 		}
+ 
+ 		clk_disable_unprepare(dwc_priv->clk_tx);
+-		clk_disable_unprepare(dwc_priv->clk_csr);
+ 		clk_disable_unprepare(dwc_priv->clk_app);
+ 	}
+ 
+@@ -445,12 +437,6 @@ static int dwc_qos_probe(struct platform_device *pdev,
+ 		return PTR_ERR(dwc_priv->clk_app);
+ 	}
+ 
+-	dwc_priv->clk_csr = devm_clk_get(&pdev->dev, "csr");
+-	if (IS_ERR(dwc_priv->clk_csr)) {
+-		dev_err(&pdev->dev, "csr clock not found.\n");
+-		return PTR_ERR(dwc_priv->clk_csr);
+-	}
+-
+ 	dwc_priv->clk_tx = devm_clk_get(&pdev->dev, "tx");
+ 	if (IS_ERR(dwc_priv->clk_tx)) {
+ 		dev_err(&pdev->dev, "tx clock not found.\n");
+-- 
+2.47.0
+

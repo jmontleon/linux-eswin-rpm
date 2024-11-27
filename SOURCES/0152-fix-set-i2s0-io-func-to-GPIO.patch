@@ -1,0 +1,84 @@
+From 1b03699cbb725b6a2bb5b404a84eba731755a2e1 Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Thu, 15 Aug 2024 10:30:29 +0800
+Subject: [PATCH 152/215] fix:set i2s0 io func to GPIO.
+
+Changelogs:
+	Resolve the issue of i2S0 playback impact on i2S2.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ arch/riscv/boot/dts/eswin/eic7700-evb.dts |  1 +
+ sound/soc/eswin/esw-i2s.c                 | 30 +++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
+
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb.dts b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+index 5171c76ec825..5655e3692619 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+@@ -325,6 +325,7 @@ &dw_hdmi_hdcp2 {
+ 
+ &d0_i2s0 {
+ 	status = "okay";
++	io_reuse_enable;
+ 	ports {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+diff --git a/sound/soc/eswin/esw-i2s.c b/sound/soc/eswin/esw-i2s.c
+index 02c05b85dfab..fb032ebd085e 100755
+--- a/sound/soc/eswin/esw-i2s.c
++++ b/sound/soc/eswin/esw-i2s.c
+@@ -73,6 +73,8 @@
+ 			SNDRV_PCM_RATE_8000)
+ #define ESW_I2S_FORMATS (SNDRV_PCM_FMTBIT_S32_LE)
+ 
++#define I2S0_IO_ADDR 0x51600124
++
+ static struct clk *g_mclk;
+ 
+ static u32 dmaen_txch[] = {
+@@ -742,6 +744,8 @@ static int i2s_probe(struct platform_device *pdev)
+ 	int ret;
+ 	const char *clk_id;
+ 	struct snd_dmaengine_pcm_config *config;
++	void __iomem *i2s0_io_base;
++	int reg_val;
+ 
+ 	dev_info(&pdev->dev, "dev name:%s\n", pdev->dev.of_node->name);
+ 	i2s_drvdata = devm_kzalloc(&pdev->dev, sizeof(*i2s_drvdata), GFP_KERNEL);
+@@ -783,6 +787,32 @@ static int i2s_probe(struct platform_device *pdev)
+ 			dev_err(&pdev->dev, "i2s_reset failed\n");
+ 			goto err_probe;
+ 		}
++
++		if (!of_property_read_bool(pdev->dev.of_node, "io_reuse_enable")) {
++			i2s0_io_base = devm_ioremap(&pdev->dev, I2S0_IO_ADDR, 12);
++			if (!i2s0_io_base) {
++				dev_err(i2s_drvdata->dev, "failed to remap i2s0 io ctl\n");
++				return -ENOMEM;
++			}
++
++			/* set the i2s0 WCLK io to GPIO func */
++			reg_val = readl((char *)i2s0_io_base);
++			reg_val &= 0xfff8ffff;
++			reg_val |= 0x20000;
++			writel(reg_val, (char *)i2s0_io_base);
++
++			/* set the i2s0 SDI io to GPIO func */
++			reg_val = readl((char *)i2s0_io_base + 4);
++			reg_val &= 0xfff8ffff;
++			reg_val |= 0x20000;
++			writel(reg_val, (char *)i2s0_io_base + 4);
++
++			/* set the i2s0 SDO io to GPIO func */
++			reg_val = readl((char *)i2s0_io_base + 8);
++			reg_val &= 0xfff8ffff;
++			reg_val |= 0x20000;
++			writel(reg_val, (char *)i2s0_io_base + 8);
++		}
+ 	}
+ 
+ 	dev_set_drvdata(&pdev->dev, i2s_drvdata);
+-- 
+2.47.0
+

@@ -1,0 +1,36 @@
+From 743b623951774e9b7739b551b657b76b9e6c6b91 Mon Sep 17 00:00:00 2001
+From: huangyifeng <huangyifeng@eswincomputing.com>
+Date: Wed, 7 Aug 2024 17:01:33 +0800
+Subject: [PATCH 141/215] fix:when write protection config, do runtime resume
+
+Changelogs:
+      when write protection config, do runtime resume.
+
+Signed-off-by: huangyifeng <huangyifeng@eswincomputing.com>
+---
+ drivers/spi/spi-eswin-bootspi.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/spi/spi-eswin-bootspi.c b/drivers/spi/spi-eswin-bootspi.c
+index 9d3447538e38..ee28701ab1b8 100644
+--- a/drivers/spi/spi-eswin-bootspi.c
++++ b/drivers/spi/spi-eswin-bootspi.c
+@@ -477,6 +477,7 @@ void eswin_bootspi_wp_cfg(struct es_spi_priv *priv, int enable)
+ 	struct device *dev = priv->dev;
+ 
+ 	dev_info(dev, "Boot spi flash write protection %s\n", enable ? "enabled" : "disabled");
++	pm_runtime_get_sync(dev);
+ 	if (enable) {
+ 		eswin_bootspi_flash_write_protection_cfg(priv, enable);
+ 		gpiod_set_value(priv->wp_gpio, enable); //gpio output low, enable protection
+@@ -484,6 +485,7 @@ void eswin_bootspi_wp_cfg(struct es_spi_priv *priv, int enable)
+ 		gpiod_set_value(priv->wp_gpio, enable); //gpio output high, disable protection
+ 		eswin_bootspi_flash_write_protection_cfg(priv, enable);
+ 	}
++	pm_runtime_put_sync(dev);
+ }
+ 
+ static ssize_t wp_enable_show(struct device *dev,
+-- 
+2.47.0
+

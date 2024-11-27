@@ -1,0 +1,28 @@
+From 73aee83777b9cc748a8950ced4a49e6967206048 Mon Sep 17 00:00:00 2001
+From: Xiang Xu <xuxiang@eswincomputing.com>
+Date: Tue, 10 Sep 2024 10:35:02 +0800
+Subject: [PATCH 168/215] chore:Remove redundant log
+
+Changelogs:
+1.Remove redundant log
+
+Signed-off-by: Xiang Xu <xuxiang@eswincomputing.com>
+---
+ drivers/clocksource/timer-eswin.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/clocksource/timer-eswin.c b/drivers/clocksource/timer-eswin.c
+index 089d0f28eba3..a00a686bc0ec 100644
+--- a/drivers/clocksource/timer-eswin.c
++++ b/drivers/clocksource/timer-eswin.c
+@@ -170,7 +170,6 @@ static int timer_mmap(struct file *file, struct vm_area_struct *vma)
+     res = perf_timer->mem;
+ 
+     base = res->start + perf_timer->perf_count * 0x14;
+-    printk("%s, %d, chan=%d.\n\n", __func__, __LINE__, perf_timer->perf_count);
+     remap_pfn_range(vma, vma->vm_start, base >> 12,
+             vma->vm_end - vma->vm_start, vma->vm_page_prot);
+     return 0;
+-- 
+2.47.0
+

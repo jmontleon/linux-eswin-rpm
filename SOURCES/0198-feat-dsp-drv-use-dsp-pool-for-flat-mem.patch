@@ -1,0 +1,331 @@
+From cf5c28b2d5c84340497be1260825b54a77b7a558 Mon Sep 17 00:00:00 2001
+From: donghuawei <donghuawei@eswincomputing.com>
+Date: Wed, 23 Oct 2024 18:23:02 +0800
+Subject: [PATCH 198/215] feat: dsp drv use dsp pool for flat mem
+
+Changelogs:
+	The native DMA pool does not support specifying the size of each memory allocation,
+	so the DSP implements its own memory pool allocation interface, which allows specifying
+	the size of each allocation.
+
+Signed-off-by: donghuawei <donghuawei@eswincomputing.com>
+---
+ drivers/soc/eswin/ai_driver/dsp/Makefile      |   3 +-
+ .../soc/eswin/ai_driver/dsp/dsp_platform.c    |  21 ++-
+ drivers/soc/eswin/ai_driver/dsp/dsp_pool.c    | 173 ++++++++++++++++++
+ drivers/soc/eswin/ai_driver/dsp/dsp_pool.h    |  32 ++++
+ 4 files changed, 219 insertions(+), 10 deletions(-)
+ create mode 100644 drivers/soc/eswin/ai_driver/dsp/dsp_pool.c
+ create mode 100644 drivers/soc/eswin/ai_driver/dsp/dsp_pool.h
+
+diff --git a/drivers/soc/eswin/ai_driver/dsp/Makefile b/drivers/soc/eswin/ai_driver/dsp/Makefile
+index cb53bc1850f3..ebacf5f1723e 100755
+--- a/drivers/soc/eswin/ai_driver/dsp/Makefile
++++ b/drivers/soc/eswin/ai_driver/dsp/Makefile
+@@ -43,11 +43,12 @@ eic7700_dsp-y += dsp_platform_sim.o
+ 
+ else
+ ccflags-y +=-I
+-eic7700_dsp-y += dsp_platform.o dsp_sram.o dsp_firmware.o \
++eic7700_dsp-y += dsp_platform.o dsp_sram.o dsp_firmware.o dsp_pool.o \
+ 				mloader/dsp_load_operator.o \
+ 				mloader/xt_mld_loader.o \
+ 				mloader/xt_mld_relocate.o
+ 
++
+ endif
+ 
+ ccflags-y += -DDSP_ENV_SIM=${DSP_ENV_SIM} -DBUILD_RELEASE=${BUILD_RELEASE} -DDEBUG_LEVEL=${DEBUG_LEVEL} -w
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+index 2e96a24e6899..652b640be2cc 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+@@ -45,6 +45,7 @@
+ #include "dsp_firmware.h"
+ #include "dsp_ioctl.h"
+ #include "dsp_main.h"
++#include "dsp_pool.h"
+ 
+ #define DRIVER_NAME "eswin-dsp"
+ 
+@@ -114,7 +115,7 @@ struct es_dsp_hw {
+ 	struct regmap *con_map;
+ 	struct clk *aclk;
+ 	struct es_dsp_subsys *subsys;
+-	struct dma_pool *flat_dma_pool;
++	struct dsp_pool *flat_dma_pool;
+ 
+ 	dma_addr_t pts_iova;
+ 	u32 pts_iova_size;
+@@ -1072,14 +1073,15 @@ void dsp_free_flat_mem(struct es_dsp *dsp, u32 size, void *cpu,
+ 		       dma_addr_t dma_addr)
+ {
+ 	struct es_dsp_hw *hw = dsp->hw_arg;
+-	dma_pool_free(hw->flat_dma_pool, cpu, dma_addr);
++	//dma_pool_free(hw->flat_dma_pool, cpu, dma_addr);
++	dsp_pool_free(hw->flat_dma_pool, cpu, dma_addr);
+ }
+ 
+ void *dsp_alloc_flat_mem(struct es_dsp *dsp, u32 dma_len, dma_addr_t *dma_addr)
+ {
+ 	struct es_dsp_hw *hw = dsp->hw_arg;
+ 	void *flat = NULL;
+-	flat = dma_pool_alloc(hw->flat_dma_pool, GFP_KERNEL, dma_addr);
++	flat = dsp_pool_alloc(hw->flat_dma_pool, GFP_KERNEL, dma_addr);
+ 	return flat;
+ }
+ 
+@@ -1124,18 +1126,19 @@ int es_dsp_get_subsys(struct platform_device *pdev, struct es_dsp *dsp)
+ }
+ 
+ 
+-
+ int es_dsp_map_resource(struct es_dsp *dsp)
+ {
+ 	struct es_dsp_hw *hw = (struct es_dsp_hw *)dsp->hw_arg;
+ 	int ret;
+ 	unsigned long base;
+ 
+-	hw->flat_dma_pool = dma_pool_create("dsp_flat_dma", dsp->dev,
+-					    sizeof(struct es_dsp_flat1_desc) +
++	hw->flat_dma_pool = dsp_pool_create(dsp->dev, sizeof(struct es_dsp_flat1_desc) +
+ 						    sizeof(es_dsp_buffer) *
+-							    BUFFER_CNT_MAXSIZE,
+-					    64, 0);
++							    BUFFER_CNT_MAXSIZE, 0x200000, 64, 0);//dma_pool_create("dsp_flat_dma", dsp->dev,
++	//				    sizeof(struct es_dsp_flat1_desc) +
++	//					    sizeof(es_dsp_buffer) *
++	//						    BUFFER_CNT_MAXSIZE,
++	//				    64, 0);
+ 	if (!hw->flat_dma_pool) {
+ 		dsp_err("cat not create flat dma pool.\n");
+ 		ret = -ENOMEM;
+@@ -1196,7 +1199,7 @@ int es_dsp_unmap_resource(struct es_dsp *dsp)
+ 	struct es_dsp_hw *hw = (struct es_dsp_hw *)dsp->hw_arg;
+ 
+ 	if (hw->flat_dma_pool != NULL) {
+-		dma_pool_destroy(hw->flat_dma_pool);
++		dsp_pool_destroy(hw->flat_dma_pool);
+ 		hw->flat_dma_pool = NULL;
+ 	}
+ 
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_pool.c b/drivers/soc/eswin/ai_driver/dsp/dsp_pool.c
+new file mode 100644
+index 000000000000..9295b9ee0d99
+--- /dev/null
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_pool.c
+@@ -0,0 +1,173 @@
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++#include <linux/list.h>
++#include <linux/dma-mapping.h>
++#include "dsp_pool.h"
++
++static void dsp_pool_init_page(struct dsp_pool *pool,
++			       struct dsp_pool_page *page)
++{
++	unsigned int offset = 0;
++	unsigned int next_b = pool->boundary;
++
++	do {
++		unsigned int next = offset + pool->size;
++		if (unlikely((next + pool->size) >= next_b)) {
++			next = next_b;
++			next_b += pool->boundary;
++		}
++		*(int *)(page->vaddr + offset) = next;
++		offset = next;
++	} while (offset < pool->allocation);
++}
++
++static struct dsp_pool_page *dsp_pool_alloc_page(struct dsp_pool *pool,
++						 gfp_t mem_flags)
++{
++	struct dsp_pool_page *page;
++	page = kmalloc(sizeof(*page), mem_flags);
++	if (!page)
++		return NULL;
++
++	page->vaddr = dma_alloc_coherent(pool->dev, pool->allocation,
++					 &page->dma, mem_flags);
++	if (page->vaddr) {
++		dsp_pool_init_page(pool, page);
++		page->in_use = 0;
++		page->offset = 0;
++	} else {
++		kfree(page);
++		page = NULL;
++	}
++	return page;
++}
++
++struct dsp_pool *dsp_pool_create(struct device *dev, size_t size,
++				 size_t pool_size, size_t align, size_t boundary)
++{
++	size_t allocation;
++	struct dsp_pool *retval;
++	struct dsp_pool_page *page;
++
++	if (align == 0) {
++		align = 1;
++	} else if (align & (align - 1)) {
++		return NULL;
++	}
++
++	if (size == 0) {
++		return NULL;
++	} else if (size < 4) {
++		size = 4;
++	}
++
++	size = ALIGN(size, align);
++	allocation = ALIGN(pool_size, PAGE_SIZE);
++	if (!boundary) {
++		boundary = allocation;
++	} else if (boundary < size || (boundary & (boundary - 1)))
++		return NULL;
++
++	retval = kmalloc(sizeof(*retval), GFP_KERNEL);
++	if (!retval)
++		return retval;
++
++	retval->dev = dev;
++	INIT_LIST_HEAD(&retval->page_list);
++	spin_lock_init(&retval->lock);
++	retval->size = size;
++	retval->allocation = allocation;
++	retval->boundary = boundary;
++	page = dsp_pool_alloc_page(retval, GFP_KERNEL & (~__GFP_ZERO));
++	if (page) {
++		list_add(&page->page_list, &retval->page_list);
++	}
++	return retval;
++}
++
++void *dsp_pool_alloc(struct dsp_pool *pool, gfp_t mem_flags, dma_addr_t *handle)
++{
++	unsigned long flags;
++	struct dsp_pool_page *page;
++	void *retval;
++	size_t offset;
++
++	spin_lock_irqsave(&pool->lock, flags);
++	list_for_each_entry(page, &pool->page_list, page_list) {
++		if (page->offset < pool->allocation)
++			goto ready;
++	}
++	spin_unlock_irqrestore(&pool->lock, flags);
++
++	page = dsp_pool_alloc_page(pool, mem_flags & (~__GFP_ZERO));
++	if (!page)
++		return NULL;
++	spin_lock_irqsave(&pool->lock, flags);
++	list_add(&page->page_list, &pool->page_list);
++ready:
++	page->in_use++;
++	offset = page->offset;
++	page->offset = *(int *)(page->vaddr + offset);
++	retval = offset + page->vaddr;
++	*handle = offset + page->dma;
++	spin_unlock_irqrestore(&pool->lock, flags);
++	return retval;
++}
++
++static struct dsp_pool_page *dsp_pool_find_page(struct dsp_pool *pool,
++						dma_addr_t dma)
++{
++	struct dsp_pool_page *page;
++	list_for_each_entry(page, &pool->page_list, page_list) {
++		if (dma < page->dma)
++			continue;
++		if ((dma - page->dma) < pool->allocation)
++			return page;
++	}
++	return NULL;
++}
++
++void dsp_pool_free(struct dsp_pool *pool, void *vaddr, dma_addr_t dma)
++{
++	struct dsp_pool_page *page;
++	unsigned long flags;
++	unsigned int offset;
++
++	spin_lock_irqsave(&pool->lock, flags);
++
++	page = dsp_pool_find_page(pool, dma);
++	if (!page) {
++		spin_unlock_irqrestore(&pool->lock, flags);
++		return;
++	}
++
++	offset = vaddr - page->vaddr;
++	page->in_use--;
++	*(int *)vaddr = page->offset;
++	page->offset = offset;
++	spin_unlock_irqrestore(&pool->lock, flags);
++}
++
++static void dsp_pool_free_page(struct dsp_pool *pool,
++			       struct dsp_pool_page *page)
++{
++	dma_addr_t dma = page->dma;
++	dma_free_coherent(pool->dev, pool->allocation, page->vaddr, dma);
++}
++
++void dsp_pool_destroy(struct dsp_pool *pool)
++{
++	struct dsp_pool_page *page, *tmp;
++	if (!pool) {
++		return;
++	}
++
++	list_for_each_entry_safe(page, tmp, &pool->page_list, page_list) {
++		if (!page->in_use) {
++			dsp_pool_free_page(pool, page);
++		}
++		list_del(&page->page_list);
++		kfree(page);
++	}
++	kfree(pool);
++}
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_pool.h b/drivers/soc/eswin/ai_driver/dsp/dsp_pool.h
+new file mode 100644
+index 000000000000..946bf3840680
+--- /dev/null
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_pool.h
+@@ -0,0 +1,32 @@
++#ifndef __DSP_POOL_H_
++#define __DSP_POOL_H_
++#include <linux/list.h>
++#include <linux/spinlock.h>
++#include <linux/device.h>
++#include <linux/types.h>
++
++struct dsp_pool {
++	struct list_head page_list;
++	spinlock_t lock;
++	size_t size;
++	struct device *dev;
++	size_t allocation;
++	size_t boundary;
++};
++
++struct dsp_pool_page {
++	struct list_head page_list;
++	void *vaddr;
++	dma_addr_t dma;
++	unsigned int in_use;
++	unsigned int offset;
++};
++
++void dsp_pool_free(struct dsp_pool *pool, void *vaddr, dma_addr_t dma);
++void *dsp_pool_alloc(struct dsp_pool *pool, gfp_t mem_flags,
++		     dma_addr_t *handle);
++
++struct dsp_pool *dsp_pool_create(struct device *dev, size_t size,
++				 size_t pool_size, size_t align, size_t boundary);
++void dsp_pool_destroy(struct dsp_pool *pool);
++#endif
+-- 
+2.47.0
+

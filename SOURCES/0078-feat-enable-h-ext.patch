@@ -1,0 +1,130 @@
+From 088dfac8d2ce6b05429a3e9397f8ffac76db9df4 Mon Sep 17 00:00:00 2001
+From: Han Gao <gaohan@iscas.ac.cn>
+Date: Wed, 26 Jun 2024 21:42:42 +0800
+Subject: [PATCH 078/215] feat: enable h ext
+
+Signed-off-by: Han Gao <gaohan@iscas.ac.cn>
+---
+ .../boot/dts/eswin/eswin-win2030-arch-d2d.dtsi   | 16 ++++++++--------
+ .../riscv/boot/dts/eswin/eswin-win2030-arch.dtsi |  8 ++++----
+ 2 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-arch-d2d.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-arch-d2d.dtsi
+index 08b35addb5b7..725d93d2165f 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-arch-d2d.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-arch-d2d.dtsi
+@@ -99,7 +99,7 @@ cpu_0: cpu@0 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&L15>;
+ 			reg = <0x0>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			sifive,buserror = <&L16>;
+@@ -146,7 +146,7 @@ cpu_1: cpu@1 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&L20>;
+ 			reg = <0x1>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			sifive,buserror = <&L21>;
+@@ -193,7 +193,7 @@ cpu_2: cpu@2 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&L25>;
+ 			reg = <0x2>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			sifive,buserror = <&L26>;
+@@ -240,7 +240,7 @@ cpu_3: cpu@3 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&L30>;
+ 			reg = <0x3>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			sifive,buserror = <&L31>;
+@@ -297,7 +297,7 @@ cpu_4: cpu@4 {
+ 		#else
+ 			reg = <0x4>;
+ 		#endif
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			#if (CHIPLET_AND_DIE & 0x2)
+@@ -344,7 +344,7 @@ cpu_5: cpu@5 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&D2L2_1>;
+ 			reg = <0x5>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			#if (CHIPLET_AND_DIE & 0x2)
+@@ -390,7 +390,7 @@ cpu_6: cpu@6 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&D2L2_2>;
+ 			reg = <0x6>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			#if (CHIPLET_AND_DIE & 0x2)
+@@ -436,7 +436,7 @@ cpu_7: cpu@7 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&D2L2_3>;
+ 			reg = <0x7>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			#if (CHIPLET_AND_DIE & 0x2)
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-arch.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-arch.dtsi
+index 3571f134aacc..cde282a61863 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-arch.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-arch.dtsi
+@@ -66,7 +66,7 @@ L17: cpu@0 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&L15>;
+ 			reg = <0x0>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb_sscofpmf";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb_sscofpmf";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			sifive,buserror = <&L16>;
+@@ -108,7 +108,7 @@ L22: cpu@1 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&L20>;
+ 			reg = <0x1>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb_sscofpmf";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb_sscofpmf";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			sifive,buserror = <&L21>;
+@@ -150,7 +150,7 @@ L27: cpu@2 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&L25>;
+ 			reg = <0x2>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb_sscofpmf";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb_sscofpmf";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			sifive,buserror = <&L26>;
+@@ -192,7 +192,7 @@ L32: cpu@3 {
+ 			mmu-type = "riscv,sv48";
+ 			next-level-cache = <&L30>;
+ 			reg = <0x3>;
+-			riscv,isa = "rv64imafdc_zicsr_zifencei_zba_zbb_sscofpmf";
++			riscv,isa = "rv64imafdch_zicsr_zifencei_zba_zbb_sscofpmf";
+ 			riscv,pmpgranularity = <4096>;
+ 			riscv,pmpregions = <8>;
+ 			sifive,buserror = <&L31>;
+-- 
+2.47.0
+

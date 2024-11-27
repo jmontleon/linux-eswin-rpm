@@ -1,0 +1,35 @@
+From e0b1a4895e3c8027cb22244632ebf13dd7285713 Mon Sep 17 00:00:00 2001
+From: lilijun <lilijun@eswincomputing.com>
+Date: Wed, 31 Jul 2024 16:23:32 +0800
+Subject: [PATCH 138/215] fix(DC8K):data compressed when outputting RGB
+
+Changelogs:
+1.During desktop system development,
+I found that the color was abnormal because RGB was compressed.
+It is necessary do not compression conversion.
+
+Signed-off-by: lilijun <lilijun@eswincomputing.com>
+---
+ drivers/gpu/drm/eswin/es_dc_hw.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/eswin/es_dc_hw.c b/drivers/gpu/drm/eswin/es_dc_hw.c
+index 30bcfb6b759c..440fd1645694 100644
+--- a/drivers/gpu/drm/eswin/es_dc_hw.c
++++ b/drivers/gpu/drm/eswin/es_dc_hw.c
+@@ -1211,10 +1211,10 @@ static void plane_ex_commit(struct dc_hw *hw)
+ 				if (i == PRIMARY_PLANE)
+ 					dc_set_clear(hw,
+ 						     DC_FRAMEBUFFER_CONFIG_EX,
+-						     BIT(6), BIT(8));
++						     0, BIT(8));
+ 				else
+ 					dc_set_clear(hw, DC_OVERLAY_CONFIG,
+-						     BIT(29), BIT(30));
++						     0, BIT(30));
+ 			} else {
+ 				if (i == PRIMARY_PLANE)
+ 					dc_set_clear(hw,
+-- 
+2.47.0
+

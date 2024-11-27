@@ -1,0 +1,61 @@
+From 5f0de16f62486d9bf3cc98bca398431d5a8cbc8d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E2=80=9Chuangyifeng=E2=80=9D?=
+ <huangyifeng@eswincomputing.com>
+Date: Fri, 31 May 2024 08:52:35 +0800
+Subject: [PATCH 041/215] fix :distinguish built-in RTC and PCF RTC
+
+Changelogs:
+      Setting aliases for the SoC built-in RTC and the PCF RTC, so
+      that the built-in RTC could be the default rtc
+---
+ arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts | 4 +++-
+ arch/riscv/boot/dts/eswin/eic7700-evb.dts    | 4 +++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+index 008c21b95a6f..41fb37364295 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+@@ -47,6 +47,8 @@ aliases {
+ 		serial0 = &d0_uart0;
+ 		ethernet0 = &d0_gmac0;
+ 		ethernet1 = &d0_gmac1;
++		rtc0 = &die0_rtc;
++		rtc1 = &pcf_rtc;
+ 	};
+ 
+ 	chosen {
+@@ -788,7 +790,7 @@ &d0_aon_i2c0 {
+ 	/* temp sensor & rtc */
+ 	status = "okay";
+ 	eswin,syscfg = <&d0_sys_con 0x3C0 16>;
+-	rtc@51 {
++	pcf_rtc:rtc@51 {
+ 		compatible = "nxp,pcf8563";
+ 		reg = <0x51>;
+ 	};
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb.dts b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+index 4d9aeafa93f7..2aebb21a51a0 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+@@ -46,6 +46,8 @@ aliases {
+ 		serial0 = &d0_uart0;
+ 		ethernet0 = &d0_gmac0;
+ 		ethernet1 = &d0_gmac1;
++		rtc0 = &die0_rtc;
++		rtc1 = &pcf_rtc;
+ 	};
+ 
+ 	chosen {
+@@ -746,7 +748,7 @@ &d0_aon_i2c0 {
+ 	/* temp sensor & rtc */
+ 	status = "okay";
+ 	eswin,syscfg = <&d0_sys_con 0x3C0 16>;
+-	rtc@51 {
++	pcf_rtc:rtc@51 {
+ 		compatible = "nxp,pcf8563";
+ 		reg = <0x51>;
+ 	};
+-- 
+2.47.0
+

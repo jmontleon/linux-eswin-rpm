@@ -1,0 +1,91 @@
+From 1380fffc1d533ee988222c5f0051d17be78f53b2 Mon Sep 17 00:00:00 2001
+From: yangwei1 <yangwei1@eswincomputing.com>
+Date: Tue, 30 Jul 2024 13:56:07 +0800
+Subject: [PATCH 179/215] fix:Correct word errors,remove unused define
+
+Changelogs:
+	1.Correct word error
+	2.,remove unused define
+
+Signed-off-by: yangwei1 <yangwei1@eswincomputing.com>
+---
+ arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi | 2 +-
+ arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi | 2 +-
+ drivers/hwmon/eswin-fan-control.c                     | 2 +-
+ drivers/usb/dwc3/dwc3-eswin.c                         | 8 --------
+ 4 files changed, 3 insertions(+), 11 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index 2785eb640b3a..fc1bb85f2289 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -1274,7 +1274,7 @@ fan_control: fan_control@50b50000 {
+ 			interrupt-names = "fanirq";
+ 			interrupts = <354>;
+ 			pulses-per-revolution = <2>;
+-			pwm-minimun-period = <1000>;
++			pwm-minimum-period = <1000>;
+ 			pwms = <&pwm0 0 100000>;
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_fan_tach_default>;
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index 9883a0b1a8bf..067c9488efd5 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -683,7 +683,7 @@ d1_fan_control: fan_control@70b50000 {
+ 			interrupt-names = "fanirq";
+ 			interrupts = <354>;
+ 			pulses-per-revolution = <1>;
+-			pwm-minimun-period = <1000>;
++			pwm-minimum-period = <1000>;
+ 			pwms = <&d1_pwm0 0 100000>;
+ 			status = "disabled";
+ 			label = "d1_fan_control";
+diff --git a/drivers/hwmon/eswin-fan-control.c b/drivers/hwmon/eswin-fan-control.c
+index ea92a0bb9906..aff50deb2740 100644
+--- a/drivers/hwmon/eswin-fan-control.c
++++ b/drivers/hwmon/eswin-fan-control.c
+@@ -378,7 +378,7 @@ static int eswin_fan_control_init(struct eswin_fan_control_data *ctl,
+ 		return -EINVAL;
+ 
+ 	/* get pwm minimum period */
+-	ret = of_property_read_u32(np, "pwm-minimun-period", &ctl->min_period);
++	ret = of_property_read_u32(np, "pwm-minimum-period", &ctl->min_period);
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/drivers/usb/dwc3/dwc3-eswin.c b/drivers/usb/dwc3/dwc3-eswin.c
+index 1769d9a7ff5f..4ea7003b0339 100755
+--- a/drivers/usb/dwc3/dwc3-eswin.c
++++ b/drivers/usb/dwc3/dwc3-eswin.c
+@@ -51,12 +51,6 @@
+ #include "core.h"
+ #include "io.h"
+ 
+-
+-#define dwc3_eswin_AUTOSUSPEND_DELAY 500 /* ms */
+-#define PERIPHERAL_DISCONNECT_TIMEOUT 1000000 /* us */
+-#define WAIT_FOR_HCD_READY_TIMEOUT 5000000 /* us */
+-#define XHCI_TSTCTRL_MASK (0xf << 28)
+-
+ #define AWSMMUSID GENMASK(31, 24) // The sid of write operation
+ #define AWSMMUSSID GENMASK(23, 16) // The ssid of write operation
+ #define ARSMMUSID GENMASK(15, 8) // The sid of read operation
+@@ -77,14 +71,12 @@
+ struct dwc3_eswin {
+ 	int num_clocks;
+ 	bool connected;
+-	bool skip_suspend;
+ 	bool suspended;
+ 	bool force_mode;
+ 	bool is_phy_on;
+ 	struct device *dev;
+ 	struct clk **clks;
+ 	struct dwc3 *dwc;
+-	struct reset_control *otg_rst;
+ 	struct extcon_dev *edev;
+ 	struct usb_hcd *hcd;
+ 	struct notifier_block device_nb;
+-- 
+2.47.0
+

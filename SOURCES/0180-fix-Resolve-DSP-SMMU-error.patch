@@ -1,0 +1,171 @@
+From cc5446c83456500ca9a8e0963fc40d99de2d548c Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Fri, 27 Sep 2024 17:11:20 +0800
+Subject: [PATCH 180/215] fix:Resolve DSP SMMU error.
+
+Changelogs:
+	Resolve SMMU error reported by DSP driver without fw.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ .../dts/eswin/eswin-win2030-die0-soc.dtsi     |  4 +--
+ .../dts/eswin/eswin-win2030-die1-soc.dtsi     |  4 +--
+ .../soc/eswin/ai_driver/dsp/dsp_platform.c    | 28 +++++++++++++++----
+ drivers/soc/eswin/dsp_subsys.c                | 16 ++++++++---
+ drivers/soc/eswin/eswin-dsp-subsys.h          |  1 +
+ 5 files changed, 39 insertions(+), 14 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index fc1bb85f2289..50a9383989b4 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -544,8 +544,8 @@ d0_dsp_subsys:dsp_subsys@52280400 {
+ 			ranges;
+ 			dma-ranges = <0x0 0x30000000 0x0 0xc0000000 0x0 0xce000000>;
+ 			compatible = "es-dsp-subsys", "simple-bus";
+-			clocks = <&d0_clock WIN2030_CLK_DSPT_CFG_CLK>;
+-			clock-names = "cfg_clk";
++			clocks = <&d0_clock WIN2030_CLK_DSPT_CFG_CLK>, <&d0_clock WIN2030_CLK_DSPT_ACLK>;
++			clock-names = "cfg_clk", "aclk";
+ 			resets = <&d0_reset DSP_RST_CTRL SW_DSP_AXI_RSTN>,
+ 					<&d0_reset DSP_RST_CTRL SW_DSP_CFG_RSTN>,
+ 					<&d0_reset DSP_RST_CTRL SW_DSP_DIV4_RSTN>,
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index 067c9488efd5..01a325bd598f 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -1243,8 +1243,8 @@ d1_dsp_subsys:dsp_subsys@72280400 {
+ 			ranges;
+ 			dma-ranges = <0x0 0x30000000 0x0 0xc0000000 0x0 0xce000000>;
+ 			compatible = "es-dsp-subsys", "simple-bus";
+-			clocks = <&d1_clock WIN2030_CLK_DSPT_CFG_CLK>;
+-			clock-names = "cfg_clk";
++			clocks = <&d1_clock WIN2030_CLK_DSPT_CFG_CLK>,  <&d1_clock WIN2030_CLK_DSPT_ACLK>;
++			clock-names = "cfg_clk", aclk;
+ 			resets = <&d1_reset DSP_RST_CTRL SW_DSP_AXI_RSTN>,
+ 				<&d1_reset DSP_RST_CTRL SW_DSP_CFG_RSTN>,
+ 				<&d1_reset DSP_RST_CTRL SW_DSP_DIV4_RSTN>,
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+index 055428dfaba1..9732a204a4e6 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_platform.c
+@@ -248,14 +248,24 @@ int es_dsp_clk_disable(struct es_dsp *dsp)
+ {
+ 	int ret;
+ 	struct es_dsp_hw *hw = (struct es_dsp_hw *)dsp->hw_arg;
++	bool enabled;
++	u32 val;
++
+ 	ret = es_dsp_core_clk_disable(dsp);
+ 	if (ret) {
+ 		dsp_debug("%s, %d, dsp core clk disable err, ret=%d.\n",
+ 			  __func__, __LINE__, ret);
+ 		return ret;
+ 	}
++	enabled = __clk_is_enabled(hw->subsys->aclk);
++	regmap_read(hw->map, REG_OFFSET_USR_CONF0, &val);
++	dsp_debug("%s, %d, enabled=%d, val=0x%x.\n", __func__, __LINE__,
++		  enabled, val);
+ 
+-	clk_disable_unprepare(hw->aclk);
++	if ((enabled == true && val == 0)) {
++		dsp_debug("%s, %d, disable aclk.\n", __func__, __LINE__);
++		clk_disable_unprepare(hw->subsys->aclk);
++	}
+ 	clk_disable_unprepare(hw->subsys->cfg_clk);
+ 	dsp_debug("%s, %d, done.\n", __func__, __LINE__);
+ 	return ret;
+@@ -264,21 +274,27 @@ int es_dsp_clk_enable(struct es_dsp *dsp)
+ {
+ 	struct es_dsp_hw *hw = (struct es_dsp_hw *)dsp->hw_arg;
+ 	int ret;
++	bool enabled;
+ 
+ 	ret = clk_prepare_enable(hw->subsys->cfg_clk);
+ 	if (ret) {
+ 		dev_err(dsp->dev, "failed to enable cfg clk, ret=%d.\n", ret);
+ 		return ret;
+ 	}
+-	ret = clk_prepare_enable(hw->aclk);
+-	if (ret) {
+-		dev_err(dsp->dev, "failed to enable aclk: %d\n", ret);
+-		return ret;
++	enabled = __clk_is_enabled(hw->subsys->aclk);
++	if (!enabled) {
++		ret = clk_prepare_enable(hw->subsys->aclk);
++		if (ret) {
++			dev_err(dsp->dev, "failed to enable aclk: %d\n", ret);
++			return ret;
++		}
+ 	}
+ 
+ 	ret = es_dsp_core_clk_enable(dsp);
+ 	if (ret) {
+-		clk_disable_unprepare(hw->aclk);
++		if (!enabled) {
++			clk_disable_unprepare(hw->subsys->aclk);
++		}
+ 		return ret;
+ 	}
+ 
+diff --git a/drivers/soc/eswin/dsp_subsys.c b/drivers/soc/eswin/dsp_subsys.c
+index acf33631926a..b5a95f20c061 100644
+--- a/drivers/soc/eswin/dsp_subsys.c
++++ b/drivers/soc/eswin/dsp_subsys.c
+@@ -68,6 +68,14 @@ static inline int dsp_subsys_clk_init(struct platform_device *pdev,
+ 		dev_err(&pdev->dev, "failed to get cfg_clk: %d\n", ret);
+ 		return ret;
+ 	}
++
++	subsys->aclk = devm_clk_get(&pdev->dev, "aclk");
++	if (IS_ERR(subsys->aclk)) {
++		ret = PTR_ERR(subsys->aclk);
++		dev_err(&pdev->dev, "failed to get aclk: %d\n", ret);
++		return ret;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -102,13 +110,13 @@ static int dsp_subsys_reset(struct es_dsp_subsys *subsys)
+ 	return 0;
+ }
+ 
+-static int dsp_subsys_clk_enable(struct es_dsp_subsys *subsys)
++static int dsp_subsys_aclk_enable(struct es_dsp_subsys *subsys)
+ {
+ 	int ret;
+ 
+-	ret = clk_prepare_enable(subsys->cfg_clk);
++	ret = clk_prepare_enable(subsys->aclk);
+ 	if (ret) {
+-		dev_err(&subsys->pdev->dev, "failed to enable cfg_clk: %d\n", ret);
++		dev_err(&subsys->pdev->dev, "failed to enable aclk: %d\n", ret);
+ 		return ret;
+ 	}
+ 	return 0;
+@@ -294,7 +302,7 @@ static int es_dsp_subsys_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	ret = dsp_subsys_clk_enable(subsys);
++	ret = dsp_subsys_aclk_enable(subsys);
+ 	if (0 != ret) {
+ 		return ret;
+ 	}
+diff --git a/drivers/soc/eswin/eswin-dsp-subsys.h b/drivers/soc/eswin/eswin-dsp-subsys.h
+index 4933411fde94..644ff4b26c20 100644
+--- a/drivers/soc/eswin/eswin-dsp-subsys.h
++++ b/drivers/soc/eswin/eswin-dsp-subsys.h
+@@ -39,6 +39,7 @@ struct es_dsp_subsys {
+ 	struct reset_control *rstc_div_2;
+ 	struct reset_control *rstc_div_3;
+ 	struct clk *cfg_clk;
++	struct clk *aclk;
+ 	dsp_subsys_status_pfunc dsp_subsys_status;
+ };
+ #endif
+\ No newline at end of file
+-- 
+2.47.0
+

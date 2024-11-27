@@ -1,0 +1,61 @@
+From 96103f8bcdb0a9065461743763dcf19634fd4f2e Mon Sep 17 00:00:00 2001
+From: linmin <linmin@eswincomputing.com>
+Date: Wed, 4 Sep 2024 15:13:10 +0800
+Subject: [PATCH 166/215] feat:Support mmz partition resize
+
+Changelogs:
+1.It is able to resize the mmz partition via uboot command:"fdt mmz <name> <addr> <size>".
+  The "@upper,lower" will be added as suffix to mmz partition name. This name does NOT
+  conform to mmz partition naming conventions.
+  So, change the eswin_memblock.c to truncate the string before '@' character and use it as
+  the partition name.
+
+Signed-off-by: linmin <linmin@eswincomputing.com>
+---
+ drivers/memory/eswin/eswin_memblock.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/memory/eswin/eswin_memblock.c b/drivers/memory/eswin/eswin_memblock.c
+index c99b0b0b100d..06c8635c6a60 100644
+--- a/drivers/memory/eswin/eswin_memblock.c
++++ b/drivers/memory/eswin/eswin_memblock.c
+@@ -82,6 +82,8 @@ static int __init eswin_rsvmem_init_reserved_mem(phys_addr_t base, phys_addr_t s
+ {
+ 	struct mem_block *memblock;
+ 	phys_addr_t alignment;
++	char *temp;
++	int bname_len;
+ 
+ 	/* Sanity checks */
+ 	if (eswin_rsvmem_block_count == ARRAY_SIZE(eswin_rsvmem_blocks)) {
+@@ -113,9 +115,15 @@ static int __init eswin_rsvmem_init_reserved_mem(phys_addr_t base, phys_addr_t s
+ 
+ 	/* Set esPagesStart = NULL here, it will be allocated later by fs_initcall*/
+ 	memblock->esPagesStart = NULL;
+-
+ 	memblock->kPageStart = phys_to_page(base);
++
+ 	snprintf(memblock->name, BLOCK_MAX_NAME, name);
++	temp = strchr(memblock->name, '@');
++	if (temp) {
++		bname_len = strnlen(memblock->name, BLOCK_MAX_NAME) - strnlen(temp,
++								BLOCK_MAX_NAME);
++		*(memblock->name + bname_len) = '\0';
++	}
+ 
+ 	eswin_rsvmem_block_count++;
+ 
+@@ -161,8 +169,8 @@ static int __init rmem_eswin_setup(struct reserved_mem *rmem)
+ 		return err;
+ 	}
+ 
+-	pr_info("Reserved memory: created eswin reserve memory at %pa, size %ld MiB\n",
+-		&rmem->base, (unsigned long)rmem->size / SZ_1M);
++	pr_info("Reserved memory: created %s eswin reserve memory at %pa, size %ld MiB\n",
++		rmem->name, &rmem->base, (unsigned long)rmem->size / SZ_1M);
+ 
+ 	return 0;
+ }
+-- 
+2.47.0
+

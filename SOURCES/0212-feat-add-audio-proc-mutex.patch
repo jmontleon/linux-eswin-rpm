@@ -1,0 +1,91 @@
+From 73dbe5a37eb874bfd3cbd27acbb227b8c21647a3 Mon Sep 17 00:00:00 2001
+From: yangqiang <yangqiang1@eswincomputing.com>
+Date: Fri, 8 Nov 2024 14:56:51 +0800
+Subject: [PATCH 212/215] feat:add audio proc mutex.
+
+Changelogs:
+add audio proc mutex.
+
+Signed-off-by: yangqiang <yangqiang1@eswincomputing.com>
+---
+ sound/soc/eswin/esw-audio-proc.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/sound/soc/eswin/esw-audio-proc.c b/sound/soc/eswin/esw-audio-proc.c
+index f0c0cbe10f56..83c3bbb26c73 100644
+--- a/sound/soc/eswin/esw-audio-proc.c
++++ b/sound/soc/eswin/esw-audio-proc.c
+@@ -27,6 +27,7 @@
+ #include <linux/eventfd.h>
+ #include <linux/ioctl.h>
+ #include <linux/device.h>
++#include <linux/mutex.h>
+ 
+ // proc data definition
+ typedef enum
+@@ -79,6 +80,7 @@ static int audio_proc_major[NUM_DEVICES] = {0};
+ static struct class *audio_proc_class = NULL;
+ static struct device *audio_proc_device[NUM_DEVICES] = {NULL};
+ static int32_t *g_perf_data[NUM_DEVICES] = {NULL};
++static DEFINE_MUTEX(audio_proc_lock);
+ 
+ static void show_aenc_data(struct seq_file *m)
+ {
+@@ -393,14 +395,16 @@ int audio_proc_module_init(void)
+ 	int i, ret;
+ 	struct device *dev;
+ 
++	mutex_lock(&audio_proc_lock);
++
+ 	if (g_proc_initialized) {
++		mutex_unlock(&audio_proc_lock);
+ 		return 0;
+ 	}
+ 
+-	pr_info("audio_proc_module_init enter.\n");
+-
+ 	audio_proc_class = class_create("audio_proc_class");
+ 	if (IS_ERR(audio_proc_class)) {
++		mutex_unlock(&audio_proc_lock);
+ 		pr_err("Failed to create audio_proc_class\n");
+ 		return PTR_ERR(audio_proc_class);
+ 	}
+@@ -435,7 +439,9 @@ int audio_proc_module_init(void)
+ 
+ 	g_proc_initialized = true;
+ 
+-	pr_info("es_audio_proc: initialized\n");
++	mutex_unlock(&audio_proc_lock);
++	pr_info("es_audio_proc:initialized\n");
++
+ 	return 0;
+ 
+ cleanup:
+@@ -455,6 +461,7 @@ int audio_proc_module_init(void)
+ 	}
+ 
+ 	class_destroy(audio_proc_class);
++	mutex_unlock(&audio_proc_lock);
+ 	return ret;
+ }
+ 
+@@ -464,6 +471,8 @@ void audio_proc_module_exit(void)
+ {
+ 	int i;
+ 
++	mutex_lock(&audio_proc_lock);
++
+ 	if (g_proc_uninitialized) {
+ 		return;
+ 	}
+@@ -480,5 +489,7 @@ void audio_proc_module_exit(void)
+ 
+ 	g_proc_uninitialized = true;
+ 
++	mutex_unlock(&audio_proc_lock);
++
+ 	pr_info("es_audio_proc: uninitialized\n");
+ }
+-- 
+2.47.0
+

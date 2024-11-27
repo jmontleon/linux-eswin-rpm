@@ -1,0 +1,29 @@
+From a9106ecfc1f0daecc3c9f49d0d8f6d158bbb1ca3 Mon Sep 17 00:00:00 2001
+From: congyuyang <congyuyang@eswincomputing.com>
+Date: Thu, 1 Aug 2024 15:09:50 +0800
+Subject: [PATCH 139/215] feat:change idle defconfig from win2030 to eic7700
+
+Changelogs:
+change idle defconfig from win2030 to eic7700
+
+Signed-off-by: congyuyang <congyuyang@eswincomputing.com>
+---
+ arch/riscv/configs/eic7700_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/riscv/configs/eic7700_defconfig b/arch/riscv/configs/eic7700_defconfig
+index 24819c7dd1e7..1472511bd299 100644
+--- a/arch/riscv/configs/eic7700_defconfig
++++ b/arch/riscv/configs/eic7700_defconfig
+@@ -48,6 +48,8 @@ CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+ CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+ CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
+ CONFIG_CPUFREQ_DT=y
++CONFIG_CPU_IDLE=y
++CONFIG_RISCV_SBI_CPUIDLE=y
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM=m
+ CONFIG_JUMP_LABEL=y
+-- 
+2.47.0
+

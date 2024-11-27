@@ -1,0 +1,117 @@
+From 0da28edaafa318a0ab4e20e7bc942840c9c9aed2 Mon Sep 17 00:00:00 2001
+From: huangyifeng <huangyifeng@eswincomputing.com>
+Date: Thu, 24 Oct 2024 10:36:41 +0800
+Subject: [PATCH 197/215] feat:NOC driver adapt to bandwidth test.
+
+Changelogs:
+1. In dts, bandwidth measurement is not filtered
+2. Modify  duration value to 30
+
+Signed-off-by: huangyifeng <huangyifeng@eswincomputing.com>
+---
+ arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts           | 10 ++++++++++
+ arch/riscv/boot/dts/eswin/eic7700-evb.dts              | 10 ++++++++++
+ .../boot/dts/eswin/eic7700-hifive-premier-p550.dts     | 10 ++++++++++
+ drivers/interconnect/eswin/noc.h                       |  2 +-
+ 4 files changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+index 83b656f6c481..bf2bf5e2c920 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+@@ -210,6 +210,7 @@ &d0_sys_noc {
+ 	//eswin,NPU-qos-owner;
+ 	//eswin,SPISLV_TBU3-qos-owner;
+ 
++#if 0
+ 	stat,0 = "TracePort:ddr0_p1_req",
+ 		 "InitFlow:mcput_snoc_mp/I/0";
+ 
+@@ -222,6 +223,15 @@ &d0_sys_noc {
+ 		 "Status:Req", "AddrSize:0x28";
+ 
+ 	stat,3 = "TracePort:ddr1_p2_req";
++#else
++	stat,0 = "TracePort:ddr0_p1_req";
++
++	stat,1 = "TracePort:ddr0_p2_req";
++
++	stat,2 = "TracePort:ddr1_p1_req";
++
++	stat,3 = "TracePort:ddr1_p2_req";
++#endif
+ 
+ 	latency,0 = "TracePort:sysnoc_trans_probe_0", "AddrSize:0x0";
+ 	latency,1 = "TracePort:sysnoc_trans_probe_1","Mode:latency","AddrBase:0x82000000","AddrSize:0x28","Opcode:RdWr";
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb.dts b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+index d99fe95e2a31..456890a19c8c 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb.dts
+@@ -167,6 +167,7 @@ &d0_sys_noc {
+ 	//eswin,NPU-qos-owner;
+ 	//eswin,SPISLV_TBU3-qos-owner;
+ 
++#if 0
+ 	stat,0 = "TracePort:ddr0_p1_req",
+ 		 "InitFlow:mcput_snoc_mp/I/0";
+ 
+@@ -179,6 +180,15 @@ &d0_sys_noc {
+ 		 "Status:Req", "AddrSize:0x28";
+ 
+ 	stat,3 = "TracePort:ddr1_p2_req";
++#else
++	stat,0 = "TracePort:ddr0_p1_req";
++
++	stat,1 = "TracePort:ddr0_p2_req";
++
++	stat,2 = "TracePort:ddr1_p1_req";
++
++	stat,3 = "TracePort:ddr1_p2_req";
++#endif
+ 
+ 	latency,0 = "TracePort:sysnoc_trans_probe_0", "AddrSize:0x0";
+ 	latency,1 = "TracePort:sysnoc_trans_probe_1","Mode:latency","AddrBase:0x82000000","AddrSize:0x28","Opcode:RdWr";
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts b/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+index 573b1e7d148d..4b6772710ab6 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+@@ -164,6 +164,7 @@ &d0_sys_noc {
+ 	//eswin,NPU-qos-owner;
+ 	//eswin,SPISLV_TBU3-qos-owner;
+ 
++#if 0
+ 	stat,0 = "TracePort:ddr0_p1_req",
+ 		 "InitFlow:mcput_snoc_mp/I/0";
+ 
+@@ -176,6 +177,15 @@ &d0_sys_noc {
+ 		 "Status:Req", "AddrSize:0x28";
+ 
+ 	stat,3 = "TracePort:ddr1_p2_req";
++#else
++	stat,0 = "TracePort:ddr0_p1_req";
++
++	stat,1 = "TracePort:ddr0_p2_req";
++
++	stat,2 = "TracePort:ddr1_p1_req";
++
++	stat,3 = "TracePort:ddr1_p2_req";
++#endif
+ 
+ 	latency,0 = "TracePort:sysnoc_trans_probe_0", "AddrSize:0x0";
+ 	latency,1 = "TracePort:sysnoc_trans_probe_1","Mode:latency","AddrBase:0x82000000","AddrSize:0x28","Opcode:RdWr";
+diff --git a/drivers/interconnect/eswin/noc.h b/drivers/interconnect/eswin/noc.h
+index 37cbf964169a..92a86788b0d0 100644
+--- a/drivers/interconnect/eswin/noc.h
++++ b/drivers/interconnect/eswin/noc.h
+@@ -26,7 +26,7 @@
+ #define WIN2030_NOC_ERROR_REGISTERS_MAX 8
+ #define WIN2030_NOC_REG_ADDR(_reg)	((void __iomem *) (reg->base + reg->offset))
+ #define MAX_ITERATION		(1 << 28)	/* Arbitrary value */
+-#define DURATION		20
++#define DURATION		30
+ #define WIN2030_NOC_TRACE_PORT_MAX	3
+ #define WIN2030_NOC_BIN_CNT	4
+ #define SIZE_BIG_BUF	4096
+-- 
+2.47.0
+

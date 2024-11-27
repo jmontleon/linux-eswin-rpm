@@ -1,0 +1,53 @@
+From c3e3ca43aa2f19f495686731eb801777bade18f3 Mon Sep 17 00:00:00 2001
+From: liusheng <liusheng@eswincomputing.com>
+Date: Tue, 6 Aug 2024 14:29:38 +0800
+Subject: [PATCH 142/215] fix:signal to wait the gpu idle
+
+Changelogs:
+1. power on -> off, it would call pmcacheflush. After cmd finish,
+it do power off directly, maybe the interupt haven't back. so use
+the signal to wait interrupt and then do power off.
+
+Signed-off-by: liusheng <liusheng@eswincomputing.com>
+---
+ .../media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.c  | 4 ++--
+ .../hae/hal/kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c  | 1 +
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.c b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.c
+index a40648236f10..bebbbd4a7edf 100644
+--- a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.c
++++ b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware.c
+@@ -2033,8 +2033,7 @@ gckHARDWARE_Construct(gckOS Os, gckKERNEL Kernel, gckHARDWARE *Hardware)
+     /* Check if big endian */
+     hardware->bigEndian = (*(gctUINT8 *)&data == 0xff);
+ 
+-    gcmkONERROR(gckOS_CreateSignal(Os, gcvFALSE, &hardware->feIdleSignal));
+-    gcmkONERROR(gckOS_Signal(Os, hardware->feIdleSignal, gcvTRUE));
++    gcmkONERROR(gckOS_CreateSignal(Os, gcvTRUE, &hardware->feIdleSignal));
+ 
+     /* Initialize the fast clear. */
+     gcmkONERROR(gckHARDWARE_SetFastClear(hardware, -1, -1));
+@@ -9664,6 +9663,7 @@ gckHARDWARE_ExecuteFunctions(gcsFUNCTION_EXECUTION_PTR Execution)
+         } else {
+             gcmkONERROR(gckWLFE_Execute(hardware, address,
+                                         Execution->funcCmd[i].bytes));
++            gcmkONERROR(gckOS_WaitSignal(hardware->os, hardware->feIdleSignal, gcvFALSE, gcdGPU_2D_TIMEOUT));
+         }
+ 
+ #if gcdLINK_QUEUE_SIZE
+diff --git a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c
+index bae3b4538639..bb92f5f58e0a 100644
+--- a/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c
++++ b/drivers/staging/media/eswin/hae/hal/kernel/arch/gc_hal_kernel_hardware_waitlink_fe.c
+@@ -1168,6 +1168,7 @@ gckWLFE_Execute(gckHARDWARE Hardware, gctADDRESS Address, gctUINT32 Bytes)
+     gcmkONERROR(gckOS_MemoryBarrier(Hardware->os, gcvNULL));
+ 
+     if (Hardware->type == gcvHARDWARE_2D) {
++        gcmkONERROR(gckOS_Signal(Hardware->os, Hardware->feIdleSignal, gcvFALSE));
+         gcmkONERROR(gckOS_WriteRegisterEx(Hardware->os, Hardware->kernel,
+                                           0x00658, control));
+     } else {
+-- 
+2.47.0
+

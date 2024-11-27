@@ -1,0 +1,67 @@
+From 77e32d75cdcbea870fa13a01d601806b2119b7f6 Mon Sep 17 00:00:00 2001
+From: xuxiang <xuxiang@eswincomputing.com>
+Date: Fri, 14 Jun 2024 14:54:27 +0800
+Subject: [PATCH 055/215] fix:spi del dma
+
+Changelogs:
+1. spi delete dma
+---
+ arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi | 6 ------
+ arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi | 3 ---
+ drivers/spi/spi-dw-mmio.c                             | 2 +-
+ 3 files changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index 9f76de5f0162..0879dcca2527 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -817,9 +817,6 @@ ssi0: spi@50810000 {
+ 			interrupts = <91>;
+ 			resets = <&d0_reset SSI_RST_CTRL SW_SSI_RST_N_0>;
+ 			reset-names = "spi";
+-			eswin,spi_dma = <&d0_aon_dmac>;
+-			dmas = <&d0_aon_dmac 38 3>, <&d0_aon_dmac 39 3>;
+-			dma-names = "rx", "tx";
+ 			numa-node-id = <0>;
+ 			status = "disabled";
+ 			dma-noncoherent;
+@@ -837,9 +834,6 @@ ssi1: spi@50814000 {
+ 			interrupts = <92>;
+ 			resets = <&d0_reset SSI_RST_CTRL SW_SSI_RST_N_1>;
+ 			reset-names = "spi";
+-			eswin,spi_dma = <&d0_aon_dmac>;
+-			dmas = <&d0_aon_dmac 36 4>, <&d0_aon_dmac 37 4>;
+-			dma-names = "rx", "tx";
+ 			numa-node-id = <0>;
+ 			status = "disabled";
+ 			dma-noncoherent;
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index 1805c2bcdccc..1417c6298a3c 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -1589,9 +1589,6 @@ d1_ssi0: spi1@70810000 {
+ 			interrupts = <91>;
+ 			resets = <&d1_reset SSI_RST_CTRL SW_SSI_RST_N_0>;
+ 			reset-names = "spi";
+-			eswin,spi_dma = <&d1_aon_dmac>;
+-			dmas = <&d1_aon_dmac 38 3>, <&d1_aon_dmac 39 3>;
+-			dma-names = "rx", "tx";
+ 			numa-node-id = <1>;
+ 			status = "disabled";
+ 			dma-noncoherent;
+diff --git a/drivers/spi/spi-dw-mmio.c b/drivers/spi/spi-dw-mmio.c
+index 39c1ae316ac0..4462f5b87513 100644
+--- a/drivers/spi/spi-dw-mmio.c
++++ b/drivers/spi/spi-dw-mmio.c
+@@ -440,7 +440,7 @@ static const struct of_device_id dw_spi_mmio_of_match[] = {
+ 	{ .compatible = "microchip,sparx5-spi", dw_spi_mscc_sparx5_init},
+ 	{ .compatible = "canaan,k210-spi", dw_spi_canaan_k210_init},
+ 	{ .compatible = "amd,pensando-elba-spi", .data = dw_spi_elba_init},
+-	{ .compatible = "snps,eic770x-spi", .data = dw_spi_eswin_init},
++	{ .compatible = "snps,eic770x-spi",},
+ 	{ /* end of table */}
+ };
+ MODULE_DEVICE_TABLE(of, dw_spi_mmio_of_match);
+-- 
+2.47.0
+

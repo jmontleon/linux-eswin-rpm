@@ -1,0 +1,65 @@
+From a1849ca66ca7fdeaf4bc7b2fd7b0036ff9c9c014 Mon Sep 17 00:00:00 2001
+From: Han Gao <gaohan@iscas.ac.cn>
+Date: Fri, 14 Jun 2024 17:58:40 +0800
+Subject: [PATCH 080/215] drm: eswin: fbdev: fix es-fbdev
+
+fix es-fbdev
+
+Co-authored-by: Icenowy Zheng <uwu@icenowy.me>
+Signed-off-by: Han Gao <gaohan@iscas.ac.cn>
+---
+ drivers/gpu/drm/eswin/es_drv.c | 3 +++
+ drivers/gpu/drm/eswin/es_gem.c | 9 ++++++++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/eswin/es_drv.c b/drivers/gpu/drm/eswin/es_drv.c
+index 936198b1c351..2596e8e492a3 100644
+--- a/drivers/gpu/drm/eswin/es_drv.c
++++ b/drivers/gpu/drm/eswin/es_drv.c
+@@ -22,6 +22,7 @@
+ #include <drm/drm_vblank.h>
+ #include <drm/drm_framebuffer.h>
+ #include <drm/drm_atomic_helper.h>
++#include <drm/drm_fbdev_generic.h>
+ 
+ #include "es_drv.h"
+ #include "es_fb.h"
+@@ -277,6 +278,8 @@ static int es_drm_bind(struct device *dev)
+ 	if (ret)
+ 		goto err_helper;
+ 
++	drm_fbdev_generic_setup(drm_dev, 32);
++
+ 	return 0;
+ 
+ err_helper:
+diff --git a/drivers/gpu/drm/eswin/es_gem.c b/drivers/gpu/drm/eswin/es_gem.c
+index 4898c86d5d87..5406448ee2fb 100644
+--- a/drivers/gpu/drm/eswin/es_gem.c
++++ b/drivers/gpu/drm/eswin/es_gem.c
+@@ -103,7 +103,7 @@ static int es_gem_alloc_buf(struct es_gem_object *es_obj)
+ 		return 0;
+ 	}
+ 
+-	es_obj->dma_attrs = DMA_ATTR_WRITE_COMBINE | DMA_ATTR_NO_KERNEL_MAPPING;
++	es_obj->dma_attrs = DMA_ATTR_WRITE_COMBINE;
+ 
+ 	if (!is_iommu_enabled(dev))
+ 		es_obj->dma_attrs |= DMA_ATTR_FORCE_CONTIGUOUS;
+@@ -395,6 +395,13 @@ struct sg_table *es_gem_prime_get_sg_table(struct drm_gem_object *obj)
+ static int es_gem_prime_vmap(struct drm_gem_object *obj,
+ 			     struct iosys_map *map)
+ {
++	struct es_gem_object *es_obj = to_es_gem_object(obj);
++
++	void * vaddr = es_obj->dma_attrs & DMA_ATTR_NO_KERNEL_MAPPING ?
++		       page_address(es_obj->cookie) : es_obj->cookie;
++
++	iosys_map_set_vaddr(map, vaddr);
++
+ 	return 0;
+ }
+ 
+-- 
+2.47.0
+

@@ -1,0 +1,76 @@
+From b5293103e4692c933911190e757355af0390a0b2 Mon Sep 17 00:00:00 2001
+From: luoshanggui <luoshanggui@eswincomputing.com>
+Date: Mon, 23 Sep 2024 17:47:12 +0800
+Subject: [PATCH 174/215] feat: add trylock for npu ioctl Changelogs: add
+ trylock for npu ioctl
+
+Signed-off-by: luoshanggui <luoshanggui@eswincomputing.com>
+---
+ drivers/soc/eswin/ai_driver/include/hetero_ioctl.h |  4 ++--
+ drivers/soc/eswin/ai_driver/npu/user_context.c     | 14 ++++++++++++--
+ 2 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_ioctl.h b/drivers/soc/eswin/ai_driver/include/hetero_ioctl.h
+index f18e7dd29948..77974acb3b0b 100644
+--- a/drivers/soc/eswin/ai_driver/include/hetero_ioctl.h
++++ b/drivers/soc/eswin/ai_driver/include/hetero_ioctl.h
+@@ -258,7 +258,7 @@ typedef struct _modelShmDesc {
+     uint16_t kmdSubModelId;     // kmd submodel id
+     uint32_t kmdNetworkAddrId;  // kmd network address index in model
+     int32_t dspFd[DSP_MAX_CORE_NUM];
+-    addrListDesc_t addrList;    // model address list
++    addrListDesc_t addrList;  // model address list
+ } modelShmDesc_t;
+ 
+ typedef struct _modelRec {
+@@ -296,7 +296,7 @@ typedef struct _modelRec {
+ #define ES_NPU_IOCTL_PREPARE_DMA_BUF ES_NPU_IOWR(0xf, int)
+ #define ES_NPU_IOCTL_UNPREPARE_DMA_BUF ES_NPU_IOWR(0x10, int)
+ 
+-#define ES_NPU_IOCTL_UNPREPARE_DMA_BUF ES_NPU_IOWR(0x10, int)
++#define ES_NPU_IOCTL_MUTEX_TRYLOCK ES_NPU_IOWR(0x11, int)
+ 
+ #define NPU_HETERO_CMD_BASE 'h'
+ #define NPU_HETERO_IOWR(nr, type) _IOWR(NPU_HETERO_CMD_BASE, nr, type)
+diff --git a/drivers/soc/eswin/ai_driver/npu/user_context.c b/drivers/soc/eswin/ai_driver/npu/user_context.c
+index 1d58f190a7a7..b32f9484d98d 100644
+--- a/drivers/soc/eswin/ai_driver/npu/user_context.c
++++ b/drivers/soc/eswin/ai_driver/npu/user_context.c
+@@ -592,7 +592,15 @@ static int runtime_lock_request(struct user_context *uctx, struct file *file,
+ 	struct win_engine *engine;
+ 
+ 	engine = get_engine_from_file(file);
+-	if (cmd == ES_NPU_IOCTL_MUTEX_LOCK) {
++	if (cmd == ES_NPU_IOCTL_MUTEX_TRYLOCK) {
++		if (down_trylock(&engine->runtime_sem)) {
++			return -EINTR;
++		}
++		BUG_ON(atomic_read(&uctx->lock_status) != NPU_RT_MUTX_IDLE);
++		atomic_set(&uctx->lock_status, NPU_RT_MUTX_LOCKED);
++		dla_debug("try %s, %d locked\n", __func__, __LINE__);
++
++	} else if (cmd == ES_NPU_IOCTL_MUTEX_LOCK) {
+ 		if (down_interruptible(&engine->runtime_sem)) {
+ 			return -EINTR;
+ 		}
+@@ -872,6 +880,7 @@ static long npu_dev_ioctl(struct file *file, unsigned int cmd,
+ 		break;
+ 	case ES_NPU_IOCTL_MUTEX_LOCK:
+ 	case ES_NPU_IOCTL_MUTEX_UNLOCK:
++	case ES_NPU_IOCTL_MUTEX_TRYLOCK:
+ 		ret = runtime_lock_request(uctx, file, cmd);
+ 		break;
+ 	case ES_NPU_IOCTL_HETERO_CMD:
+@@ -950,7 +959,8 @@ int npu_dev_open(struct inode *inode, struct file *file)
+ 	engine = ndev->win_engine;
+ 	ret = npu_pm_get(ndev);
+ 	if (ret < 0) {
+-		dla_error("%s, %d, npu_pm_get failed, ret = %d.\n", __func__, __LINE__, ret);
++		dla_error("%s, %d, npu_pm_get failed, ret = %d.\n", __func__,
++			  __LINE__, ret);
+ 		return ret;
+ 	}
+ 	spin_lock_irqsave(&engine->executor_lock, flags);
+-- 
+2.47.0
+

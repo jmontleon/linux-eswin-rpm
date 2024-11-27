@@ -1,0 +1,54 @@
+From 41778d8c4e6aaf78cf643a1a83b4c20741f52775 Mon Sep 17 00:00:00 2001
+From: linmin <linmin@eswincomputing.com>
+Date: Tue, 27 Aug 2024 10:26:01 +0800
+Subject: [PATCH 158/215] style:harmonize device-tree
+
+Changelogs:
+We should use a device-tree name that is upstreamable.
+
+1.use eswin/eic7700-hifive-premier-p550.dtb as device-tree name
+2.use "SiFive HiFive Premier P550" as model property
+3.use  "sifive,hifive-premier-p550", "eswin,eic7700" as compatible string
+
+Signed-off-by: linmin <linmin@eswincomputing.com>
+---
+ arch/riscv/boot/dts/eswin/Makefile                           | 2 +-
+ ...five-premier-p550.dts => eic7700-hifive-premier-p550.dts} | 5 ++---
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+ rename arch/riscv/boot/dts/eswin/{hifive-premier-p550.dts => eic7700-hifive-premier-p550.dts} (99%)
+
+diff --git a/arch/riscv/boot/dts/eswin/Makefile b/arch/riscv/boot/dts/eswin/Makefile
+index 3812da5bbdce..c5b439ec7f27 100644
+--- a/arch/riscv/boot/dts/eswin/Makefile
++++ b/arch/riscv/boot/dts/eswin/Makefile
+@@ -2,7 +2,7 @@
+ dtb-$(CONFIG_SOC_SIFIVE) += eswin-win2030.dtb \
+ 							eic7700-evb.dtb \
+ 							eic7700-evb-a2.dtb \
+-							hifive-premier-p550.dtb \
++							eic7700-hifive-premier-p550.dtb \
+ 							eic7702-evb-a1-d0.dtb \
+ 							eic7702-evb-a1-d1.dtb
+ 
+diff --git a/arch/riscv/boot/dts/eswin/hifive-premier-p550.dts b/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+similarity index 99%
+rename from arch/riscv/boot/dts/eswin/hifive-premier-p550.dts
+rename to arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+index c4a9d6f97f95..f20c86264c3e 100644
+--- a/arch/riscv/boot/dts/eswin/hifive-premier-p550.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+@@ -38,9 +38,8 @@
+ / {
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
+-	model = "ESWIN EIC7700";
+-	compatible = "sifive,hifive-unmatched-a00", "sifive,fu740-c000",
+-		     "sifive,fu740", "eswin,eic7700";
++	model = "SiFive HiFive Premier P550";
++	compatible = "sifive,hifive-premier-p550", "eswin,eic7700";
+ 
+ 	aliases {
+ 		serial0 = &d0_uart0;
+-- 
+2.47.0
+

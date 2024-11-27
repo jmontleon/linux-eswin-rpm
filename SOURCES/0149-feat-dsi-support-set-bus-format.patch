@@ -1,0 +1,261 @@
+From cb11f3599e8ca487f1d224193bba930ee29b5c0a Mon Sep 17 00:00:00 2001
+From: lilijun <lilijun@eswincomputing.com>
+Date: Wed, 14 Aug 2024 14:54:12 +0800
+Subject: [PATCH 149/215] feat:dsi support set bus-format
+
+Changelogs:
+1.dts define panel bus-format:
+	MIPI_DSI_FMT_RGB888
+	MIPI_DSI_FMT_RGB666
+	MIPI_DSI_FMT_RGB565
+
+Signed-off-by: lilijun <lilijun@eswincomputing.com>
+---
+ .../dts/eswin/eswin-win2030-die0-soc.dtsi     |  3 +-
+ .../dts/eswin/eswin-win2030-die1-soc.dtsi     |  2 +
+ drivers/gpu/drm/eswin/es_mipi_dsi.c           | 30 +++++++++----
+ drivers/gpu/drm/eswin/es_panel.c              | 42 ++++++++++++-------
+ 4 files changed, 52 insertions(+), 25 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index 2a85265960a3..13a40780a619 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -1834,7 +1834,8 @@ mipi_dsi_out: endpoint {
+ 			dsi_panel:dsi_panel@0 {
+ 				compatible = "eswin,generic-panel";
+ 				reg = <0>;
+-
++				dsi,format = <0>; //RGB888:0, RGB666:1, RGB565:3
++				dsi,lanes = <4>;
+ 				port {
+ 					panel_in: endpoint {
+ 						remote-endpoint = <&mipi_dsi_out>;
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index 92cddf1e756f..be08ead18fa8 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -1706,6 +1706,8 @@ d1_mipi_dsi_out: endpoint {
+             panel@1 {
+                 compatible = "eswin,generic-panel";
+                 reg = <0>;
++                dsi,format = <0>; //RGB888:0, RGB666:1, RGB565:3
++                dsi,lanes = <4>;
+ 
+                 port {
+                     d1_panel_in: endpoint {
+diff --git a/drivers/gpu/drm/eswin/es_mipi_dsi.c b/drivers/gpu/drm/eswin/es_mipi_dsi.c
+index 8aa3c69378f2..9f8d4c4a25b8 100644
+--- a/drivers/gpu/drm/eswin/es_mipi_dsi.c
++++ b/drivers/gpu/drm/eswin/es_mipi_dsi.c
+@@ -25,6 +25,7 @@
+ #include <video/mipi_display.h>
+ #include <drm/drm_simple_kms_helper.h>
+ #include <drm/bridge/dw_mipi_dsi.h>
++#include <linux/media-bus-format.h>
+ 
+ #include "es_crtc.h"
+ #include "es_mipi_dsi.h"
+@@ -214,11 +215,23 @@ static void es_dsi_encoder_disable(struct drm_encoder *encoder)
+ 		container_of(encoder, struct es_mipi_dsi, encoder);
+ 	struct mipi_dsi_priv *dsi_priv = &es_dsi->dsi_priv;
+ 
+-	DRM_INFO("enter, encoder = 0x%px\n", encoder);
++	DRM_DEBUG("enter, encoder = 0x%px\n", encoder);
+ 
+ 	clk_disable_unprepare(dsi_priv->ivideo_clk);
+ }
+ 
++static int
++es_dsi_encoder_atomic_check(struct drm_encoder *encoder,
++				   struct drm_crtc_state *crtc_state,
++				   struct drm_connector_state *conn_state)
++{
++	struct es_crtc_state *s = to_es_crtc_state(crtc_state);
++	struct drm_display_info *info = &conn_state->connector->display_info;
++	u32 bus_format = info->bus_formats[0];
++	s->output_fmt = bus_format;
++	return 0;
++}
++
+ static bool es_dsi_encoder_mode_fixup(struct drm_encoder *encoder,
+ 				      const struct drm_display_mode *mode,
+ 				      struct drm_display_mode *adj_mode)
+@@ -228,9 +241,9 @@ static bool es_dsi_encoder_mode_fixup(struct drm_encoder *encoder,
+ 	struct drm_crtc_state *crtc_state =
+ 		container_of(mode, struct drm_crtc_state, mode);
+ 
+-	DRM_INFO("enter, bind crtc%d\n", drm_crtc_index(crtc_state->crtc));
+-	DRM_INFO("mode: " DRM_MODE_FMT "\n", DRM_MODE_ARG(mode));
+-	DRM_INFO("adj_mode: " DRM_MODE_FMT "\n", DRM_MODE_ARG(adj_mode));
++	DRM_DEBUG("enter, bind crtc%d\n", drm_crtc_index(crtc_state->crtc));
++	DRM_DEBUG("mode: " DRM_MODE_FMT "\n", DRM_MODE_ARG(mode));
++	DRM_DEBUG("adj_mode: " DRM_MODE_FMT "\n", DRM_MODE_ARG(adj_mode));
+ 
+ 	es_dsi->crtc = crtc_state->crtc;
+ 	return true;
+@@ -240,8 +253,8 @@ static void es_dsi_encoder_mode_set(struct drm_encoder *encoder,
+ 				    struct drm_display_mode *mode,
+ 				    struct drm_display_mode *adj_mode)
+ {
+-	DRM_INFO("mode: " DRM_MODE_FMT "\n", DRM_MODE_ARG(mode));
+-	DRM_INFO("adj_mode: " DRM_MODE_FMT "\n", DRM_MODE_ARG(adj_mode));
++	DRM_DEBUG("mode: " DRM_MODE_FMT "\n", DRM_MODE_ARG(mode));
++	DRM_DEBUG("adj_mode: " DRM_MODE_FMT "\n", DRM_MODE_ARG(adj_mode));
+ }
+ 
+ static void es_dsi_encoder_mode_enable(struct drm_encoder *encoder)
+@@ -251,7 +264,7 @@ static void es_dsi_encoder_mode_enable(struct drm_encoder *encoder)
+ 		container_of(encoder, struct es_mipi_dsi, encoder);
+ 	struct mipi_dsi_priv *dsi_priv = &es_dsi->dsi_priv;
+ 
+-	DRM_INFO("enter, encoder = 0x%px\n", encoder);
++	DRM_DEBUG("enter, encoder = 0x%px\n", encoder);
+ 
+ 	ret = clk_prepare_enable(dsi_priv->ivideo_clk);
+ 	if (ret)
+@@ -263,6 +276,7 @@ static const struct drm_encoder_helper_funcs es_dsi_encoder_helper_funcs = {
+ 	.mode_set = es_dsi_encoder_mode_set,
+ 	.enable = es_dsi_encoder_mode_enable,
+ 	.disable = es_dsi_encoder_disable,
++	.atomic_check = es_dsi_encoder_atomic_check,
+ };
+ 
+ static void es_mipi_dsi_phy_write(struct mipi_dsi_priv *dsi, u8 test_code,
+@@ -598,7 +612,7 @@ static int es_mipi_dsi_bind(struct device *dev, struct device *master,
+ 	if (ret)
+ 		goto exit3;
+ 
+-	DRM_INFO("mipi dsi bind done\n");
++	DRM_DEBUG("mipi dsi bind done\n");
+ 
+ 	return 0;
+ 
+diff --git a/drivers/gpu/drm/eswin/es_panel.c b/drivers/gpu/drm/eswin/es_panel.c
+index 7c2bd90393e2..7342ab287c70 100644
+--- a/drivers/gpu/drm/eswin/es_panel.c
++++ b/drivers/gpu/drm/eswin/es_panel.c
+@@ -3,6 +3,7 @@
+ #include <drm/drm_panel.h>
+ #include <drm/drm_modes.h>
+ #include <linux/backlight.h>
++#include <linux/of.h>
+ 
+ #include <linux/gpio/consumer.h>
+ #include <linux/regulator/consumer.h>
+@@ -11,6 +12,8 @@
+ #include <video/mipi_display.h>
+ #include <video/of_videomode.h>
+ #include <video/videomode.h>
++#include <video/of_display_timing.h>
++#include <video/of_videomode.h>
+ #include <linux/fs.h>
+ #include <linux/cdev.h>
+ #include <linux/slab.h>
+@@ -68,6 +71,8 @@ struct es_panel {
+ 
+ 	struct gpio_desc *gpio_backlight0;
+ 	struct gpio_desc *gpio_reset;
++	enum mipi_dsi_pixel_format format;
++	unsigned int lanes;
+ };
+ 
+ static void es_panel_dcs_write(struct es_panel *ctx, const void *data,
+@@ -572,14 +577,14 @@ void es_panel_4_lanes_panel_init(struct es_panel *ctx)
+ 	es_panel_dcs_write_seq_static(ctx, 0xD3, 0x44, 0x33, 0x05, 0x03, 0x4A,
+ 				      0x4A, 0x33, 0x17, 0x22, 0x43,
+ 				      0x6E); // set GVDDP=4.1V, GVDDN=-4.1V,
+-		// VGHO=12V,      VGLO=-11V
++	// VGHO=12V,      VGLO=-11V
+ 	es_panel_dcs_write_seq_static(ctx, 0xD5, 0x8B, 0x00, 0x00, 0x00, 0x01,
+ 				      0x7D, 0x01, 0x7D, 0x01, 0x7D, 0x00, 0x00,
+ 				      0x00, 0x00); // set VCOM
+ 	es_panel_dcs_write_seq_static(ctx, 0xD6, 0x00, 0x00, 0x08, 0x17, 0x23,
+ 				      0x65, 0x77, 0x44, 0x87, 0x00, 0x00,
+ 				      0x09); // P12_D[3] for sleep in
+-		// current reduce setting
++	// current reduce setting
+ 	es_panel_dcs_write_seq_static(ctx, 0xEC, 0x76, 0x1E, 0x32, 0x00, 0x46,
+ 				      0x00, 0x00);
+ 	es_panel_dcs_write_seq_static(
+@@ -783,8 +788,7 @@ static int es_panel_get_modes(struct drm_panel *panel,
+ 			return -ENOMEM;
+ 		}
+ 	}
+-	dev_info(
+-		pr_dev,
++	dev_dbg(pr_dev,
+ 		"get modes user_mode_inited:%d, clock:%d, hdisplay:%u, hsyncStart:%u, hsyncEnd:%u, htotal:%u\n"
+ 		"vdisplay:%u vsyncStart:%u vsyncEnd:%u vtotal:%u width_mm:%d, height_mm:%d flags:0x%08x \n",
+ 		ctx->user_mode_inited, mode->clock, mode->hdisplay,
+@@ -798,6 +802,16 @@ static int es_panel_get_modes(struct drm_panel *panel,
+ 
+ 	connector->display_info.width_mm = ctx->user_mode.width_mm;
+ 	connector->display_info.height_mm = ctx->user_mode.height_mm;
++
++	if (ctx->format == MIPI_DSI_FMT_RGB888) {
++		bus_format = MEDIA_BUS_FMT_RGB888_1X24;
++	} else if (ctx->format == MIPI_DSI_FMT_RGB666) {
++		bus_format = MEDIA_BUS_FMT_RGB666_1X18;
++	} else if (ctx->format == MIPI_DSI_FMT_RGB565) {
++		bus_format = MEDIA_BUS_FMT_RGB565_1X16;
++	} else {
++		dev_err(pr_dev, "format:%d not support\n", ctx->format);
++	}
+ 	drm_display_info_set_bus_formats(&connector->display_info, &bus_format,
+ 					 1);
+ 	connector->display_info.bus_flags = DRM_BUS_FLAG_PIXDATA_DRIVE_NEGEDGE;
+@@ -819,10 +833,10 @@ int es_panel_probe(struct mipi_dsi_device *dsi)
+ 	struct es_panel *ctx;
+ 	int ret;
+ 	struct device_node *dsi_node, *remote_node = NULL, *endpoint = NULL;
++	int val;
+ 
+ 	// for print
+ 	pr_dev = dev;
+-
+ 	dev_info(pr_dev, "[%s] Enter\n", __func__);
+ 
+ 	dsi_node = of_get_parent(dev->of_node);
+@@ -840,12 +854,6 @@ int es_panel_probe(struct mipi_dsi_device *dsi)
+ 		}
+ 	}
+ 
+-	/*
+-        if (remote_node != dev->of_node) {
+-            dev_info(pr_dev,"%s+ skip probe due to not current es_panel\n", __func__);
+-            return -ENODEV;
+-        }
+-    */
+ 	ctx = devm_kzalloc(dev, sizeof(struct es_panel), GFP_KERNEL);
+ 	if (!ctx)
+ 		return -ENOMEM;
+@@ -854,9 +862,13 @@ int es_panel_probe(struct mipi_dsi_device *dsi)
+ 	ctx->dev = dev;
+ 
+ 	// default val, if other value, set it on:IOC_ES_MIPI_TX_SET_MODE.
+-	dsi->lanes = LANES;
+-	dsi->format = MIPI_DSI_FMT_RGB888;
+-	// dsi->mode_flags = MIPI_DSI_MODE_VIDEO;
++	if (!of_property_read_u32(dev->of_node, "dsi,format", &val))
++		dsi->format = val;
++	if (!of_property_read_u32(dev->of_node, "dsi,lanes", &val))
++		dsi->lanes = val;
++	ctx->format = dsi->format;
++	ctx->lanes = dsi->lanes;
++
+ 	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_LPM |
+ 			  MIPI_DSI_MODE_VIDEO_SYNC_PULSE;
+ 
+@@ -885,8 +897,6 @@ int es_panel_probe(struct mipi_dsi_device *dsi)
+ 
+ 	drm_panel_init(&ctx->panel, dev, &es_panel_drm_funcs,
+ 		       DRM_MODE_CONNECTOR_DPI);
+-	//	ctx->panel.dev = dev;
+-	//	ctx->panel.funcs = &es_panel_drm_funcs;
+ 
+ 	drm_panel_add(&ctx->panel);
+ 
+-- 
+2.47.0
+

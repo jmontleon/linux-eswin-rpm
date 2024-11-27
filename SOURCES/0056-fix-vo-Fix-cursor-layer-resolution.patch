@@ -1,0 +1,124 @@
+From 9156b3447ad2223a94b09ab1fb9866b9c2e5a83a Mon Sep 17 00:00:00 2001
+From: lilijun <lilijun@eswincomputing.com>
+Date: Wed, 19 Jun 2024 15:53:32 +0800
+Subject: [PATCH 056/215] fix(vo): Fix cursor layer resolution
+
+Changelogs:
+1. Fix cursor layer only supporting 32x32 resolution
+2. merged from patch:I67caf1a36104c57a91df18c58858f1d9d6783649
+3. merged from patch:I929a0fd069f80b4dd840b9050a5114a0185013b1
+---
+ drivers/gpu/drm/eswin/es_dc.c    | 47 ++++++++++++++++++++++++++++----
+ drivers/gpu/drm/eswin/es_dc_hw.c |  5 ++--
+ drivers/gpu/drm/eswin/es_dc_hw.h |  8 ++++++
+ 3 files changed, 53 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/gpu/drm/eswin/es_dc.c b/drivers/gpu/drm/eswin/es_dc.c
+index 9e485f7edcc4..3ae03d20b600 100644
+--- a/drivers/gpu/drm/eswin/es_dc.c
++++ b/drivers/gpu/drm/eswin/es_dc.c
+@@ -615,17 +615,54 @@ static void update_overlay_plane(struct es_dc *dc, struct es_plane *plane)
+ 	dc_hw_set_blend(&dc->hw, &blend);
+ }
+ 
++static void update_cursor_size(struct drm_plane_state *state, struct dc_hw_cursor *cursor)
++{
++	u8 size_type;
++
++	switch (state->crtc_w) {
++		case 32:
++			size_type = CURSOR_SIZE_32X32;
++			break;
++		case 64:
++			size_type = CURSOR_SIZE_64X64;
++			break;
++		case 128:
++			size_type = CURSOR_SIZE_128X128;
++			break;
++		case 256:
++			size_type = CURSOR_SIZE_256X256;
++			break;
++		default:
++			size_type = CURSOR_SIZE_32X32;
++			break;
++	}
++
++	cursor->size = size_type;
++}
++
+ static void update_cursor_plane(struct es_dc *dc, struct es_plane *plane)
+ {
+ 	struct drm_plane_state *state = plane->base.state;
+-	struct drm_framebuffer *drm_fb = state->fb;
+ 	struct dc_hw_cursor cursor;
+ 
+ 	cursor.address = plane->dma_addr[0];
+-	cursor.x = state->crtc_x;
+-	cursor.y = state->crtc_y;
+-	cursor.hot_x = drm_fb->hot_x;
+-	cursor.hot_y = drm_fb->hot_y;
++
++	if (state->crtc_x > 0) {
++		cursor.x = state->crtc_x;
++		cursor.hot_x = 0;
++	} else {
++		cursor.hot_x = -state->crtc_x;
++		cursor.x = 0;
++	}
++	if (state->crtc_y > 0) {
++		cursor.y = state->crtc_y;
++		cursor.hot_y = 0;
++	} else {
++		cursor.hot_y = -state->crtc_y;
++		cursor.y = 0;
++	}
++
++	update_cursor_size(state, &cursor);
+ 	cursor.enable = true;
+ 
+ 	dc_hw_update_cursor(&dc->hw, &cursor);
+diff --git a/drivers/gpu/drm/eswin/es_dc_hw.c b/drivers/gpu/drm/eswin/es_dc_hw.c
+index 010de5b65250..30bcfb6b759c 100644
+--- a/drivers/gpu/drm/eswin/es_dc_hw.c
++++ b/drivers/gpu/drm/eswin/es_dc_hw.c
+@@ -1485,8 +1485,9 @@ void dc_hw_commit(struct dc_hw *hw)
+ 			dc_write(hw, DC_CURSOR_LOCATION,
+ 				 hw->cursor.x | (hw->cursor.y << 16));
+ 			dc_write(hw, DC_CURSOR_CONFIG,
+-				 (hw->cursor.hot_x << 16) |
+-					 (hw->cursor.hot_y << 8) | 0x02);
++				  (hw->cursor.hot_x << 16) |
++				  (hw->cursor.hot_y << 8) |
++				  (hw->cursor.size << 5) | 0x06);
+ 		} else {
+ 			dc_write(hw, DC_CURSOR_CONFIG, 0x00);
+ 		}
+diff --git a/drivers/gpu/drm/eswin/es_dc_hw.h b/drivers/gpu/drm/eswin/es_dc_hw.h
+index 885d225c9203..1578aad0d79c 100644
+--- a/drivers/gpu/drm/eswin/es_dc_hw.h
++++ b/drivers/gpu/drm/eswin/es_dc_hw.h
+@@ -235,6 +235,13 @@ enum dc_hw_swizzle {
+ 	SWIZZLE_BGRA,
+ };
+ 
++enum dc_hw_cursor_size {
++	CURSOR_SIZE_32X32 = 0,
++	CURSOR_SIZE_64X64,
++	CURSOR_SIZE_128X128,
++	CURSOR_SIZE_256X256,
++};
++
+ enum dc_hw_out {
+ 	OUT_DPI,
+ 	OUT_DP,
+@@ -362,6 +369,7 @@ struct dc_hw_cursor {
+ 	u16 y;
+ 	u16 hot_x;
+ 	u16 hot_y;
++	u8 size;
+ 	bool enable;
+ 	bool dirty;
+ };
+-- 
+2.47.0
+

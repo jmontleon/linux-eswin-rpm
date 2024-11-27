@@ -1,0 +1,621 @@
+From 3a7e7ff96bfd4689a541ae8631feec164843e3cc Mon Sep 17 00:00:00 2001
+From: liangshuang <liangshuang@eswincomputing.com>
+Date: Thu, 7 Nov 2024 11:02:15 +0800
+Subject: [PATCH 209/215] feat:sdhci driver add dump_vendor_regs function.
+
+Changelogs:
+1.sdhci driver add dump_vendor_regs function.
+
+Signed-off-by: liangshuang <liangshuang@eswincomputing.com>
+---
+ .../dts/eswin/eswin-win2030-die0-soc.dtsi     | 14 +--
+ .../dts/eswin/eswin-win2030-die1-soc.dtsi     | 85 +++++++++---------
+ drivers/mmc/host/sdhci-eswin.c                | 68 +++++++++++++--
+ drivers/mmc/host/sdhci-eswin.h                | 12 ++-
+ drivers/mmc/host/sdhci-of-eswin-sdio.c        | 86 +++++++++----------
+ drivers/mmc/host/sdhci-of-eswin.c             | 63 +++++++++-----
+ 6 files changed, 212 insertions(+), 116 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index ad9cd4db5802..244d3b3424a8 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -927,7 +927,8 @@ sdhci_emmc: mmc@50450000 {
+ 			iommus = <&smmu0 WIN2030_SID_EMMC0>;
+ 			tbus = <WIN2030_TBUID_EMMC>;
+ 			dma-ranges = <0x0 0x00000000 0x0 0xc0000000 0x1 0x0>;
+-			eswin,hsp_sp_csr = <&d0_hsp_sp_csr 0x1038>;
++			eswin,hsp_sp_csr = <&d0_hsp_sp_csr 0x1038 0x508 0x50c>;
++			eswin,syscrg_csr = <&d0_sys_crg 0x160 0x148 0x14c>;
+ 			status = "disabled";
+ 			numa-node-id = <0>;
+ 			dma-noncoherent;
+@@ -951,14 +952,15 @@ sdio0: mmc@0x50460000{
+ 				<&d0_reset HSPDMA_RST_CTRL SW_HSP_SD0_ARSTN>;
+ 			reset-names = "txrx_rst","phy_rst","prstn","arstn";
+ 
+-			core-clk-reg = <0x51828164>;
+ 			clock-frequency = <208000000>;
+ 			max-frequency = <208000000>;
+-			#size-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
+ 			dma-ranges = <0x0 0x20000000 0x0 0xc0000000 0x0 0x40000000>;
+ 			iommus = <&smmu0 WIN2030_SID_SD0>;
+ 			tbus = <WIN2030_TBUID_SD>;
+-			eswin,hsp_sp_csr = <&d0_hsp_sp_csr 0x103c>;
++			eswin,hsp_sp_csr = <&d0_hsp_sp_csr 0x103c 0x608 0x60c>;
++			eswin,syscrg_csr = <&d0_sys_crg 0x164 0x148 0x14c>;
+ 			bus-width = <4>;
+ 			sdio-id = <0>;
+ 			numa-node-id = <0>;
+@@ -984,7 +986,6 @@ sdio1: mmc@0x50470000{
+ 				<&d0_reset HSPDMA_RST_CTRL SW_HSP_SD1_ARSTN>;
+ 			reset-names = "txrx_rst","phy_rst","prstn","arstn";
+ 
+-			core-clk-reg = <0x51828168>;
+ 			clock-frequency = <208000000>;
+ 			max-frequency = <208000000>;
+ 			#address-cells = <1>;
+@@ -992,7 +993,8 @@ sdio1: mmc@0x50470000{
+ 			dma-ranges = <0x0 0x20000000 0x0 0xc0000000 0x0 0x40000000>;
+ 			iommus = <&smmu0 WIN2030_SID_SD1>;
+ 			tbus = <WIN2030_TBUID_SD>;
+-			eswin,hsp_sp_csr = <&d0_hsp_sp_csr 0x1040>;
++			eswin,hsp_sp_csr = <&d0_hsp_sp_csr 0x1040 0x708 0x70c>;
++			eswin,syscrg_csr = <&d0_sys_crg 0x168 0x148 0x14c>;
+ 			bus-width = <4>;
+ 			sdio-id = <1>;
+ 			numa-node-id = <0>;
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index e8a5c18b5459..1a275707a259 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -1548,6 +1548,43 @@ d1_stmmac_axi_setup_gmac1: stmmac-axi-config {
+ 			};
+ 		};
+ 
++		d1_sdhci_emmc: mmc@70450000 {
++			compatible = "eswin,emmc-sdhci-5.1";
++			reg = <0x0 0x70450000 0x0 0x10000>;
++			interrupt-parent = <&plic1>;
++			interrupts = <79>;
++			assigned-clocks = <&d1_clock WIN2030_CLK_HSP_MSHC0_CORE_CLK>;
++			assigned-clock-rates = <200000000>;
++			clocks = <&d1_clock WIN2030_CLK_HSP_MSHC0_CORE_CLK>, <&d1_clock WIN2030_CLK_HSP_CFG_CLK>;
++			clock-names = "clk_xin", "clk_ahb";
++			clock-output-names = "d1_emmc_cardclock";
++			#clock-cells = <0>;
++
++			resets = <&d1_reset HSPDMA_RST_CTRL SW_MSHC0_TXRX_RSTN>,
++				<&d1_reset HSPDMA_RST_CTRL SW_MSHC0_PHY_RSTN>,
++				<&d1_reset HSPDMA_RST_CTRL SW_HSP_EMMC_PRSTN>,
++				<&d1_reset HSPDMA_RST_CTRL SW_HSP_EMMC_ARSTN>;
++			reset-names = "txrx_rst", "phy_rst", "prstn", "arstn";
++
++			disable-cqe-dcmd;
++			bus-width = <8>;
++			non-removable;
++			/* mmc-ddr-1_8v; */
++			mmc-hs400-1_8v;
++			max-frequency = <200000000>;
++			/* sdhci-caps-mask =  <0x0 0x3200000>; */
++			/* smmu */
++			#size-cells = <2>;
++			iommus = <&smmu1 WIN2030_SID_EMMC0>;
++			tbus = <WIN2030_TBUID_EMMC>;
++			dma-ranges = <0x0 0x00000000 0x0 0xc0000000 0x1 0x0>;
++			eswin,hsp_sp_csr = <&d1_hsp_sp_csr 0x1038 0x508 0x50c>;
++			eswin,syscrg_csr = <&d1_sys_crg 0x160 0x148 0x14c>;
++			status = "disabled";
++			numa-node-id = <1>;
++			dma-noncoherent;
++		};
++
+ 		d1_sdio0: mmc@0x70460000{
+ 			compatible = "eswin,sdhci-sdio";
+ 			reg = <0x0 0x70460000 0x0 0x10000>;
+@@ -1568,11 +1605,13 @@ d1_sdio0: mmc@0x70460000{
+ 
+ 			clock-frequency = <208000000>;
+ 			max-frequency = <208000000>;
+-			#size-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
+ 			dma-ranges = <0x0 0x20000000 0x0 0xc0000000 0x0 0x40000000>;
+ 			iommus = <&smmu1 WIN2030_SID_SD0>;
+ 			tbus = <WIN2030_TBUID_SD>;
+-			eswin,hsp_sp_csr = <&d1_hsp_sp_csr 0x103c>;
++			eswin,hsp_sp_csr = <&d1_hsp_sp_csr 0x103c 0x608 0x60c>;
++			eswin,syscrg_csr = <&d1_sys_crg 0x164 0x148 0x14c>;
+ 			bus-width = <4>;
+ 			sdio-id = <0>;
+ 			numa-node-id = <1>;
+@@ -1600,11 +1639,13 @@ d1_sdio1: mmc@0x70470000{
+ 
+ 			clock-frequency = <208000000>;
+ 			max-frequency = <208000000>;
+-			#size-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
+ 			dma-ranges = <0x0 0x20000000 0x0 0xc0000000 0x0 0x40000000>;
+ 			iommus = <&smmu1 WIN2030_SID_SD1>;
+ 			tbus = <WIN2030_TBUID_SD>;
+-			eswin,hsp_sp_csr = <&d1_hsp_sp_csr 0x1040>;
++			eswin,hsp_sp_csr = <&d1_hsp_sp_csr 0x1040 0x708 0x70c>;
++			eswin,syscrg_csr = <&d1_sys_crg 0x168 0x148 0x14c>;
+ 			bus-width = <4>;
+ 			sdio-id = <1>;
+ 			numa-node-id = <1>;
+@@ -1899,42 +1940,6 @@ d1_gc820: g2d@70140000 {
+ 			dma-noncoherent;
+                 };
+ 
+-		d1_sdhci_emmc: mmc@70450000 {
+-			compatible = "eswin,emmc-sdhci-5.1";
+-			reg = <0x0 0x70450000 0x0 0x10000>;
+-			interrupt-parent = <&plic1>;
+-			interrupts = <79>;
+-			assigned-clocks = <&d1_clock WIN2030_CLK_HSP_MSHC0_CORE_CLK>;
+-			assigned-clock-rates = <200000000>;
+-			clocks = <&d1_clock WIN2030_CLK_HSP_MSHC0_CORE_CLK>, <&d1_clock WIN2030_CLK_HSP_CFG_CLK>;
+-			clock-names = "clk_xin", "clk_ahb";
+-			clock-output-names = "d1_emmc_cardclock";
+-			#clock-cells = <0>;
+-
+-			resets = <&d1_reset HSPDMA_RST_CTRL SW_MSHC0_TXRX_RSTN>,
+-				<&d1_reset HSPDMA_RST_CTRL SW_MSHC0_PHY_RSTN>,
+-				<&d1_reset HSPDMA_RST_CTRL SW_HSP_EMMC_PRSTN>,
+-				<&d1_reset HSPDMA_RST_CTRL SW_HSP_EMMC_ARSTN>;
+-			reset-names = "txrx_rst", "phy_rst", "emmc_prstn", "emmc_arstn";
+-
+-			disable-cqe-dcmd;
+-			bus-width = <8>;
+-			non-removable;
+-			/* mmc-ddr-1_8v; */
+-			mmc-hs400-1_8v;
+-			max-frequency = <200000000>;
+-			/* sdhci-caps-mask =  <0x0 0x3200000>; */
+-			/* smmu */
+-			#size-cells = <2>;
+-			iommus = <&smmu1 WIN2030_SID_EMMC0>;
+-			tbus = <WIN2030_TBUID_EMMC>;
+-			dma-ranges = <0x0 0x00000000 0x0 0xc0000000 0x1 0x0>;
+-			eswin,hsp_sp_csr = <&d1_hsp_sp_csr 0x1038>;
+-			status = "disabled";
+-			numa-node-id = <1>;
+-			dma-noncoherent;
+-		};
+-
+ 		d1_graphcard: graphcard {
+ 			compatible = "audio-graph-card";
+ 		};
+diff --git a/drivers/mmc/host/sdhci-eswin.c b/drivers/mmc/host/sdhci-eswin.c
+index e75d8b77acdb..861a1467623b 100644
+--- a/drivers/mmc/host/sdhci-eswin.c
++++ b/drivers/mmc/host/sdhci-eswin.c
+@@ -21,6 +21,7 @@
+  */
+ #include <linux/delay.h>
+ #include <linux/reset.h>
++#include <linux/regmap.h>
+ #include "sdhci-eswin.h"
+ 
+ static void eswin_mshc_coreclk_config(struct sdhci_host *host, uint16_t divisor,
+@@ -34,9 +35,9 @@ static void eswin_mshc_coreclk_config(struct sdhci_host *host, uint16_t divisor,
+ 	pltfm_host = sdhci_priv(host);
+ 	eswin_sdhci = sdhci_pltfm_priv(pltfm_host);
+ 
+-	val = readl(eswin_sdhci->core_clk_reg);
++	regmap_read(eswin_sdhci->crg_regmap, eswin_sdhci->crg_core_clk, &val);
+ 	val &= ~MSHC_CORE_CLK_ENABLE;
+-	writel(val, eswin_sdhci->core_clk_reg);
++	regmap_write(eswin_sdhci->crg_regmap, eswin_sdhci->crg_core_clk, val);
+ 	while (delay--)
+ 		;
+ 	val &= ~(MSHC_CORE_CLK_FREQ_BIT_MASK << MSHC_CORE_CLK_FREQ_BIT_SHIFT);
+@@ -44,11 +45,11 @@ static void eswin_mshc_coreclk_config(struct sdhci_host *host, uint16_t divisor,
+ 	       << MSHC_CORE_CLK_FREQ_BIT_SHIFT;
+ 	val &= ~(MSHC_CORE_CLK_SEL_BIT);
+ 	val |= flag_sel;
+-	writel(val, eswin_sdhci->core_clk_reg);
++	regmap_write(eswin_sdhci->crg_regmap, eswin_sdhci->crg_core_clk, val);
+ 
+ 	udelay(100);
+ 	val |= MSHC_CORE_CLK_ENABLE;
+-	writel(val, eswin_sdhci->core_clk_reg);
++	regmap_write(eswin_sdhci->crg_regmap, eswin_sdhci->crg_core_clk, val);
+ 	mdelay(1);
+ }
+ 
+@@ -61,9 +62,9 @@ static void eswin_mshc_coreclk_disable(struct sdhci_host *host)
+ 	pltfm_host = sdhci_priv(host);
+ 	eswin_sdhci = sdhci_pltfm_priv(pltfm_host);
+ 
+-	val = readl(eswin_sdhci->core_clk_reg);
++	regmap_read(eswin_sdhci->crg_regmap, eswin_sdhci->crg_core_clk, &val);
+ 	val &= ~MSHC_CORE_CLK_ENABLE;
+-	writel(val, eswin_sdhci->core_clk_reg);
++	regmap_write(eswin_sdhci->crg_regmap, eswin_sdhci->crg_core_clk, val);
+ }
+ 
+ void eswin_sdhci_disable_card_clk(struct sdhci_host *host)
+@@ -301,3 +302,58 @@ int eswin_sdhci_reset_init(struct device *dev,
+ 
+ 	return ret;
+ }
++
++#define DRIVER_NAME "sdhci_esw"
++#define SDHCI_ESW_DUMP(f, x...) \
++	pr_err("%s: " DRIVER_NAME ": " f, mmc_hostname(host->mmc), ## x)
++
++void eswin_sdhci_dump_vendor_regs(struct sdhci_host *host)
++{
++	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
++	struct eswin_sdhci_data *eswin_sdhci = sdhci_pltfm_priv(pltfm_host);
++	int ret;
++	u32 val = 0, val1 = 0;
++
++	SDHCI_ESW_DUMP("----------- VENDOR REGISTER DUMP -----------\n");
++
++	ret = regmap_read(eswin_sdhci->crg_regmap, eswin_sdhci->crg_core_clk, &val);
++	if (ret) {
++		pr_err("%s: read crg_core_clk failed, ret:%d\n",
++					mmc_hostname(host->mmc), ret);
++		return;
++	}
++
++	SDHCI_ESW_DUMP("CORE CLK: 0x%08x | IRQ FLAG:  0x%016lx\n",
++		val, arch_local_save_flags());
++
++	ret = regmap_read(eswin_sdhci->crg_regmap, eswin_sdhci->crg_aclk_ctrl, &val);
++	if (ret) {
++		pr_err("%s: read crg_aclk_ctrl failed, ret:%d\n",
++					mmc_hostname(host->mmc), ret);
++		return;
++	}
++	ret = regmap_read(eswin_sdhci->crg_regmap, eswin_sdhci->crg_cfg_ctrl, &val1);
++	if (ret) {
++		pr_err("%s: read crg_cfg_ctrl failed, ret:%d\n",
++					mmc_hostname(host->mmc), ret);
++		return;
++	}
++	SDHCI_ESW_DUMP("HSP ACLK: 0x%08x | HSP CFG:  0x%08x\n", val, val1);
++
++	ret = regmap_read(eswin_sdhci->hsp_regmap, eswin_sdhci->hsp_int_status, &val);
++	if (ret) {
++		pr_err("%s: read hsp_int_status failed, ret:%d\n",
++					mmc_hostname(host->mmc), ret);
++		return;
++	}
++	ret = regmap_read(eswin_sdhci->hsp_regmap, eswin_sdhci->hsp_pwr_ctrl, &val1);
++	if (ret) {
++		pr_err("%s: read hsp_pwr_ctrl failed, ret:%d\n",
++					mmc_hostname(host->mmc), ret);
++		return;
++	}
++	SDHCI_ESW_DUMP("HSP STA: 0x%08x | PWR CTRL:  0x%08x\n", val, val1);
++
++	return;
++}
++
+diff --git a/drivers/mmc/host/sdhci-eswin.h b/drivers/mmc/host/sdhci-eswin.h
+index 08ddfdf8932e..65b0b69bfda7 100644
+--- a/drivers/mmc/host/sdhci-eswin.h
++++ b/drivers/mmc/host/sdhci-eswin.h
+@@ -209,7 +209,16 @@ struct eswin_sdhci_data {
+ 	struct eswin_sdhci_clk_data clk_data;
+ 	const struct eswin_sdhci_clk_ops *clk_ops;
+ 	unsigned int quirks;
+-	void __iomem *core_clk_reg;
++
++	struct regmap *crg_regmap;
++	unsigned int crg_core_clk;
++	unsigned int crg_aclk_ctrl;
++	unsigned int crg_cfg_ctrl;
++
++	struct regmap *hsp_regmap;
++	unsigned int hsp_int_status;
++	unsigned int hsp_pwr_ctrl;
++
+ 	struct reset_control *txrx_rst;
+ 	struct reset_control *phy_rst;
+ 	struct reset_control *prstn;
+@@ -233,5 +242,6 @@ unsigned int eswin_convert_drive_impedance_ohm(struct platform_device *pdev,
+ 					     unsigned int dr_ohm);
+ int eswin_sdhci_reset_init(struct device *dev,
+ 				 struct eswin_sdhci_data *eswin_sdhci);
++void eswin_sdhci_dump_vendor_regs(struct sdhci_host *host);
+ 
+ #endif /* _DRIVERS_MMC_SDHCI_ESWIN_H */
+diff --git a/drivers/mmc/host/sdhci-of-eswin-sdio.c b/drivers/mmc/host/sdhci-of-eswin-sdio.c
+index 8cd8deb339b0..01779e01cd61 100644
+--- a/drivers/mmc/host/sdhci-of-eswin-sdio.c
++++ b/drivers/mmc/host/sdhci-of-eswin-sdio.c
+@@ -37,11 +37,6 @@
+ #include "sdhci-eswin.h"
+ 
+ #define ESWIN_SDHCI_SD_CQE_BASE_ADDR 0x180
+-#define ESWIN_SDHCI_SD0_INT_STATUS 0x608
+-#define ESWIN_SDHCI_SD0_PWR_CTRL 0x60c
+-#define ESWIN_SDHCI_SD1_INT_STATUS 0x708
+-#define ESWIN_SDHCI_SD1_PWR_CTRL 0x70c
+-
+ #define TUNING_RANGE_THRESHOLD   40
+ 
+ static inline void *sdhci_sdio_priv(struct eswin_sdhci_data *sdio)
+@@ -327,7 +322,7 @@ static const struct sdhci_ops eswin_sdhci_sdio_cqe_ops = {
+ 	.set_power = sdhci_set_power_and_bus_voltage,
+ 	.irq = eswin_sdhci_sdio_cqhci_irq,
+ 	.platform_execute_tuning = eswin_sdhci_sdio_executing_tuning,
+-
++	.dump_vendor_regs = eswin_sdhci_dump_vendor_regs,
+ };
+ 
+ static const struct sdhci_pltfm_data eswin_sdhci_sdio_cqe_pdata = {
+@@ -823,9 +818,7 @@ static int eswin_sdhci_sdio_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct device_node *np = dev->of_node;
+ 	struct eswin_sdhci_data *eswin_sdhci_sdio;
+-	struct regmap *regmap;
+ 	const struct eswin_sdhci_of_data *data;
+-	unsigned int sdio_id = 0;
+ 	unsigned int val = 0;
+ 
+ 	data = of_device_get_match_data(dev);
+@@ -839,24 +832,6 @@ static int eswin_sdhci_sdio_probe(struct platform_device *pdev)
+ 	eswin_sdhci_sdio->host = host;
+ 	eswin_sdhci_sdio->has_cqe = false;
+ 
+-	ret = of_property_read_u32(dev->of_node, "core-clk-reg", &val);
+-	if (ret) {
+-		dev_err(dev, "get core clk reg failed.\n");
+-		goto err_pltfm_free;
+-	}
+-
+-	eswin_sdhci_sdio->core_clk_reg = ioremap(val, 0x4);
+-	if (!eswin_sdhci_sdio->core_clk_reg) {
+-		dev_err(dev, "ioremap core clk reg failed.\n");
+-		goto err_pltfm_free;
+-	}
+-
+-	ret = of_property_read_u32(dev->of_node, "sdio-id", &sdio_id);
+-	if (ret) {
+-		dev_err(dev, "get sdio-id failed.\n");
+-		goto err_pltfm_free;
+-	}
+-
+ 	sdhci_get_of_property(pdev);
+ 
+ 	eswin_sdhci_sdio->clk_ops = data->clk_ops;
+@@ -924,24 +899,54 @@ static int eswin_sdhci_sdio_probe(struct platform_device *pdev)
+ 		goto clk_disable_all;
+ 	}
+ 
+-	regmap = syscon_regmap_lookup_by_phandle(dev->of_node,
++	eswin_sdhci_sdio->crg_regmap = syscon_regmap_lookup_by_phandle(pdev->dev.of_node, "eswin,syscrg_csr");
++	if (IS_ERR(eswin_sdhci_sdio->crg_regmap)){
++		dev_dbg(&pdev->dev, "No syscrg_csr phandle specified\n");
++		goto clk_disable_all;
++	}
++
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,syscrg_csr", 1,
++                                    &eswin_sdhci_sdio->crg_core_clk);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get crg_core_clk (%d)\n", ret);
++		goto clk_disable_all;
++	}
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,syscrg_csr", 2,
++                                    &eswin_sdhci_sdio->crg_aclk_ctrl);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get crg_aclk_ctrl (%d)\n", ret);
++		goto clk_disable_all;
++	}
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,syscrg_csr", 3,
++                                    &eswin_sdhci_sdio->crg_cfg_ctrl);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get crg_cfg_ctrl (%d)\n", ret);
++		goto clk_disable_all;
++	}
++
++	eswin_sdhci_sdio->hsp_regmap = syscon_regmap_lookup_by_phandle(dev->of_node,
+ 						 "eswin,hsp_sp_csr");
+-	if (IS_ERR(regmap)) {
+-		dev_err(dev, "No hsp_sp_csr phandle specified\n");
+-		ret = -EFAULT;
++	if (IS_ERR(eswin_sdhci_sdio->hsp_regmap)) {
++		dev_dbg(dev, "No hsp_sp_csr phandle specified\n");
+ 		goto clk_disable_all;
+ 	}
+ 
+-	if (sdio_id == 0) {
+-		regmap_write(regmap, ESWIN_SDHCI_SD0_INT_STATUS,
+-			     MSHC_INT_CLK_STABLE);
+-		regmap_write(regmap, ESWIN_SDHCI_SD0_PWR_CTRL, MSHC_HOST_VAL_STABLE);
+-	} else {
+-		regmap_write(regmap, ESWIN_SDHCI_SD1_INT_STATUS,
+-			     MSHC_INT_CLK_STABLE);
+-		regmap_write(regmap, ESWIN_SDHCI_SD1_PWR_CTRL, MSHC_HOST_VAL_STABLE);
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,hsp_sp_csr", 2,
++                                    &eswin_sdhci_sdio->hsp_int_status);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get hsp_int_status (%d)\n", ret);
++		goto clk_disable_all;
++	}
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,hsp_sp_csr", 3,
++                                    &eswin_sdhci_sdio->hsp_pwr_ctrl);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get hsp_pwr_ctrl (%d)\n", ret);
++		goto clk_disable_all;
+ 	}
+ 
++	regmap_write(eswin_sdhci_sdio->hsp_regmap, eswin_sdhci_sdio->hsp_int_status, MSHC_INT_CLK_STABLE);
++	regmap_write(eswin_sdhci_sdio->hsp_regmap, eswin_sdhci_sdio->hsp_pwr_ctrl, MSHC_HOST_VAL_STABLE);
++
+ 	ret = eswin_sdhci_sdio_sid_cfg(dev);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to use smmu\n");
+@@ -994,9 +999,6 @@ static int eswin_sdhci_sdio_probe(struct platform_device *pdev)
+ clk_dis_ahb:
+ 	clk_disable_unprepare(eswin_sdhci_sdio->clk_ahb);
+ err_pltfm_free:
+-	if (eswin_sdhci_sdio->core_clk_reg)
+-		iounmap(eswin_sdhci_sdio->core_clk_reg);
+-
+ 	sdhci_pltfm_free(pdev);
+ 	return ret;
+ }
+@@ -1009,7 +1011,6 @@ static int eswin_sdhci_sdio_remove(struct platform_device *pdev)
+ 	struct eswin_sdhci_data *eswin_sdhci_sdio =
+ 		sdhci_pltfm_priv(pltfm_host);
+ 	struct clk *clk_ahb = eswin_sdhci_sdio->clk_ahb;
+-	void __iomem *core_clk_reg = eswin_sdhci_sdio->core_clk_reg;
+ 
+ 	pm_runtime_get_sync(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+@@ -1040,7 +1041,6 @@ static int eswin_sdhci_sdio_remove(struct platform_device *pdev)
+ 
+ 	eswin_sdhci_sdio_unregister_sdclk(&pdev->dev);
+ 	clk_disable_unprepare(clk_ahb);
+-	iounmap(core_clk_reg);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/mmc/host/sdhci-of-eswin.c b/drivers/mmc/host/sdhci-of-eswin.c
+index 66e9e02bfb26..585d30259cdd 100644
+--- a/drivers/mmc/host/sdhci-of-eswin.c
++++ b/drivers/mmc/host/sdhci-of-eswin.c
+@@ -36,9 +36,6 @@
+ #include <linux/eswin-win2030-sid-cfg.h>
+ #include "sdhci-eswin.h"
+ 
+-#define SDHCI_EMMC0_INT_STATUS 0x508
+-#define SDHCI_EMMC0_PWR_CLEAR 0x50c
+-
+ //EMMC_DWC_MSHC_CRYPTO_CFG_PTR 8 -- parameter
+ #define eswin_sdhci_VENDOR_REGISTER_BASEADDR 0x800
+ #define eswin_sdhci_VENDOR_EMMC_CTRL_REGISTER 0x2c
+@@ -61,8 +58,6 @@
+ #define HIWORD_UPDATE(val, mask, shift) \
+ 	((val) << (shift) | (mask) << ((shift) + 16))
+ 
+-#define ESWIN_EMMC_CORE_CLK_REG 0x51828160
+-
+ static void eswin_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ {
+ 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+@@ -448,6 +443,7 @@ static const struct sdhci_ops eswin_sdhci_cqe_ops = {
+ 	.set_power = sdhci_set_power_and_bus_voltage,
+ 	.irq = eswin_sdhci_cqhci_irq,
+ 	.platform_execute_tuning = eswin_sdhci_executing_tuning,
++	.dump_vendor_regs = eswin_sdhci_dump_vendor_regs,
+ };
+ 
+ static const struct sdhci_pltfm_data eswin_sdhci_cqe_pdata = {
+@@ -868,7 +864,6 @@ static int eswin_sdhci_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct eswin_sdhci_data *eswin_sdhci;
+ 	const struct eswin_sdhci_of_data *data;
+-	struct regmap *regmap;
+ 	unsigned int val = 0;
+ 
+ 	data = of_device_get_match_data(dev);
+@@ -881,12 +876,6 @@ static int eswin_sdhci_probe(struct platform_device *pdev)
+ 	eswin_sdhci->host = host;
+ 	eswin_sdhci->clk_ops = data->clk_ops;
+ 
+-	eswin_sdhci->core_clk_reg = ioremap(ESWIN_EMMC_CORE_CLK_REG, 0x4);
+-	if (!eswin_sdhci->core_clk_reg) {
+-		dev_err(dev, "ioremap core clk reg failed.\n");
+-		goto err_pltfm_free;
+-	}
+-
+ 	eswin_sdhci->clk_ahb = devm_clk_get(dev, "clk_ahb");
+ 	if (IS_ERR(eswin_sdhci->clk_ahb)) {
+ 		ret = dev_err_probe(dev, PTR_ERR(eswin_sdhci->clk_ahb),
+@@ -921,15 +910,53 @@ static int eswin_sdhci_probe(struct platform_device *pdev)
+ 
+ 	win2030_tbu_power(dev, true);
+ 
+-	regmap = syscon_regmap_lookup_by_phandle(dev->of_node,
++	eswin_sdhci->crg_regmap = syscon_regmap_lookup_by_phandle(pdev->dev.of_node, "eswin,syscrg_csr");
++	if (IS_ERR(eswin_sdhci->crg_regmap)){
++		dev_dbg(&pdev->dev, "No syscrg_csr phandle specified\n");
++		goto clk_disable_all;
++	}
++
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,syscrg_csr", 1,
++                                    &eswin_sdhci->crg_core_clk);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get crg_core_clk (%d)\n", ret);
++		goto clk_disable_all;
++	}
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,syscrg_csr", 2,
++                                    &eswin_sdhci->crg_aclk_ctrl);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get crg_aclk_ctrl (%d)\n", ret);
++		goto clk_disable_all;
++	}
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,syscrg_csr", 3,
++                                    &eswin_sdhci->crg_cfg_ctrl);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get crg_cfg_ctrl (%d)\n", ret);
++		goto clk_disable_all;
++	}
++
++	eswin_sdhci->hsp_regmap = syscon_regmap_lookup_by_phandle(dev->of_node,
+ 						 "eswin,hsp_sp_csr");
+-	if (IS_ERR(regmap)) {
++	if (IS_ERR(eswin_sdhci->hsp_regmap)) {
+ 		dev_dbg(dev, "No hsp_sp_csr phandle specified\n");
+ 		goto clk_disable_all;
+ 	}
+ 
+-	regmap_write(regmap, SDHCI_EMMC0_INT_STATUS, MSHC_INT_CLK_STABLE);
+-	regmap_write(regmap, SDHCI_EMMC0_PWR_CLEAR, MSHC_HOST_VAL_STABLE);
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,hsp_sp_csr", 2,
++                                    &eswin_sdhci->hsp_int_status);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get hsp_int_status (%d)\n", ret);
++		goto clk_disable_all;
++	}
++	ret = of_property_read_u32_index(pdev->dev.of_node, "eswin,hsp_sp_csr", 3,
++                                    &eswin_sdhci->hsp_pwr_ctrl);
++	if (ret) {
++		dev_err(&pdev->dev, "can't get hsp_pwr_ctrl (%d)\n", ret);
++		goto clk_disable_all;
++	}
++
++	regmap_write(eswin_sdhci->hsp_regmap, eswin_sdhci->hsp_int_status, MSHC_INT_CLK_STABLE);
++	regmap_write(eswin_sdhci->hsp_regmap, eswin_sdhci->hsp_pwr_ctrl, MSHC_HOST_VAL_STABLE);
+ 
+ 	/* smmu */
+ 	eswin_emmc_sid_cfg(dev);
+@@ -998,8 +1025,6 @@ static int eswin_sdhci_probe(struct platform_device *pdev)
+ clk_dis_ahb:
+ 	clk_disable_unprepare(eswin_sdhci->clk_ahb);
+ err_pltfm_free:
+-	if (eswin_sdhci->core_clk_reg)
+-		iounmap(eswin_sdhci->core_clk_reg);
+ 	sdhci_pltfm_free(pdev);
+ 	return ret;
+ }
+@@ -1011,7 +1036,6 @@ static int eswin_sdhci_remove(struct platform_device *pdev)
+ 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+ 	struct eswin_sdhci_data *eswin_sdhci = sdhci_pltfm_priv(pltfm_host);
+ 	struct clk *clk_ahb = eswin_sdhci->clk_ahb;
+-	void __iomem *core_clk_reg = eswin_sdhci->core_clk_reg;
+ 
+ 	sdhci_pltfm_remove(pdev);
+ 	win2030_tbu_power(&pdev->dev, false);
+@@ -1037,7 +1061,6 @@ static int eswin_sdhci_remove(struct platform_device *pdev)
+ 	}
+ 	eswin_sdhci_unregister_sdclk(&pdev->dev);
+ 	clk_disable_unprepare(clk_ahb);
+-	iounmap(core_clk_reg);
+ 
+ 	return 0;
+ }
+-- 
+2.47.0
+

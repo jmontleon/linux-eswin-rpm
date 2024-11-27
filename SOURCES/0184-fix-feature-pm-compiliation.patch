@@ -1,0 +1,30 @@
+From 0befa6867d4da7b1fcfd1f0264445d3e5bf839b5 Mon Sep 17 00:00:00 2001
+From: tangdaoyong <tangdaoyong@eswincomputing.com>
+Date: Wed, 9 Oct 2024 10:13:45 +0800
+Subject: [PATCH 184/215] fix:feature-pm compiliation
+
+Changelogs:
+  1. Since only linux has feature-pm branch, compiling video dec sdk
+will fail, add macro VDEC_USER_SPACE_SUPPORT to control whether
+userspace feature is required.
+
+Signed-off-by: tangdaoyong <tangdaoyong@eswincomputing.com>
+---
+ drivers/staging/media/eswin/vdec/hantrodec.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/staging/media/eswin/vdec/hantrodec.h b/drivers/staging/media/eswin/vdec/hantrodec.h
+index da90216883cc..c6482db4992e 100644
+--- a/drivers/staging/media/eswin/vdec/hantrodec.h
++++ b/drivers/staging/media/eswin/vdec/hantrodec.h
+@@ -170,6 +170,7 @@ struct filp_priv {
+ };
+ #endif
+ 
++#define VDEC_USER_SPACE_SUPPORT
+ typedef struct {
+ 	void *memory;  /* user space memory addr */
+ 	size_t size;   /* memory size */
+-- 
+2.47.0
+

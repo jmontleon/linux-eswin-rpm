@@ -1,0 +1,88 @@
+From 3fc70fa6878a28250876c1699ee9b4faa9bb7328 Mon Sep 17 00:00:00 2001
+From: liusheng <liusheng@eswincomputing.com>
+Date: Tue, 30 Jul 2024 19:16:18 +0800
+Subject: [PATCH 131/215] fix:use timer 500ms to try gpu idle
+
+Changelogs:
+1. Default the gpu idle is fast after interrupt came, often the cmd
+count > 1, the shortest task cause gpu clk change quicky, then gpu
+clock is disable when interrupt came. so use the timer avoid gpu idle
+too quickly.
+
+Signed-off-by: liusheng <liusheng@eswincomputing.com>
+---
+ .../eswin/hae/hal/kernel/gc_hal_kernel.h      |  2 ++
+ .../hae/hal/kernel/gc_hal_kernel_event.c      | 23 +++++++++++++++++--
+ 2 files changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel.h b/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel.h
+index 922cbae61a8c..20ccde6d9e79 100644
+--- a/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel.h
++++ b/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel.h
+@@ -828,6 +828,8 @@ struct _gckEVENT {
+ 
+     gctPOINTER                  submitTimer;
+ 
++    gctPOINTER                  tryIdleTimer;
++
+ #if gcdINTERRUPT_STATISTIC
+     gctPOINTER                  interruptCount;
+ #endif
+diff --git a/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel_event.c b/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel_event.c
+index 882b453ec897..c210a5237740 100644
+--- a/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel_event.c
++++ b/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel_event.c
+@@ -511,6 +511,13 @@ _SubmitTimerFunction(gctPOINTER Data)
+     gcmkVERIFY_OK(gckEVENT_Submit(event, &eventAttr));
+ }
+ 
++void
++_TryIdleTimerFunction(gctPOINTER Data)
++{
++    gckEVENT event = (gckEVENT)Data;
++    _TryToIdleGPU(event);
++}
++
+ /******************************************************************************
+  ******************************* gckEVENT API Code ****************************
+  ******************************************************************************/
+@@ -601,6 +608,10 @@ gckEVENT_Construct(gckKERNEL Kernel, gckCOMMAND Command, gckEVENT *Event)
+                                     (gctPOINTER)eventObj,
+                                     &eventObj->submitTimer));
+ 
++    gcmkVERIFY_OK(gckOS_CreateTimer(os, _TryIdleTimerFunction,
++                                    (gctPOINTER)eventObj,
++                                    &eventObj->tryIdleTimer));
++
+ #if gcdINTERRUPT_STATISTIC
+     gcmkONERROR(gckOS_AtomConstruct(os, &eventObj->interruptCount));
+     gcmkONERROR(gckOS_AtomSet(os, eventObj->interruptCount, 0));
+@@ -680,6 +691,11 @@ gckEVENT_Destroy(gckEVENT Event)
+         gcmkVERIFY_OK(gckOS_DestroyTimer(Event->os, Event->submitTimer));
+     }
+ 
++    if (Event->tryIdleTimer != gcvNULL) {
++        gcmkVERIFY_OK(gckOS_StopTimer(Event->os, Event->tryIdleTimer));
++        gcmkVERIFY_OK(gckOS_DestroyTimer(Event->os, Event->tryIdleTimer));
++    }
++
+     /* Delete the queue mutex. */
+     gcmkVERIFY_OK(gckOS_DeleteMutex(Event->os, Event->eventQueueMutex));
+ 
+@@ -2047,8 +2063,11 @@ gckEVENT_Notify(gckEVENT Event, gctUINT32 IDs, gceEVENT_FAULT *Fault)
+         gcmkTRACE_ZONE(gcvLEVEL_VERBOSE, gcvZONE_EVENT, "Handled interrupt 0x%x", mask);
+     }
+ 
+-    if (IDs == 0)
+-        gcmkONERROR(_TryToIdleGPU(Event));
++    if (IDs == 0) {
++        gcmkONERROR(gckOS_StartTimer(Event->kernel->os,
++                                    Event->kernel->eventObj->tryIdleTimer,
++                                    500));
++    }
+ 
+     /* End of event handling. */
+     Event->notifyState = -1;
+-- 
+2.47.0
+

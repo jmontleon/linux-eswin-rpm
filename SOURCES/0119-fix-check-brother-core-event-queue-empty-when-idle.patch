@@ -1,0 +1,44 @@
+From 83ae1d90f09da74ec620096dd252b1af1a45d931 Mon Sep 17 00:00:00 2001
+From: liusheng <liusheng@eswincomputing.com>
+Date: Thu, 25 Jul 2024 14:11:01 +0800
+Subject: [PATCH 119/215] fix:check brother core event queue empty when idle
+
+Changelogs:
+1. check brother core event queue empty when try to idle gpu.
+
+Signed-off-by: liusheng <liusheng@eswincomputing.com>
+---
+ .../media/eswin/hae/hal/kernel/gc_hal_kernel_event.c   | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel_event.c b/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel_event.c
+index c633d52f53f2..882b453ec897 100644
+--- a/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel_event.c
++++ b/drivers/staging/media/eswin/hae/hal/kernel/gc_hal_kernel_event.c
+@@ -288,6 +288,14 @@ _TryToIdleGPU(gckEVENT Event)
+                         continue;
+ 
+                     if ((1 << i) & broCoreMask) {
++                        gcmkONERROR(gckEVENT_IsEmpty(kernel->eventObj, &empty));
++                        if (!empty) {
++                            /* A brother have events, quit. */
++                            gcmkVERIFY_OK(gckOS_ReleaseMutex(device->os, device->powerMutex));
++                            gcmkFOOTER();
++                            return gcvSTATUS_OK;
++                        }
++
+                         status = gckOS_AcquireMutex(hardware->os, hardware->powerMutex, 0);
+                         if (status == gcvSTATUS_TIMEOUT) {
+                             gcmkVERIFY_OK(gckOS_ReleaseMutex(device->os, device->powerMutex));
+@@ -1825,7 +1833,7 @@ gckEVENT_Notify(gckEVENT Event, gctUINT32 IDs, gceEVENT_FAULT *Fault)
+ 
+             /* Clear the BUS ERROR event. */
+             if (fault & gcvEVENT_BUS_ERROR_FAULT)
+-                pending |= (1 << 31);
++                pending |= (1U << 31);
+ 
+             gckOS_AtomClearMask(Event->pending, pending);
+ 
+-- 
+2.47.0
+

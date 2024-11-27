@@ -1,0 +1,556 @@
+From 836885b79576ba5b68456437cd86c6244c661160 Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Tue, 8 Oct 2024 16:36:27 +0800
+Subject: [PATCH 186/215] feat:NPU & DSP driver port.
+
+Changelogs:
+	1.delete NPU & DSP SDK drivers.
+	2.port NPU & DSP SDK drivers to linux kernel.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ .../{include => common/devices}/cdma_regs.h   |   0
+ .../{include => common/devices}/conv_regs.h   |   0
+ .../eswin/ai_driver/common/devices/drp_regs.h | 173 ++++++++++++++++++
+ .../{include => common/devices}/edma_regs.h   |   0
+ .../devices}/mailbox_regs.h                   |   0
+ .../devices}/npu_base_regs.h                  |   0
+ .../{include => common/devices}/pdp_regs.h    |   0
+ .../eswin/ai_driver/common/devices/pec_reg.h  | 139 ++++++++++++++
+ .../{include => common/devices}/rubik_regs.h  |   0
+ .../{include => common/devices}/sdp_regs.h    |   0
+ .../{include => common/devices}/sys_regs.h    |   0
+ .../{include => common}/dla_interface.h       |   0
+ .../{include => common}/es_dsp_internal.h     |   0
+ .../{include => common}/es_dsp_op_types.h     |   0
+ .../{include => common}/es_dsp_types.h        |   4 +
+ .../{include => common}/es_nn_common.h        |   0
+ .../ai_driver/{include => common}/es_type.h   |   0
+ .../{include => common}/hetero_arch.h         |   0
+ .../{include => common}/hetero_common.h       |   0
+ .../{include => common}/hetero_env.h          |   0
+ .../{include => common}/hetero_host.h         |   0
+ .../{include => common}/hetero_ioctl.h        |   6 +
+ .../{include => common}/hetero_ipc.h          |   0
+ .../{include => common}/hetero_perf.h         |   0
+ .../{include => common}/hetero_processor.h    |   0
+ .../{include => common}/hetero_types.h        |   0
+ .../eswin/ai_driver/{include => common}/md5.h |   0
+ drivers/soc/eswin/ai_driver/dsp/Makefile      |   3 +-
+ drivers/soc/eswin/ai_driver/npu/Makefile      |   3 +-
+ 29 files changed, 326 insertions(+), 2 deletions(-)
+ rename drivers/soc/eswin/ai_driver/{include => common/devices}/cdma_regs.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common/devices}/conv_regs.h (100%)
+ create mode 100644 drivers/soc/eswin/ai_driver/common/devices/drp_regs.h
+ rename drivers/soc/eswin/ai_driver/{include => common/devices}/edma_regs.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common/devices}/mailbox_regs.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common/devices}/npu_base_regs.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common/devices}/pdp_regs.h (100%)
+ create mode 100644 drivers/soc/eswin/ai_driver/common/devices/pec_reg.h
+ rename drivers/soc/eswin/ai_driver/{include => common/devices}/rubik_regs.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common/devices}/sdp_regs.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common/devices}/sys_regs.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/dla_interface.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/es_dsp_internal.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/es_dsp_op_types.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/es_dsp_types.h (98%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/es_nn_common.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/es_type.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/hetero_arch.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/hetero_common.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/hetero_env.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/hetero_host.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/hetero_ioctl.h (99%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/hetero_ipc.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/hetero_perf.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/hetero_processor.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/hetero_types.h (100%)
+ rename drivers/soc/eswin/ai_driver/{include => common}/md5.h (100%)
+
+diff --git a/drivers/soc/eswin/ai_driver/include/cdma_regs.h b/drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/cdma_regs.h
+rename to drivers/soc/eswin/ai_driver/common/devices/cdma_regs.h
+diff --git a/drivers/soc/eswin/ai_driver/include/conv_regs.h b/drivers/soc/eswin/ai_driver/common/devices/conv_regs.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/conv_regs.h
+rename to drivers/soc/eswin/ai_driver/common/devices/conv_regs.h
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h b/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h
+new file mode 100644
+index 000000000000..53fa23982c19
+--- /dev/null
++++ b/drivers/soc/eswin/ai_driver/common/devices/drp_regs.h
+@@ -0,0 +1,173 @@
++// Copyright © 2023 ESWIN. All rights reserved.
++//
++// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
++// all intellectual property and proprietary rights in and to this software. Except as expressly
++// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
++// modified, adapted, translated, or created derivative work of, in whole or in part.
++
++#ifndef __DRP_REGS_H__
++#define __DRP_REGS_H__
++
++#define SDP_POST_DRP_S_BASE_ADDR 0x13a000
++#define SDP_POST_DRP_D_BASE_ADDR 0x13b000
++
++#define PDP_POST_DRP_S_BASE_ADDR 0x13c000
++#define PDP_POST_DRP_D_BASE_ADDR 0x13d000
++
++#define POST_DRP_CLK_GATING_BIT_OFFSET 24
++
++typedef enum {
++    POST_DRP_TYPE_PDP = 0,
++    POST_DRP_TYPE_SDP,
++} POST_DRP_TYPE;
++
++typedef enum {
++    POST_DRP_S_REG_SOFT_RESET = 0x0,
++    POST_DRP_S_REG_POINTER_FLAG = 0x4,
++    POST_DRP_S_REG_PP_STATUS = 0x8,
++    POST_DRP_S_REG_POST_NOC_AW_CNT = 0x100,
++    POST_DRP_S_REG_POST_NOC_AW_BLOCK_CNT = 0x104,
++    POST_DRP_S_REG_POST_NOC_W_CNT = 0x108,
++    POST_DRP_S_REG_POST_NOC_W_BLOCK_CNT = 0x10c,
++    POST_DRP_S_REG_POST_NOC_W_BUBBE_CNT = 0x110,
++} POST_DRP_S_REG_E;
++
++typedef enum {
++    POST_DRP_D_REG_OP_EN_TRIG = 0x00,
++    POST_DRP_D_REG_OP_STATUS = 0x04,
++    POST_DRP_D_REG_G_STRIDE_SRAM = 0x08,
++    POST_DRP_D_REG_N_STRIDE_SRAM = 0x0c,
++    POST_DRP_D_REG_H_STRIDE_SRAM = 0x10,
++    POST_DRP_D_REG_C_STRIDE_SRAM = 0x14,
++    POST_DRP_D_REG_H_EXT_STRIDE = 0x18,
++    POST_DRP_D_REG_W_EXT_STRIDE = 0x1c,
++    POST_DRP_D_REG_OMAP_PARA_RSP_H = 0x20,
++    POST_DRP_D_REG_OMAP_PARA_RSP_L = 0x24,
++    POST_DRP_D_REG_LAYER_PARA_L = 0x28,
++    POST_DRP_D_REG_LAYER_PARA_M = 0x2c,
++    POST_DRP_D_REG_LAYER_PARA_H = 0x30,
++    POST_DRP_D_REG_OMAP_PARA_L = 0x34,
++    POST_DRP_D_REG_BASE_ADDR_H = 0x38,
++    POST_DRP_D_REG_BASE_ADDR_L = 0x3c,
++    POST_DRP_D_REG_CTRL = 0x40,
++    POST_DRP_D_REG_SPLIT = 0x44,
++    POST_DRP_D_REG_PARTIAL_WIDTH = 0x48,
++    POST_DRP_D_REG_SRAM_LOOP_PARA_H = 0x4c,
++    POST_DRP_D_REG_SRAM_LOOP_PARA_L = 0x50,
++} POST_DRP_D_REG_E;
++
++#define DRP_WR_D_OP_EN_TRIG 0x0
++#define DRP_WR_D_OP_STATUS 0x4
++
++#define DRP_WR_D_CTRL 0x8
++/**
++ * @brief N2方向的步进值，n2_stride=N1*N0*E3*E2*E1*M2*M1*F0*M0，用于PE写DRP地址计算.
++ *
++ */
++#define DRP_WR_D_N2_STRIDE 0x10
++/**
++ * @brief 任务0，G2方向的步进值，g2_stride=N2*N1*E3*E2*E1*M2*M1*F0*M0*GF*GMF，用于PE写DRP地址计算。配置减1
++ *
++ */
++#define DRP_WR_D_G2_STRIDE 0x14
++/**
++ * @brief E3方向的步进值，e3_stride=E2*E1*M2*M1*F0*M0，用于PE写DRP地址计算
++ *
++ */
++#define DRP_WR_D_E3_STRIDE 0x18
++/**
++ * @brief M2方向的步进值，m2_stride=M1*F0*M0，用于PE写DRP地址计算
++ *
++ */
++#define DRP_WR_D_M2_STRIDE 0x1C
++/**
++ * @brief M方向的步进值，m_stride=F0*M0，用于PE写DRP地址计算
++ *
++ */
++#define DRP_WR_D_M_STRIDE 0x20
++/**
++ * @brief G3阈值，用于PE写DRP地址计算
++ *
++ */
++#define DRP_WR_D_G3_THRESHOLD 0x24
++/**
++ * @brief N3阈值，用于PE写DRP地址计算
++ *
++ */
++#define DRP_WR_D_N3_THRESHOLD 0x28
++/**
++ * @brief M3阈值，用于PE写DRP地址计算
++ *
++ */
++#define DRP_WR_D_M3_THRESHOLD 0x2C
++/**
++ * @brief E4阈值，用于PE写DRP地址计算
++ *
++ */
++#define DRP_WR_D_E4_THRESHOLD 0x30
++/**
++ * @brief F3阈值，用于PE写DRP地址计算
++ *
++ */
++#define DRP_WR_D_F3_THRESHOLD 0x34
++/**
++ * @brief 写入lsram/ddr的基地址低32bit
++ *
++ */
++#define DRP_WR_D_BA_L 0x38
++/**
++ * @brief 写入lsram/ddr的基地址高32bit
++ *
++ */
++#define DRP_WR_D_BA_H 0x3C
++/**
++ * @brief 参与task计算的PE数量，用于last_pkt统计，当收到的last_pkt脉冲数等于pe_num则认为所有PE均完成当前ofmap cube的计算
++ *
++ */
++#define DRP_WR_D_PE_NUM 0x80
++/**
++ * @brief task一个glb level loop输出的ofmap的大小，用与glb level loop的基地址计算
++ *
++ */
++#define DRP_WR_D_SIZE_GLB 0x94
++
++#define DRP_WR_S_SOFT_RESET 0x0
++#define DRP_WR_S_POINTER_FLAG 0x4
++#define DRP_WR_S_PP_STATUS 0x8
++
++#define DRP_RESHAPE_D_OP_EN_TRIG 0x0
++#define DRP_RESHAPE_D_OP_STATUS 0x4
++#define DRP_RESHAPE_D_CTRL 0x8
++#define DRP_RESHAPE_D_GLB_G_STRIDE 0xC
++#define DRP_RESHAPE_D_GLB_N_STRIDE 0x10
++#define DRP_RESHAPE_D_GLB_E_STRIDE 0x14
++#define DRP_RESHAPE_D_GLB_M_STRIDE 0x18
++// #define DRP_RESHAPE_D_SRAM_G_STRIDE 0x1C
++#define DRP_RESHAPE_D_SRAM_N_STRIDE 0x20
++#define DRP_RESHAPE_D_SRAM_H_STRIDE 0x24
++#define DRP_RESHAPE_D_SRAM_C_STRIDE 0x28
++#define DRP_RESHAPE_D_IMPA_PARA_L 0x2C
++// #define DRP_RESHAPE_D_IMPA_PAR_H 0x30
++// #define DRP_RESHAPE_D_OMAP_RSP_H 0x34
++#define DRP_RESHAPE_D_OMAP_PARA_RSP_W 0x38
++#define DRP_RESHAPE_D_LAYER_PARA_L 0x3C
++#define DRP_RESHAPE_D_LAYER_PARA_M 0x40
++#define DRP_RESHAPE_D_LAYER_PARA_H 0x44
++#define DRP_RESHAPE_D_GLB_PARA_L 0x48
++#define DRP_RESHAPE_D_GLB_PARA_H 0x4C
++#define DRP_RESHAPE_D_GLB_LAST_PARA_L 0x50
++#define DRP_RESHAPE_D_GLB_LAST_PARA_H 0x54
++#define DRP_RESHAPE_D_OMAP_L 0x58
++#define DRP_RESHAPE_D_BASE_ADDR_IN_L 0x5C
++#define DRP_RESHAPE_D_BASE_ADDR_IN_H 0x60
++#define DRP_RESHAPE_D_BASE_ADDR_OUT_L 0x64
++#define DRP_RESHAPE_D_BASE_ADDR_OUT_H 0x68
++#define DRP_RESHAPE_D_SIZE_GLB 0x6C
++#define DRP_RESHAPE_D_PRECISON_CTRL_L 0x80
++#define DRP_RESHAPE_D_PRECISON_CTRL_H 0x84
++
++#define DRP_RESHAPE_S_SOFT_RESET 0x0
++#define DRP_RESHAPE_S_POINTER_FLAG 0x4
++#define DRP_RESHAPE_S_PP_STATUS 0x8
++
++#endif
+diff --git a/drivers/soc/eswin/ai_driver/include/edma_regs.h b/drivers/soc/eswin/ai_driver/common/devices/edma_regs.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/edma_regs.h
+rename to drivers/soc/eswin/ai_driver/common/devices/edma_regs.h
+diff --git a/drivers/soc/eswin/ai_driver/include/mailbox_regs.h b/drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/mailbox_regs.h
+rename to drivers/soc/eswin/ai_driver/common/devices/mailbox_regs.h
+diff --git a/drivers/soc/eswin/ai_driver/include/npu_base_regs.h b/drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/npu_base_regs.h
+rename to drivers/soc/eswin/ai_driver/common/devices/npu_base_regs.h
+diff --git a/drivers/soc/eswin/ai_driver/include/pdp_regs.h b/drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/pdp_regs.h
+rename to drivers/soc/eswin/ai_driver/common/devices/pdp_regs.h
+diff --git a/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h b/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h
+new file mode 100644
+index 000000000000..9fa0052b6aaa
+--- /dev/null
++++ b/drivers/soc/eswin/ai_driver/common/devices/pec_reg.h
+@@ -0,0 +1,139 @@
++// Copyright © 2023 ESWIN. All rights reserved.
++//
++// Beijing ESWIN Computing Technology Co., Ltd and its affiliated companies ("ESWIN") retain
++// all intellectual property and proprietary rights in and to this software. Except as expressly
++// authorized by ESWIN, no part of the software may be released, copied, distributed, reproduced,
++// modified, adapted, translated, or created derivative work of, in whole or in part.
++
++/*generated by gen_register_table.py  author wubo */
++#ifndef __PEC_REG_S__
++#define __PEC_REG_S__
++// #include <inttypes.h>
++typedef struct PEC_REG_S {
++    struct reg_op_en_trig {
++        uint32_t address_offset;
++        union op_en_trig_ {
++            struct {
++                uint32_t op_en_trig : 1;
++                uint32_t Reserved : 31;
++            };
++            uint32_t value;
++        } op_en_trig;
++    } reg_op_en_trig;
++
++    struct reg_op_status {
++        uint32_t address_offset;
++        union op_status_ {
++            struct {
++                uint32_t op_en_status : 1;
++                uint32_t Reserved : 31;
++            };
++            uint32_t value;
++        } op_status;
++    } reg_op_status;
++
++    struct reg_pec_spad_param0 {
++        uint32_t address_offset;
++        union pec_spad_param0_ {
++            struct {
++                uint32_t pe_c0 : 4;
++                uint32_t pe_u : 4;
++                uint32_t pe_s : 4;
++                uint32_t pe_w0 : 10;
++                uint32_t stride_v : 4;
++                uint32_t Reserved : 6;
++            };
++            uint32_t value;
++        } pec_spad_param0;
++    } reg_pec_spad_param0;
++
++    struct reg_pec_spad_param1 {
++        uint32_t address_offset;
++        union pec_spad_param1_ {
++            struct {
++                uint32_t f0_m0 : 10;
++                uint32_t pe_m0 : 5;
++                uint32_t padding_pending : 1;
++                uint32_t first_unit : 5;
++                uint32_t Reserved : 11;
++            };
++            uint32_t value;
++        } pec_spad_param1;
++    } reg_pec_spad_param1;
++
++    struct reg_pec_glb_param0 {
++        uint32_t address_offset;
++        union pec_glb_param0_ {
++            struct {
++                uint32_t pec_m2 : 6;
++                uint32_t pec_r3 : 6;
++                uint32_t pec_e3 : 6;
++                uint32_t pec_c2 : 6;
++                uint32_t pec_n2 : 6;
++                uint32_t Reserved : 2;
++            };
++            uint32_t value;
++        } pec_glb_param0;
++    } reg_pec_glb_param0;
++
++    struct reg_pec_calc_mode {
++        uint32_t address_offset;
++        union pec_calc_mode_ {
++            struct {
++                uint32_t nan_to_zero_en : 1;
++                uint32_t w_csc_en : 1;
++                uint32_t iact_csc_en : 1;
++                uint32_t pe_dat_type : 2;
++                uint32_t psum_use_last : 1;
++                uint32_t pe_simd_mode : 4;
++                uint32_t e3_c2_stride : 4;
++                uint32_t r3_e3_stride : 10;
++                uint32_t Reserved : 8;
++            };
++            uint32_t value;
++        } pec_calc_mode;
++    } reg_pec_calc_mode;
++
++    struct reg_router_cast_mode_padding {
++        uint32_t address_offset;
++        union router_cast_mode_padding_ {
++            struct {
++                uint32_t iact_src_en : 5;
++                uint32_t weight_src_en : 3;
++                uint32_t iact_mode : 4;
++                uint32_t weight_mode : 2;
++                uint32_t psum_glbc_enable : 1;
++                uint32_t pec_psum_in_sel : 1;
++                uint32_t e1_last_cnt : 2;
++                uint32_t r1_last_cnt : 2;
++                uint32_t r2_last_en : 1;
++                uint32_t r_all : 8;
++                uint32_t Reserved : 3;
++            };
++            uint32_t value;
++        } router_cast_mode_padding;
++    } reg_router_cast_mode_padding;
++
++    struct reg_pec_space_offset0 {
++        uint32_t address_offset;
++        union pec_space_offset0_ {
++            struct {
++                uint32_t pe0_base_addr : 18;
++                uint32_t Reserved : 14;
++            };
++            uint32_t value;
++        } pec_space_offset0;
++    } reg_pec_space_offset0;
++
++    struct reg_pec_space_offset1 {
++        uint32_t address_offset;
++        union pec_space_offset1_ {
++            struct {
++                uint32_t m2_m1_f0_m0 : 18;
++                uint32_t Reserved : 14;
++            };
++            uint32_t value;
++        } pec_space_offset1;
++    } reg_pec_space_offset1;
++} PEC_REG_S;
++#endif  // __PEC_REG_S__
+diff --git a/drivers/soc/eswin/ai_driver/include/rubik_regs.h b/drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/rubik_regs.h
+rename to drivers/soc/eswin/ai_driver/common/devices/rubik_regs.h
+diff --git a/drivers/soc/eswin/ai_driver/include/sdp_regs.h b/drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/sdp_regs.h
+rename to drivers/soc/eswin/ai_driver/common/devices/sdp_regs.h
+diff --git a/drivers/soc/eswin/ai_driver/include/sys_regs.h b/drivers/soc/eswin/ai_driver/common/devices/sys_regs.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/sys_regs.h
+rename to drivers/soc/eswin/ai_driver/common/devices/sys_regs.h
+diff --git a/drivers/soc/eswin/ai_driver/include/dla_interface.h b/drivers/soc/eswin/ai_driver/common/dla_interface.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/dla_interface.h
+rename to drivers/soc/eswin/ai_driver/common/dla_interface.h
+diff --git a/drivers/soc/eswin/ai_driver/include/es_dsp_internal.h b/drivers/soc/eswin/ai_driver/common/es_dsp_internal.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/es_dsp_internal.h
+rename to drivers/soc/eswin/ai_driver/common/es_dsp_internal.h
+diff --git a/drivers/soc/eswin/ai_driver/include/es_dsp_op_types.h b/drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/es_dsp_op_types.h
+rename to drivers/soc/eswin/ai_driver/common/es_dsp_op_types.h
+diff --git a/drivers/soc/eswin/ai_driver/include/es_dsp_types.h b/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
+similarity index 98%
+rename from drivers/soc/eswin/ai_driver/include/es_dsp_types.h
+rename to drivers/soc/eswin/ai_driver/common/es_dsp_types.h
+index 473df42a41d3..646ea5e3ac55 100644
+--- a/drivers/soc/eswin/ai_driver/include/es_dsp_types.h
++++ b/drivers/soc/eswin/ai_driver/common/es_dsp_types.h
+@@ -9,7 +9,11 @@
+ #define __ESWIN_DSP_TYPES_H__
+ 
+ #include "es_type.h"
++#if defined(__KERNEL__)
+ #include <uapi/linux/es_vb_user.h>
++#else
++#include "es_vb_user.h"
++#endif
+ 
+ #ifdef __cplusplus
+ #if __cplusplus
+diff --git a/drivers/soc/eswin/ai_driver/include/es_nn_common.h b/drivers/soc/eswin/ai_driver/common/es_nn_common.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/es_nn_common.h
+rename to drivers/soc/eswin/ai_driver/common/es_nn_common.h
+diff --git a/drivers/soc/eswin/ai_driver/include/es_type.h b/drivers/soc/eswin/ai_driver/common/es_type.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/es_type.h
+rename to drivers/soc/eswin/ai_driver/common/es_type.h
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_arch.h b/drivers/soc/eswin/ai_driver/common/hetero_arch.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/hetero_arch.h
+rename to drivers/soc/eswin/ai_driver/common/hetero_arch.h
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_common.h b/drivers/soc/eswin/ai_driver/common/hetero_common.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/hetero_common.h
+rename to drivers/soc/eswin/ai_driver/common/hetero_common.h
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_env.h b/drivers/soc/eswin/ai_driver/common/hetero_env.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/hetero_env.h
+rename to drivers/soc/eswin/ai_driver/common/hetero_env.h
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_host.h b/drivers/soc/eswin/ai_driver/common/hetero_host.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/hetero_host.h
+rename to drivers/soc/eswin/ai_driver/common/hetero_host.h
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_ioctl.h b/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h
+similarity index 99%
+rename from drivers/soc/eswin/ai_driver/include/hetero_ioctl.h
+rename to drivers/soc/eswin/ai_driver/common/hetero_ioctl.h
+index 77974acb3b0b..442be18ca88a 100644
+--- a/drivers/soc/eswin/ai_driver/include/hetero_ioctl.h
++++ b/drivers/soc/eswin/ai_driver/common/hetero_ioctl.h
+@@ -10,7 +10,13 @@
+ 
+ #include "hetero_types.h"
+ #include "es_type.h"
++
++
++#if defined(__KERNEL__)
+ #include <uapi/linux/es_vb_user.h>
++#else
++#include "es_vb_user.h"
++#endif
+ 
+ enum {
+     mem_flag_swap,
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_ipc.h b/drivers/soc/eswin/ai_driver/common/hetero_ipc.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/hetero_ipc.h
+rename to drivers/soc/eswin/ai_driver/common/hetero_ipc.h
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_perf.h b/drivers/soc/eswin/ai_driver/common/hetero_perf.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/hetero_perf.h
+rename to drivers/soc/eswin/ai_driver/common/hetero_perf.h
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_processor.h b/drivers/soc/eswin/ai_driver/common/hetero_processor.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/hetero_processor.h
+rename to drivers/soc/eswin/ai_driver/common/hetero_processor.h
+diff --git a/drivers/soc/eswin/ai_driver/include/hetero_types.h b/drivers/soc/eswin/ai_driver/common/hetero_types.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/hetero_types.h
+rename to drivers/soc/eswin/ai_driver/common/hetero_types.h
+diff --git a/drivers/soc/eswin/ai_driver/include/md5.h b/drivers/soc/eswin/ai_driver/common/md5.h
+similarity index 100%
+rename from drivers/soc/eswin/ai_driver/include/md5.h
+rename to drivers/soc/eswin/ai_driver/common/md5.h
+diff --git a/drivers/soc/eswin/ai_driver/dsp/Makefile b/drivers/soc/eswin/ai_driver/dsp/Makefile
+index 22f9cf76b86e..cb53bc1850f3 100755
+--- a/drivers/soc/eswin/ai_driver/dsp/Makefile
++++ b/drivers/soc/eswin/ai_driver/dsp/Makefile
+@@ -31,7 +31,8 @@ ccflags-y := -I$(src)/
+ ccflags-y += -I$(srctree)/drivers/soc/eswin
+ ccflags-y += -I$(srctree)/drivers/memory/eswin/es_dev_buf/include/linux
+ ccflags-y += -I$(srctree)/drivers/memory/eswin/es_iommu_rsv/include/linux
+-ccflags-y += -I$(srctree)/$(src)/../include
++ccflags-y += -I$(srctree)/$(src)/../common
++ccflags-y += -I$(srctree)/$(src)/../common/devices
+ 
+ obj-$(CONFIG_ESWIN_DSP) += eic7700_dsp.o
+ 
+diff --git a/drivers/soc/eswin/ai_driver/npu/Makefile b/drivers/soc/eswin/ai_driver/npu/Makefile
+index 29de4587ff04..3602d3c9a0f6 100644
+--- a/drivers/soc/eswin/ai_driver/npu/Makefile
++++ b/drivers/soc/eswin/ai_driver/npu/Makefile
+@@ -8,7 +8,8 @@ ccflags-y += -I$(srctree)/drivers/soc/eswin
+ ccflags-y += -I$(srctree)/drivers/memory/eswin/codacache/
+ ccflags-y += -I$(srctree)/$(src)/include
+ ccflags-y += -I$(srctree)/$(src)/../dsp
+-ccflags-y += -I$(srctree)/$(src)/../include
++ccflags-y += -I$(srctree)/$(src)/../common
++ccflags-y += -I$(srctree)/$(src)/../common/devices
+ ccflags-y += -I$(srctree)/drivers/memory/eswin/es_iommu_rsv/include/linux
+ ccflags-y += -I$(srctree)/drivers/memory/eswin/es_dev_buf/include/linux
+ 
+-- 
+2.47.0
+

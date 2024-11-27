@@ -1,0 +1,292 @@
+From 611c2ed0a8a1f275ebed8ca207180d49a57bdf3a Mon Sep 17 00:00:00 2001
+From: luyulin <luyulin@eswincomputing.com>
+Date: Fri, 18 Oct 2024 13:36:16 +0800
+Subject: [PATCH 192/215] fix:fix sata reset
+
+Changelogs:
+1.fix sata reset
+2.Solve the problem of softreset failure caused by SATA reset when rmmod and insmod ko
+
+Signed-off-by: luyulin <luyulin@eswincomputing.com>
+---
+ .../dts/eswin/eswin-win2030-die0-soc.dtsi     |   8 +-
+ .../dts/eswin/eswin-win2030-die1-soc.dtsi     |   7 +-
+ drivers/ata/ahci_eswin.c                      | 161 ++++++------------
+ 3 files changed, 59 insertions(+), 117 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index 14d5b4b0df6a..4a79fe6b0721 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -785,12 +785,8 @@ d0_sata: sata@0x50420000{
+ 			interrupt-names = "intrq", "msi", "pme";
+ 			interrupts = <58>, <59>, <60>;
+ 			ports-implemented = <0x1>;
+-			resets = <&d0_reset HSPDMA_RST_CTRL SW_SATA_ASIC0_RSTN>,
+-					<&d0_reset HSPDMA_RST_CTRL SW_SATA_OOB_RSTN>,
+-					<&d0_reset HSPDMA_RST_CTRL SW_SATA_PMALIVE_RSTN>,
+-					<&d0_reset HSPDMA_RST_CTRL SW_SATA_RBC_RSTN>,
+-					<&d0_reset HSPDMA_RST_CTRL SW_HSP_SATA_ARSTN>;
+-			reset-names = "asic0", "oob", "pmalive", "rbc", "apb";
++			resets = <&d0_reset HSPDMA_RST_CTRL SW_HSP_SATA_ARSTN>;
++			reset-names = "apb";
+ 			#size-cells = <2>;
+ 			iommus = <&smmu0 WIN2030_SID_SATA>;
+ 			tbus = <WIN2030_TBUID_SATA>;
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index 8351a81c605a..e8a5c18b5459 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -1022,11 +1022,8 @@ d1_sata: sata@0x70420000 {
+ 				interrupt-names = "intrq", "msi", "pme";
+ 				interrupts = <58>, <59>, <60>;
+ 				ports-implemented = <0x1>;
+-				resets = <&d1_reset HSPDMA_RST_CTRL SW_SATA_ASIC0_RSTN>,
+-					<&d1_reset HSPDMA_RST_CTRL SW_SATA_OOB_RSTN>,
+-					<&d1_reset HSPDMA_RST_CTRL SW_SATA_PMALIVE_RSTN>,
+-					<&d1_reset HSPDMA_RST_CTRL SW_SATA_RBC_RSTN>;
+-				reset-names = "asic0", "oob", "pmalive", "rbc";
++				resets = <&d1_reset HSPDMA_RST_CTRL SW_HSP_SATA_ARSTN>;
++				reset-names = "apb";
+ 				#size-cells = <2>;
+ 				iommus = <&smmu1 WIN2030_SID_SATA>;
+ 				tbus = <WIN2030_TBUID_SATA>;
+diff --git a/drivers/ata/ahci_eswin.c b/drivers/ata/ahci_eswin.c
+index c97431f008a2..47240248f468 100644
+--- a/drivers/ata/ahci_eswin.c
++++ b/drivers/ata/ahci_eswin.c
+@@ -69,9 +69,10 @@
+ #define SATA_MPLL_MULTIPLIER          (0x3c << 16)
+ #define SATA_M_CSYSREQ                BIT(0)
+ #define SATA_S_CSYSREQ                BIT(16)
+-#define HSPDME_RST_CTRL               0x41C
+-#define SW_HSP_SATA_ARSTN             BIT(27)
+-#define SW_SATA_RSTN                  (0xf << 9)
++
++struct eswin_ahci_plat {
++    struct reset_control *apb_rst;
++};
+ 
+ static const struct ata_port_info ahci_port_info = {
+     .flags		= AHCI_FLAG_COMMON,
+@@ -131,6 +132,7 @@ static int eswin_sata_sid_cfg(struct device *dev)
+      else
+         dev_dbg(dev, "success to config sata streamID(%d)!\n", sid);
+     pr_err("eswin_sata_sid_cfg success\n");
++
+     return ret;
+ }
+ 
+@@ -142,6 +144,7 @@ static int eswin_sata_init(struct device *dev)
+         dev_dbg(dev, "No hsp_sp_csr phandle specified\n");
+         return -1;
+     }
++
+     regmap_write(regmap, SATA_REF_CTRL1, 0x1);
+     regmap_write(regmap, SATA_PHY_CTRL0, (SATA_P0_AMPLITUDE_GEN1|SATA_P0_AMPLITUDE_GEN2|SATA_P0_AMPLITUDE_GEN3));
+     regmap_write(regmap, SATA_PHY_CTRL1, (SATA_P0_PHY_TX_PREEMPH_GEN1|SATA_P0_PHY_TX_PREEMPH_GEN2|SATA_P0_PHY_TX_PREEMPH_GEN3));
+@@ -150,136 +153,80 @@ static int eswin_sata_init(struct device *dev)
+     regmap_write(regmap, SATA_REG_CTRL, (SATA_REF_REPEATCLK_EN|SATA_REF_USE_PAD));
+     regmap_write(regmap, SATA_MPLL_CTRL, SATA_MPLL_MULTIPLIER);
+     regmap_write(regmap, SATA_RESET_CTRL, 0x0);
++
+     return 0;
+ }
+ 
+-static int __init eswin_reset(struct device *dev)
++static int eswin_ahci_platform_resets(struct ahci_host_priv *hpriv,
++				    struct device *dev)
+ {
+-    struct reset_control *asic0_rst;
+-    struct reset_control *oob_rst;
+-    struct reset_control *pmalive_rst;
+-    struct reset_control *rbc_rst;
+-    struct reset_control *apb_rst;
++	struct eswin_ahci_plat *plat = hpriv->plat_data;
++    struct regmap *regmap;
+     int ret;
+-    asic0_rst = devm_reset_control_get_shared(dev, "asic0");
+-    if (IS_ERR_OR_NULL(asic0_rst)) {
+-        dev_err(dev, "Failed to asic0_rst handle\n");
+-        return -EFAULT;
+-    }
+-    oob_rst = devm_reset_control_get_shared(dev, "oob");
+-    if (IS_ERR_OR_NULL(oob_rst)) {
+-        dev_err(dev, "Failed to oob_rst handle\n");
+-        return -EFAULT;
+-    }
+-    pmalive_rst = devm_reset_control_get_shared(dev, "pmalive");
+-    if (IS_ERR_OR_NULL(pmalive_rst)) {
+-        dev_err(dev, "Failed to pmalive_rst handle\n");
+-        return -EFAULT;
+-    }
+-    rbc_rst = devm_reset_control_get_shared(dev, "rbc");
+-    if (IS_ERR_OR_NULL(rbc_rst)) {
+-        dev_err(dev, "Failed to rbc_rst handle\n");
+-        return -EFAULT;
+-    }
+-    apb_rst = devm_reset_control_get_shared(dev, "apb");
+-    if (IS_ERR_OR_NULL(apb_rst)) {
+-        dev_err(dev, "Failed to apb_rst handle\n");
+-        return -EFAULT;
+-    }
+-    if (asic0_rst) {
+-        ret = reset_control_deassert(asic0_rst);
+-        WARN_ON(0 != ret);
+-    }
+-    if (oob_rst) {
+-        ret = reset_control_deassert(oob_rst);
+-        WARN_ON(0 != ret);
+-    }
+-    if (pmalive_rst) {
+-        ret = reset_control_deassert(pmalive_rst);
+-        WARN_ON(0 != ret);
+-    }
+-    if (rbc_rst) {
+-        ret = reset_control_deassert(rbc_rst);
+-        WARN_ON(0 != ret);
+-    }
+-    if (apb_rst) {
+-        ret = reset_control_deassert(apb_rst);
+-        WARN_ON(0 != ret);
++
++    regmap = syscon_regmap_lookup_by_phandle(dev->of_node, "eswin,hsp_sp_csr");
++    if (IS_ERR(regmap)) {
++        dev_dbg(dev, "No hsp_sp_csr phandle specified\n");
++        return -1;
+     }
+-    return 0;
+-}
+ 
++    plat->apb_rst = devm_reset_control_get_optional(dev, "apb");
++	if (PTR_ERR(plat->apb_rst) == -EPROBE_DEFER)
++		return PTR_ERR(plat->apb_rst);
+ 
+-static int eswin_unreset(struct device *dev)
+-{
+-    struct reset_control *asic0_rst;
+-    struct reset_control *oob_rst;
+-    struct reset_control *pmalive_rst;
+-    struct reset_control *rbc_rst;
+-    int ret;
++    ret = reset_control_assert(plat->apb_rst);
++	if (ret) {
++		dev_err(dev, "failed to assert apb_rst\n");
++		return ret;
++	}
++    regmap_write(regmap, SATA_RESET_CTRL, SATA_RESET_CTRL_ASSERT);
+ 
+-    asic0_rst = devm_reset_control_get_shared(dev, "asic0");
+-    if (IS_ERR_OR_NULL(asic0_rst)) {
+-        dev_err(dev, "Failed to asic0_rst handle\n");
+-        return -EFAULT;
+-    }
+-    oob_rst = devm_reset_control_get_shared(dev, "oob");
+-    if (IS_ERR_OR_NULL(oob_rst)) {
+-        dev_err(dev, "Failed to oob_rst handle\n");
+-        return -EFAULT;
+-    }
+-    pmalive_rst = devm_reset_control_get_shared(dev, "pmalive");
+-    if (IS_ERR_OR_NULL(pmalive_rst)) {
+-        dev_err(dev, "Failed to pmalive_rst handle\n");
+-        return -EFAULT;
+-    }
+-    rbc_rst = devm_reset_control_get_shared(dev, "rbc");
+-    if (IS_ERR_OR_NULL(rbc_rst)) {
+-        dev_err(dev, "Failed to rbc_rst handle\n");
+-        return -EFAULT;
+-    }
+-    if (asic0_rst) {
+-        ret = reset_control_assert(asic0_rst);
+-        WARN_ON(0 != ret);
+-    }
+-    if (oob_rst) {
+-        ret = reset_control_assert(oob_rst);
+-        WARN_ON(0 != ret);
+-    }
+-    if (pmalive_rst) {
+-        ret = reset_control_assert(pmalive_rst);
+-        WARN_ON(0 != ret);
+-    }
+-    if (rbc_rst) {
+-        ret = reset_control_assert(rbc_rst);
+-        WARN_ON(0 != ret);
+-    }
+-    return 0;
++    regmap_write(regmap, SATA_RESET_CTRL, SATA_RESET_CTRL_DEASSERT);
++    ret = reset_control_deassert(plat->apb_rst);
++	if (ret) {
++		dev_err(dev, "failed to deassert apb_rst\n");
++		return ret;
++	}
++
++	return 0;
+ }
+ 
+ static int ahci_probe(struct platform_device *pdev)
+ {
+     struct device *dev = &pdev->dev;
+     struct ahci_host_priv *hpriv;
++    struct eswin_ahci_plat *plat;
+     const struct ata_port_info *port;
+     int ret;
++
++    plat = devm_kzalloc(dev, sizeof(*plat), GFP_KERNEL);
++	if (!plat)
++		return -ENOMEM;
++
+     hpriv = ahci_platform_get_resources(pdev,
+                         0);
+     if (IS_ERR(hpriv))
+         return PTR_ERR(hpriv);
+ 
+-    ret = eswin_reset(dev);
+-    if (ret)
+-        return ret;
++    hpriv->plat_data = plat;
++    ret = eswin_ahci_platform_resets(hpriv, dev);
++	if (ret)
++		return ret;
++
++    ret = ahci_platform_enable_resources(hpriv);
++	if (ret)
++		return ret;
++
+     eswin_sata_init(dev);
++
+     eswin_sata_sid_cfg(dev);
++
+     win2030_tbu_power(&pdev->dev, true);
++
+     ret = dma_set_mask_and_coherent(dev,DMA_BIT_MASK(41));
+     if (ret)
+         return ret;
+-    ret = ahci_platform_enable_regulators(hpriv);
+-    if (ret)
+-        return ret;
++
+     of_property_read_u32(dev->of_node,
+                 "ports-implemented", &hpriv->saved_port_map);
+ 
+@@ -290,6 +237,7 @@ static int ahci_probe(struct platform_device *pdev)
+     if (!port){
+         port = &ahci_port_info;
+     }
++
+     ret = ahci_platform_init_host(pdev, hpriv, port,
+                 &ahci_platform_sht);
+     if (ret)
+@@ -304,8 +252,9 @@ static int ahci_probe(struct platform_device *pdev)
+ static int ahci_remove(struct platform_device *pdev)
+ {
+     win2030_tbu_power(&pdev->dev, false);
+-    eswin_unreset(&pdev->dev);
++
+     ata_platform_remove_one(pdev);
++
+     return 0;
+ }
+ 
+-- 
+2.47.0
+

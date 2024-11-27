@@ -1,0 +1,223 @@
+From 56d80252456bd9fc4962739614445e9697972585 Mon Sep 17 00:00:00 2001
+From: huangyifeng <huangyifeng@eswincomputing.com>
+Date: Thu, 29 Aug 2024 16:17:29 +0800
+Subject: [PATCH 171/215] feat:add cpu volatge adjust
+
+Changelogs:
+    add cpu volatge adjust.When the CPU frequency is scaled above
+1.6GHz, the voltage is adjusted to 0.9V; otherwise, it remains at 0.8V.
+
+Signed-off-by: huangyifeng <huangyifeng@eswincomputing.com>
+---
+ .../dts/eswin/eic7700-hifive-premier-p550.dts | 23 +++++-
+ drivers/clk/eswin/clk.c                       | 71 ++++++++++++++++++-
+ drivers/clk/eswin/clk.h                       |  7 ++
+ 3 files changed, 97 insertions(+), 4 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts b/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+index f20c86264c3e..9cacb373b3bc 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+@@ -772,7 +772,8 @@ &pinctrl_gpio37_default &pinctrl_gpio38_default &pinctrl_gpio39_default &pinctrl
+ 			&pinctrl_gpio41_default &pinctrl_gpio46_default &pinctrl_gpio52_default
+ 			&pinctrl_gpio53_default &pinctrl_gpio64_default &pinctrl_gpio65_default &pinctrl_gpio66_default
+ 			&pinctrl_gpio67_default &pinctrl_gpio70_default &pinctrl_gpio73_default &pinctrl_gpio83_default
+-			&pinctrl_gpio86_default &pinctrl_gpio87_default &pinctrl_gpio92_default &pinctrl_gpio93_default>;
++			&pinctrl_gpio86_default &pinctrl_gpio87_default &pinctrl_gpio92_default &pinctrl_gpio93_default
++			&pinctrl_gpio94_default>;
+ 
+     /* pin header default function for GPIO
+        SPI1 (CS0,SCLK,MOSI,MISO,D2,D3): GPIO 35,36,37,38,39,40
+@@ -817,6 +818,24 @@ &gpio0 {
+ 	status = "okay";
+ };
+ 
+-&dev_llc_d0{
++&dev_llc_d0 {
+ 	apply_npu_high_freq;
++};
++
++&d0_clock {
++	status = "okay";
++	cpu-voltage-gpios = <&portc 30 GPIO_ACTIVE_HIGH>;
++};
++
++&d0_cpu_opp_table {
++	opp-1600000000 {
++		opp-hz = /bits/ 64 <CLK_FREQ_1600M>;
++		opp-microvolt = <900000>;
++		clock-latency-ns = <70000>;
++	};
++	opp-1800000000 {
++		opp-hz = /bits/ 64 <CLK_FREQ_1800M>;
++		opp-microvolt = <900000>;
++		clock-latency-ns = <70000>;
++	};
+ };
+\ No newline at end of file
+diff --git a/drivers/clk/eswin/clk.c b/drivers/clk/eswin/clk.c
+index 06569c72ba37..b944a5e6ec44 100755
+--- a/drivers/clk/eswin/clk.c
++++ b/drivers/clk/eswin/clk.c
+@@ -30,8 +30,8 @@
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/util_macros.h>
++#include <linux/gpio/consumer.h>
+ #include <dt-bindings/clock/win2030-clock.h>
+-
+ #include "clk.h"
+ 
+ struct clk_hw *eswin_clk_find_parent(struct eswin_clock_data *data, char *parent_name)
+@@ -128,6 +128,26 @@ int eswin_clk_register_fixed_rate(const struct eswin_fixed_rate_clock *clks,
+ }
+ EXPORT_SYMBOL_GPL(eswin_clk_register_fixed_rate);
+ 
++static int eswin_clk_set_cpu_volatge(struct gpio_desc *cpu_voltage_gpio,
++	enum voltage_level target_volatge)
++{
++	if (!cpu_voltage_gpio) {
++		return -EINVAL;
++	}
++	switch (target_volatge) {
++		case VOLTAGE_0_9V:
++			gpiod_set_value(cpu_voltage_gpio, 1);
++			break;
++		case VOLTAGE_0_8V:
++			gpiod_set_value(cpu_voltage_gpio, 0);
++			break;
++		default:
++			pr_err("%s %d: unsupport  volatge %d\n", __func__,__LINE__, target_volatge);
++			return -EINVAL;
++	}
++	return 0;
++}
++
+ static int eswin_calc_pll(u32 *frac_val, u32 *postdiv1_val,
+ 				 u32 *fbdiv_val, u32 *refdiv_val, u64 rate,
+ 				 const struct eswin_clk_pll *clk)
+@@ -328,6 +348,40 @@ static int clk_pll_set_rate(struct clk_hw *hw,
+ 			clk_disable_unprepare(clk_cpu_lp_pll);
+ 			return -EPERM;
+ 		}
++		/*
++		  The CPU clock has now switched to the LP_PLL, so we can adjust the CPU's supply voltage
++		  If the board cpu voltage does not support boosting to 0.9V, then the frequency cannot exceed 1.6GHz.
++		*/
++		switch (rate) {
++			case CLK_FREQ_1800M:
++			case CLK_FREQ_1700M:
++			case CLK_FREQ_1600M:
++				ret = eswin_clk_set_cpu_volatge(clk->cpu_voltage_gpio, VOLTAGE_0_9V);
++				if (ret) {
++					pr_warn("Failed to change cpu volatge to 0.9V, not support rate %ld\n",  rate);
++					goto switch_back;
++				} else {
++					if (clk->cpu_current_volatge != VOLTAGE_0_9V) {
++						pr_info("Cpu volatge change to 0.9V, target rate %ld\n", rate);
++						clk->cpu_current_volatge = VOLTAGE_0_9V;
++					}
++				}
++				break;
++			default:
++				ret = eswin_clk_set_cpu_volatge(clk->cpu_voltage_gpio, VOLTAGE_0_8V);
++				if (!ret) {
++					if (clk->cpu_current_volatge != VOLTAGE_0_8V) {
++						pr_info("cpu volatge change to 0.8V, target rate %ld\n", rate);
++						clk->cpu_current_volatge = VOLTAGE_0_8V;
++					}
++				}
++				/*
++				  For boards that do not support voltage switching, the voltage is maintained at 0.8V.
++				  Therefore, this is also considered successful.
++				*/
++				ret = 0;
++				break;
++		}
+ 	}
+ 
+ 	/*first disable pll */
+@@ -375,6 +429,8 @@ static int clk_pll_set_rate(struct clk_hw *hw,
+ 		pr_err("%s %d, faild to lock the cpu pll, cpu will work on low power pll\n",__func__,__LINE__);
+ 		return -EBUSY;
+ 	}
++
++switch_back:
+ 	if (WIN2030_PLL_CPU == clk->id) {
+ 		ret = clk_set_parent(clk_cpu_mux, clk_cpu_pll);
+ 		if (ret) {
+@@ -384,7 +440,7 @@ static int clk_pll_set_rate(struct clk_hw *hw,
+ 		}
+ 		clk_disable_unprepare(clk_cpu_lp_pll);
+ 	}
+-	return 0;
++	return ret;
+ }
+ 
+ static unsigned long clk_pll_recalc_rate(struct clk_hw *hw,
+@@ -539,12 +595,21 @@ void eswin_clk_register_pll(struct eswin_pll_clock *clks,
+ 	struct clk *clk = NULL;
+ 	struct clk_init_data init;
+ 	int i;
++	struct gpio_desc *cpu_voltage_gpio;
+ 
+ 	p_clk = devm_kzalloc(dev, sizeof(*p_clk) * nums, GFP_KERNEL);
+ 
+ 	if (!p_clk)
+ 		return;
+ 
++	cpu_voltage_gpio = devm_gpiod_get(dev, "cpu-voltage", GPIOD_OUT_HIGH);
++	if (IS_ERR_OR_NULL(cpu_voltage_gpio)) {
++		dev_warn(dev, "failed to get cpu volatge gpio\n");
++		cpu_voltage_gpio = NULL;
++	} else {
++		/*cpu default freq is 1400M, the volatge should be VOLTAGE_0_8V*/
++		eswin_clk_set_cpu_volatge(cpu_voltage_gpio, VOLTAGE_0_8V);
++	}
+ 	for (i = 0; i < nums; i++) {
+ 		char *name = kzalloc(strlen(clks[i].name)
+ 			+ 2 * sizeof(char) + sizeof(int), GFP_KERNEL);
+@@ -593,6 +658,7 @@ void eswin_clk_register_pll(struct eswin_pll_clock *clks,
+ 		p_clk->lock_width = clks[i].lock_width;
+ 
+ 		p_clk->hw.init = &init;
++		p_clk->cpu_voltage_gpio = cpu_voltage_gpio;
+ 
+ 		clk = clk_register(dev, &p_clk->hw);
+ 		if (IS_ERR(clk)) {
+@@ -603,6 +669,7 @@ void eswin_clk_register_pll(struct eswin_pll_clock *clks,
+ 
+ 		data->clk_data.clks[clks[i].id] = clk;
+ 		p_clk++;
++
+ 		kfree(name);
+ 		if (parent_name) {
+ 			kfree(parent_name);
+diff --git a/drivers/clk/eswin/clk.h b/drivers/clk/eswin/clk.h
+index c5906c420769..95e222d5194c 100755
+--- a/drivers/clk/eswin/clk.h
++++ b/drivers/clk/eswin/clk.h
+@@ -128,6 +128,11 @@ struct eswin_pll_clock {
+ 	const u8	lock_width;
+ };
+ 
++enum voltage_level {
++	VOLTAGE_0_9V = 900,  // Represents 0.9V in millivolts
++	VOLTAGE_0_8V = 800   // Represents 0.8V in millivolts
++};
++
+ struct eswin_clk_pll {
+ 	struct clk_hw	hw;
+ 	u32	id;
+@@ -153,6 +158,8 @@ struct eswin_clk_pll {
+ 	void __iomem	*status_reg;
+ 	u8	lock_shift;
+ 	u8	lock_width;
++	struct gpio_desc *cpu_voltage_gpio;
++	enum voltage_level cpu_current_volatge;
+ };
+ 
+ struct eswin_clock_data *eswin_clk_init(struct platform_device *, int);
+-- 
+2.47.0
+

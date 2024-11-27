@@ -1,0 +1,48 @@
+From 274062de74de9e62b117902719a26ba928f73232 Mon Sep 17 00:00:00 2001
+From: denglei <denglei@eswincomputing.com>
+Date: Tue, 22 Oct 2024 09:53:00 +0800
+Subject: [PATCH 194/215] fix:Solving hdmi display compatibility issues.
+
+Changelogs:
+	HKC monitor, after multiple hot plugging, fails to display.
+
+Signed-off-by: denglei <denglei@eswincomputing.com>
+---
+ drivers/gpu/drm/eswin/dw-hdmi.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/eswin/dw-hdmi.c b/drivers/gpu/drm/eswin/dw-hdmi.c
+index 552b80ccacdb..ba5aae273162 100644
+--- a/drivers/gpu/drm/eswin/dw-hdmi.c
++++ b/drivers/gpu/drm/eswin/dw-hdmi.c
+@@ -311,7 +311,9 @@ static void repo_hpd_event(struct work_struct *p_work)
+ 	mutex_unlock(&hdmi->mutex);
+ 
+ 	if (hdmi->bridge.dev) {
+-		drm_helper_hpd_irq_event(hdmi->bridge.dev);
++		if (drm_helper_hpd_irq_event(hdmi->bridge.dev)) {
++			dev_info(hdmi->dev, "hpd event report status:%d\n", hdmi->last_connector_result);
++		}
+ 	}
+ 
+ 	msleep(150);
+@@ -632,6 +634,7 @@ static int dw_hdmi_i2c_xfer(struct i2c_adapter *adap,
+ 		}
+ 		if (ret < 0) {
+ 			dev_info(hdmi->dev, "i2c transfer fail\n");
++			udelay(200 * 1000);
+ 			break;
+ 		}
+ 	}
+@@ -2748,6 +2751,8 @@ static enum drm_connector_status dw_hdmi_detect(struct dw_hdmi *hdmi)
+ 	result = hdmi->phy.ops->read_hpd(hdmi, hdmi->phy.data);
+ 	hdmi->last_connector_result = result;
+ 
++	dev_dbg(hdmi->dev, "detect connector status:%d\n", result);
++
+ 	return result;
+ }
+ 
+-- 
+2.47.0
+

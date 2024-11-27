@@ -1,0 +1,31 @@
+From 5f61f6627f1c39d7fc88d20f8b7acca2943d5e03 Mon Sep 17 00:00:00 2001
+From: fanglifei <fanglifei@eswincomputing.com>
+Date: Mon, 22 Jul 2024 17:31:42 +0800
+Subject: [PATCH 116/215] fix(vo): clk off after dc initialized
+
+Changelogs:
+1. Close clks after dc initialized to fix clks_config
+   not been invoked when system suspend if no display
+   apps such as modetest were run.
+
+Signed-off-by: fanglifei <fanglifei@eswincomputing.com>
+---
+ drivers/gpu/drm/eswin/es_dc.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/gpu/drm/eswin/es_dc.c b/drivers/gpu/drm/eswin/es_dc.c
+index 4d5eaec87f5d..2eddebbd2ddb 100644
+--- a/drivers/gpu/drm/eswin/es_dc.c
++++ b/drivers/gpu/drm/eswin/es_dc.c
+@@ -945,6 +945,8 @@ static int dc_bind(struct device *dev, struct device *master, void *data)
+ 
+ 	es_drm_update_pitch_alignment(drm_dev, dc_info->pitch_alignment);
+ 
++	es_dc_clk_configs(dev, false);
++
+ 	return 0;
+ 
+ err_cleanup_planes:
+-- 
+2.47.0
+

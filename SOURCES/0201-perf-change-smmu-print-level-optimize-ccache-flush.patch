@@ -1,0 +1,50 @@
+From 28f669c75a35e981d08f73ed15c611ca90ae8022 Mon Sep 17 00:00:00 2001
+From: linmin <linmin@eswincomputing.com>
+Date: Mon, 28 Oct 2024 16:44:02 +0800
+Subject: [PATCH 201/215] perf:change smmu print level,optimize ccache flush
+
+Changelogs:
+1.Changed the smmu event print level to dev_dbg for reducing the log
+  when dsp cache prediction access to the invalid iova.
+2.Move mb(); outside of the for loop of ccache_flush64_range() to reduce
+  the time cost of flusing cache.
+
+Signed-off-by: linmin <linmin@eswincomputing.com>
+---
+ drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c | 4 ++--
+ drivers/soc/sifive/sifive_ccache.c          | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+index c383426a0655..77d37ee6e71f 100644
+--- a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
++++ b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+@@ -1661,9 +1661,9 @@ static irqreturn_t arm_smmu_evtq_thread(int irq, void *dev)
+ 			if (!ret || !__ratelimit(&rs))
+ 				continue;
+ 
+-			dev_info(smmu->dev, "event 0x%02x received:\n", id);
++			dev_dbg(smmu->dev, "event 0x%02x received:\n", id);
+ 			for (i = 0; i < ARRAY_SIZE(evt); ++i)
+-				dev_info(smmu->dev, "\t0x%016llx\n",
++				dev_dbg(smmu->dev, "\t0x%016llx\n",
+ 					 (unsigned long long)evt[i]);
+ 
+ 			cond_resched();
+diff --git a/drivers/soc/sifive/sifive_ccache.c b/drivers/soc/sifive/sifive_ccache.c
+index a88123c81ace..2010ccd64f86 100644
+--- a/drivers/soc/sifive/sifive_ccache.c
++++ b/drivers/soc/sifive/sifive_ccache.c
+@@ -130,8 +130,8 @@ static void ccache_flush64_range(phys_addr_t paddr, size_t size)
+ 	for (line = paddr; line < paddr + size;
+ 	line += SIFIVE_CCACHE_FLUSH64_LINE_LEN) {
+ 		writeq(line, ccache_base + SIFIVE_CCACHE_FLUSH64);
+-		mb();
+ 	}
++	mb();
+ }
+ 
+ static const struct riscv_nonstd_cache_ops ccache_cmo_ops __initdata = {
+-- 
+2.47.0
+

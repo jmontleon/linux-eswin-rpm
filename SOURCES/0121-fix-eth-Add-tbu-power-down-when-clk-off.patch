@@ -1,0 +1,41 @@
+From 22b90c8f7a27adb83cdc54c9c8b32e70110a6357 Mon Sep 17 00:00:00 2001
+From: fanglifei <fanglifei@eswincomputing.com>
+Date: Fri, 26 Jul 2024 10:41:37 +0800
+Subject: [PATCH 121/215] fix(eth): Add tbu power down when clk off
+
+Changelogs:
+1. Add tbu power up or down when clk on or off
+
+Signed-off-by: fanglifei <fanglifei@eswincomputing.com>
+---
+ drivers/net/ethernet/stmicro/stmmac/dwmac-win2030.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-win2030.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-win2030.c
+index 5a83b55357fb..e80061c95639 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-win2030.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-win2030.c
+@@ -301,7 +301,20 @@ static int dwc_clks_config(void *priv, bool enabled)
+ 			dev_err(dwc_priv->dev, "failed to enable tx clock: %d\n", ret);
+ 			return ret;
+ 		}
++
++		ret = win2030_tbu_power(dwc_priv->dev, true);
++		if (ret) {
++			dev_err(dwc_priv->dev, "failed to power up tbu\n");
++			return ret;
++		}
+ 	} else {
++
++		ret = win2030_tbu_power(dwc_priv->dev, false);
++		if (ret) {
++			dev_err(dwc_priv->dev, "failed to power down tbu\n");
++			return ret;
++		}
++
+ 		clk_disable_unprepare(dwc_priv->clk_tx);
+ 		clk_disable_unprepare(dwc_priv->clk_csr);
+ 		clk_disable_unprepare(dwc_priv->clk_app);
+-- 
+2.47.0
+

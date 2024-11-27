@@ -1,0 +1,32 @@
+From 1d0110b46dd1ec98b8f7ba6025317f3e798cfe08 Mon Sep 17 00:00:00 2001
+From: zouxiaojun <zouxiaojun@eswincomputing.com>
+Date: Wed, 11 Sep 2024 10:12:37 +0800
+Subject: [PATCH 170/215] to(je):disable je timeout check
+
+Changelogs:
+	Disable je timeout check; No JE hang found.
+
+Signed-off-by: zouxiaojun <zouxiaojun@eswincomputing.com>
+---
+ drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c b/drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c
+index d08a8effc7f2..e0ccc2ab9673 100644
+--- a/drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c
++++ b/drivers/staging/media/eswin/venc/vc8000_vcmd_driver.c
+@@ -734,7 +734,10 @@ static void _vcmd_watchdog_stop(struct hantrovcmd_dev *dev){
+ static void _vcmd_watchdog_feed(struct hantrovcmd_dev *dev){
+ 	u32 exetime = dev_wait_job_exetime(dev);
+ 
+-	if (exetime == 0) {
++	/** 1. stop watchdog for the idle devices;
++	 * 2. disable watchdog for the non-VE devcies;
++	*/
++	if (exetime == 0 || dev->vcmd_core_cfg.sub_module_type != VCMD_TYPE_ENCODER) {
+ 		if (dev->watchdog_active)
+ 			_vcmd_watchdog_stop(dev);
+ 	} else {
+-- 
+2.47.0
+

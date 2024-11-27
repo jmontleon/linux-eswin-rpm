@@ -1,0 +1,36 @@
+From 5ed5108a6e487ae4278a55716afe25d990b402cc Mon Sep 17 00:00:00 2001
+From: Sakura286 <sakura286@outlook.com>
+Date: Fri, 5 Jul 2024 13:35:25 +0800
+Subject: [PATCH 072/215] img gpu kmd: update kernel api dma_buf_map to
+ iosys_map
+
+ref: https://github.com/torvalds/linux/commit/7938f421
+---
+ .../img-volcanic/services/server/env/linux/physmem_dmabuf.c   | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/physmem_dmabuf.c b/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/physmem_dmabuf.c
+index 576980ed45cf..a90b3b5879d0 100644
+--- a/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/physmem_dmabuf.c
++++ b/drivers/gpu/drm/img/img-volcanic/services/server/env/linux/physmem_dmabuf.c
+@@ -170,7 +170,7 @@ typedef struct _PMR_DMA_BUF_DATA_
+ 	IMG_BOOL bPoisonOnFree;
+ 
+ 	/* Mapping information. */
+-	struct dma_buf_map sMap;
++	struct iosys_map sMap;
+ 
+ 	/* Modified by PMR lock/unlock */
+ 	struct sg_table *psSgTable;
+@@ -196,7 +196,7 @@ static IMG_UINT32 g_ui32HashRefCount;
+ static int
+ DmaBufSetValue(struct dma_buf *psDmaBuf, int iValue, const char *szFunc)
+ {
+-	struct dma_buf_map sMap;
++	struct iosys_map sMap;
+ 	int err, err_end_access;
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 6, 0))
+ 	int i;
+-- 
+2.47.0
+

@@ -1,0 +1,1397 @@
+From e1c93693f3155725b513be341eb433429c567bb3 Mon Sep 17 00:00:00 2001
+From: lilijun <lilijun@eswincomputing.com>
+Date: Fri, 18 Oct 2024 10:45:13 +0800
+Subject: [PATCH 193/215] sync:drm support debugfs control virtual
+
+Changelogs:
+   1.Sync code from eic7702
+   2.Add debugfs to control virtual dev
+
+Signed-off-by: lilijun <lilijun@eswincomputing.com>
+---
+ .../dts/eswin/eswin-win2030-die0-soc.dtsi     |  12 +-
+ arch/riscv/configs/eic7700_dbg_defconfig      |   1 +
+ arch/riscv/configs/eic7700_defconfig          |   1 +
+ arch/riscv/configs/win2030_defconfig          |   1 +
+ drivers/gpu/drm/eswin/es_dc.c                 |  51 +-
+ drivers/gpu/drm/eswin/es_dc_mmu.c             |   6 -
+ drivers/gpu/drm/eswin/es_drv.c                | 243 ++++---
+ drivers/gpu/drm/eswin/es_drv.h                |   2 +
+ drivers/gpu/drm/eswin/es_gem.c-dbg            | 607 ++++++++++++++++++
+ drivers/gpu/drm/eswin/es_mipi_dsi.c           |  12 +-
+ drivers/gpu/drm/eswin/es_panel.c              |   7 +-
+ drivers/gpu/drm/eswin/es_virtual.c            |  77 ++-
+ drivers/gpu/drm/eswin/es_virtual.h            |   1 +
+ 13 files changed, 878 insertions(+), 143 deletions(-)
+ create mode 100644 drivers/gpu/drm/eswin/es_gem.c-dbg
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index 4a79fe6b0721..daf927d2b3df 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -1780,9 +1780,10 @@ d0_graphcard2: graphcard2 {
+ 			compatible = "audio-graph-card";
+ 		};
+ 
+-		video_output: display-subsystem {
++		video_output: display-subsystem@0 {
+ 			compatible = "eswin,display-subsystem";
+ 			ports = <&dc_out>;
++			numa-node-id = <0>;
+ 			dma-noncoherent;
+ 		};
+ 
+@@ -1809,6 +1810,7 @@ dc: display_control@502c0000 {
+ 					 <&d0_reset VO_RST_CTRL SW_VO_DC_PRSTN>;
+ 			reset-names = "vo_arst", "vo_prst", "dc_arst", "dc_prst";
+ 			dma-noncoherent;
++			numa-node-id = <0>;
+ 
+ 			dc_out: port {
+ 				#address-cells = <1>;
+@@ -1831,9 +1833,10 @@ dc_out_hdmi: endpoint@2 {
+ 			};
+ 		};
+ 
+-		virtual_display: es_wb {
++		virtual_display: es_wb@0 {
+ 			compatible = "eswin,virtual_display";
+ 			bpp = /bits/ 8 <8>;
++			numa-node-id = <0>;
+ 
+ 			port {
+ 				vd_input: endpoint {
+@@ -1842,8 +1845,9 @@ vd_input: endpoint {
+ 			};
+ 		};
+ 
+-		dsi_output: dsi-output {
++		dsi_output: dsi-output@0 {
+ 			compatible = "eswin,dsi-encoder";
++			numa-node-id = <0>;
+ 			status = "disabled";
+ 		};
+ 
+@@ -1856,6 +1860,8 @@ dsi_controller: mipi_dsi@50270000 {
+ 			clock-names = "pclk";
+ 			resets = <&d0_reset VO_PHYRST_CTRL SW_VO_MIPI_PRSTN>;
+ 			reset-names ="phyrstn";
++			numa-node-id = <0>;
++
+ 			/*
+ 			phys = <&dphy>;
+ 			phy-names = "dphy";
+diff --git a/arch/riscv/configs/eic7700_dbg_defconfig b/arch/riscv/configs/eic7700_dbg_defconfig
+index ed5d3e6ea9e3..069888c4aeed 100644
+--- a/arch/riscv/configs/eic7700_dbg_defconfig
++++ b/arch/riscv/configs/eic7700_dbg_defconfig
+@@ -626,6 +626,7 @@ CONFIG_DRM_SIMPLEDRM=m
+ CONFIG_DRM_ESWIN=y
+ CONFIG_ESWIN_MMU=y
+ CONFIG_ESWIN_DW_HDMI=y
++CONFIG_ESWIN_VIRTUAL_DISPLAY=y
+ CONFIG_DW_HDMI_I2S_AUDIO=y
+ CONFIG_DW_HDMI_CEC=y
+ CONFIG_DRM_IMG_VOLCANIC=m
+diff --git a/arch/riscv/configs/eic7700_defconfig b/arch/riscv/configs/eic7700_defconfig
+index dcb4a252da20..ce5fb86d2d9b 100644
+--- a/arch/riscv/configs/eic7700_defconfig
++++ b/arch/riscv/configs/eic7700_defconfig
+@@ -641,6 +641,7 @@ CONFIG_DRM_SIMPLEDRM=m
+ CONFIG_DRM_ESWIN=y
+ CONFIG_ESWIN_MMU=y
+ CONFIG_ESWIN_DW_HDMI=y
++CONFIG_ESWIN_VIRTUAL_DISPLAY=y
+ CONFIG_DW_HDMI_I2S_AUDIO=y
+ CONFIG_DW_HDMI_CEC=y
+ CONFIG_DRM_IMG_VOLCANIC=m
+diff --git a/arch/riscv/configs/win2030_defconfig b/arch/riscv/configs/win2030_defconfig
+index f0d832fcd112..cc2484e64c2c 100644
+--- a/arch/riscv/configs/win2030_defconfig
++++ b/arch/riscv/configs/win2030_defconfig
+@@ -635,6 +635,7 @@ CONFIG_DRM_SIMPLEDRM=m
+ CONFIG_DRM_ESWIN=y
+ CONFIG_ESWIN_MMU=y
+ CONFIG_ESWIN_DW_HDMI=y
++CONFIG_ESWIN_VIRTUAL_DISPLAY=y
+ CONFIG_DW_HDMI_I2S_AUDIO=y
+ CONFIG_DW_HDMI_CEC=y
+ CONFIG_DRM_IMG_VOLCANIC=m
+diff --git a/drivers/gpu/drm/eswin/es_dc.c b/drivers/gpu/drm/eswin/es_dc.c
+index ac43c604a2dc..f63bd798320e 100644
+--- a/drivers/gpu/drm/eswin/es_dc.c
++++ b/drivers/gpu/drm/eswin/es_dc.c
+@@ -636,26 +636,27 @@ static void update_overlay_plane(struct es_dc *dc, struct es_plane *plane)
+ 	dc_hw_set_blend(&dc->hw, &blend);
+ }
+ 
+-static void update_cursor_size(struct drm_plane_state *state, struct dc_hw_cursor *cursor)
++static void update_cursor_size(struct drm_plane_state *state,
++			       struct dc_hw_cursor *cursor)
+ {
+ 	u8 size_type;
+ 
+ 	switch (state->crtc_w) {
+-		case 32:
+-			size_type = CURSOR_SIZE_32X32;
+-			break;
+-		case 64:
+-			size_type = CURSOR_SIZE_64X64;
+-			break;
+-		case 128:
+-			size_type = CURSOR_SIZE_128X128;
+-			break;
+-		case 256:
+-			size_type = CURSOR_SIZE_256X256;
+-			break;
+-		default:
+-			size_type = CURSOR_SIZE_32X32;
+-			break;
++	case 32:
++		size_type = CURSOR_SIZE_32X32;
++		break;
++	case 64:
++		size_type = CURSOR_SIZE_64X64;
++		break;
++	case 128:
++		size_type = CURSOR_SIZE_128X128;
++		break;
++	case 256:
++		size_type = CURSOR_SIZE_256X256;
++		break;
++	default:
++		size_type = CURSOR_SIZE_32X32;
++		break;
+ 	}
+ 
+ 	cursor->size = size_type;
+@@ -873,12 +874,14 @@ static int dc_bind(struct device *dev, struct device *master, void *data)
+ 	}
+ 
+ #ifdef CONFIG_ESWIN_MMU
+-	ret = dc_mmu_construct(priv->dma_dev, &priv->mmu);
+-	if (ret) {
+-		dev_err(dev, "failed to construct DC MMU\n");
+-		goto err_clean_dc;
++	if (priv->mmu_constructed == false) {
++		ret = dc_mmu_construct(priv->dma_dev, &priv->mmu);
++		if (ret) {
++			dev_err(dev, "failed to construct DC MMU\n");
++			goto err_clean_dc;
++		}
++		priv->mmu_constructed = true;
+ 	}
+-
+ 	ret = dc_hw_mmu_init(&dc->hw, priv->mmu);
+ 	if (ret) {
+ 		dev_err(dev, "failed to init DC MMU\n");
+@@ -950,8 +953,8 @@ static int dc_bind(struct device *dev, struct device *master, void *data)
+ 	return 0;
+ 
+ err_cleanup_planes:
+-	list_for_each_entry_safe (drm_plane, tmp,
+-				  &drm_dev->mode_config.plane_list, head)
++	list_for_each_entry_safe(drm_plane, tmp,
++				 &drm_dev->mode_config.plane_list, head)
+ 		if (drm_plane->possible_crtcs == drm_crtc_mask(&crtc->base))
+ 			es_plane_destory(drm_plane);
+ 
+@@ -981,7 +984,7 @@ static void vo_qos_cfg(void)
+ {
+ 	void __iomem *qos;
+ 
+-	#define VO_QOS_CSR	0x50281050UL
++#define VO_QOS_CSR 0x50281050UL
+ 	qos = ioremap(VO_QOS_CSR, 8);
+ 	if (!qos) {
+ 		printk("qos ioremap fail---------------\n");
+diff --git a/drivers/gpu/drm/eswin/es_dc_mmu.c b/drivers/gpu/drm/eswin/es_dc_mmu.c
+index 80cbeb421740..260f549aeff7 100644
+--- a/drivers/gpu/drm/eswin/es_dc_mmu.c
++++ b/drivers/gpu/drm/eswin/es_dc_mmu.c
+@@ -18,8 +18,6 @@
+ 
+ #include "es_dc_mmu.h"
+ 
+-static bool mmu_construct = false;
+-
+ int _allocate_memory(u32 bytes, void **memory)
+ {
+ 	void *mem = NULL;
+@@ -298,9 +296,6 @@ int dc_mmu_construct(struct device *dev, dc_mmu_pt *mmu)
+ 	u32 size = 0;
+ 	int ret = 0;
+ 
+-	if (mmu_construct)
+-		return 0;
+-
+ 	mem = kzalloc(sizeof(dc_mmu), GFP_KERNEL);
+ 	if (!mem)
+ 		return -ENOMEM;
+@@ -351,7 +346,6 @@ int dc_mmu_construct(struct device *dev, dc_mmu_pt *mmu)
+ 	memset(mmu_t->safe_page_logical, 0, size);
+ 
+ 	*mmu = mmu_t;
+-	mmu_construct = true;
+ 
+ 	return 0;
+ }
+diff --git a/drivers/gpu/drm/eswin/es_drv.c b/drivers/gpu/drm/eswin/es_drv.c
+index 2596e8e492a3..a589b9cc9ae5 100644
+--- a/drivers/gpu/drm/eswin/es_drv.c
++++ b/drivers/gpu/drm/eswin/es_drv.c
+@@ -65,7 +65,7 @@ static int es_debugfs_planes_show(struct seq_file *s, void *data)
+ 	struct drm_device *dev = node->minor->dev;
+ 	struct drm_plane *plane = NULL;
+ 
+-	list_for_each_entry (plane, &dev->mode_config.plane_list, head) {
++	list_for_each_entry(plane, &dev->mode_config.plane_list, head) {
+ 		struct drm_plane_state *state = plane->state;
+ 		struct es_plane_state *plane_state = to_es_plane_state(state);
+ 
+@@ -101,8 +101,8 @@ static void es_debugfs_init(struct drm_minor *minor)
+ #endif
+ 
+ static struct drm_driver es_drm_driver = {
+-	.driver_features =
+-		DRIVER_MODESET | DRIVER_ATOMIC | DRIVER_GEM | DRIVER_SYNCOBJ,
++	.driver_features = DRIVER_MODESET | DRIVER_ATOMIC | DRIVER_GEM |
++			   DRIVER_SYNCOBJ,
+ 	.lastclose = drm_fb_helper_lastclose,
+ 	.gem_prime_import = es_gem_prime_import,
+ 	.gem_prime_import_sg_table = es_gem_prime_import_sg_table,
+@@ -226,13 +226,12 @@ static int es_drm_bind(struct device *dev)
+ {
+ 	struct drm_device *drm_dev;
+ 	struct es_drm_private *priv;
+-	int ret;
++	int ret, id;
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 24)
+ 	static u64 dma_mask = DMA_BIT_MASK(40);
+ #else
+ 	static u64 dma_mask = DMA_40BIT_MASK;
+ #endif
+-
+ 	drm_dev = drm_dev_alloc(&es_drm_driver, dev);
+ 	if (IS_ERR(drm_dev))
+ 		return PTR_ERR(drm_dev);
+@@ -280,6 +279,20 @@ static int es_drm_bind(struct device *dev)
+ 
+ 	drm_fbdev_generic_setup(drm_dev, 32);
+ 
++	ret = of_property_read_u32(dev->of_node, "numa-node-id", &id);
++	if (ret) {
++		DRM_DEV_ERROR(dev, "Failed to read index property, ret = %d\n",
++			      ret);
++		return ret;
++	}
++	DRM_INFO("drm dev is on die%d\n", id);
++	priv->die_id = id;
++	priv->mmu_constructed = false;
++
++	if (drm_dev->unique) {
++		sprintf(drm_dev->unique, "%d", id);
++	}
++	DRM_INFO("drm_dev name:%s\n", drm_dev->unique);
+ 	return 0;
+ 
+ err_helper:
+@@ -323,88 +336,38 @@ static const struct component_master_ops es_drm_ops = {
+ 	.unbind = es_drm_unbind,
+ };
+ 
+-static struct platform_driver *drm_sub_drivers[] = {
+-	/* put display control driver at start */
+-	&dc_platform_driver,
+-
+-/* connector */
+-
+-/* bridge */
+-#if 1
+-#ifdef CONFIG_ESWIN_DW_HDMI
+-	&dw_hdmi_eswin_pltfm_driver,
+-#endif
+-#ifdef CONFIG_DW_HDMI_I2S_AUDIO
+-	&snd_dw_hdmi_driver,
+-#endif
+-
+-#ifdef CONFIG_DW_HDMI_CEC
+-	&dw_hdmi_cec_driver,
+-#endif
+-
+-#ifdef CONFIG_DW_HDMI_HDCP
+-	&dw_hdmi_hdcp_driver,
+-#endif
+-#endif
+-
+-#ifdef CONFIG_ESWIN_VIRTUAL_DISPLAY
+-	&virtual_display_platform_driver,
+-#endif
+-
+-#ifdef CONFIG_ESWIN_MIPI_DSI
+-	&es_mipi_dsi_driver,
+-#endif
+-
+-};
+-#define NUM_DRM_DRIVERS                                                        \
+-	(sizeof(drm_sub_drivers) / sizeof(struct platform_driver *))
+-
+-static int compare_dev(struct device *dev, void *data)
++static int compare_of(struct device *dev, void *data)
+ {
+-	return dev == (struct device *)data;
++	// DRM_INFO("Comparing of node %pOF with %pOF\n", dev->of_node, data);
++	return dev->of_node == data;
+ }
+ 
+-static struct component_match *es_drm_match_add(struct device *dev)
++static int es_drm_of_component_probe(struct device *dev,
++				     int (*compare_of)(struct device *, void *),
++				     const struct component_master_ops *m_ops)
+ {
++	struct device_node *ep, *port, *remote;
+ 	struct component_match *match = NULL;
+ 	int i;
+-
+-	for (i = 0; i < NUM_DRM_DRIVERS; ++i) {
+-		struct platform_driver *drv = drm_sub_drivers[i];
+-		struct device *p = NULL, *d;
+-
+-		while ((d = platform_find_device_by_driver(p, &drv->driver))) {
+-			put_device(p);
+-
+-			component_match_add(dev, &match, compare_dev, d);
+-			p = d;
+-		}
+-		put_device(p);
+-	}
+-
+-	return match ?: ERR_PTR(-ENODEV);
+-}
+-
+-static int es_drm_platform_of_probe(struct device *dev)
+-{
+-	struct device_node *np = dev->of_node;
+-	struct device_node *port;
+ 	bool found = false;
+-	int i;
++	bool matched = false;
+ 
+-	if (!np)
+-		return -ENODEV;
++	if (!dev->of_node)
++		return -EINVAL;
+ 
++	/*
++	 * Bind the crtc's ports first, so that drm_of_find_possible_crtcs()
++	 * called from encoder's .bind callbacks works as expected
++	 */
+ 	for (i = 0;; i++) {
+ 		struct device_node *iommu;
+-
+-		port = of_parse_phandle(np, "ports", i);
++		port = of_parse_phandle(dev->of_node, "ports", i);
+ 		if (!port)
+ 			break;
+ 
+-		if (!of_device_is_available(port->parent)) {
+-			of_node_put(port);
+-			continue;
++		if (of_device_is_available(port->parent)) {
++			drm_of_component_match_add(dev, &match, compare_of,
++						   port->parent);
+ 		}
+ 
+ 		iommu = of_parse_phandle(port->parent, "iommus", 0);
+@@ -422,34 +385,85 @@ static int es_drm_platform_of_probe(struct device *dev)
+ 		of_node_put(port);
+ 	}
+ 
++	if (!found) {
++		DRM_DEV_ERROR(dev, "No available DC found.\n");
++		return -ENODEV;
++	}
++
+ 	if (i == 0) {
+-		DRM_DEV_ERROR(dev, "missing 'ports' property\n");
++		dev_err(dev, "missing 'ports' property\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	if (!found) {
+-		DRM_DEV_ERROR(dev, "No available DC found.\n");
++	if (!match) {
++		dev_err(dev, "no available port\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	return 0;
++	/*
++	 * For bound crtcs, bind the encoders attached to their remote endpoint
++	 */
++	for (i = 0;; i++) {
++		port = of_parse_phandle(dev->of_node, "ports", i);
++		if (!port)
++			break;
++
++		if (!of_device_is_available(port->parent)) {
++			of_node_put(port);
++			continue;
++		}
++
++		for_each_child_of_node(port, ep) {
++			remote = of_graph_get_remote_port_parent(ep);
++			if (!remote || !of_device_is_available(remote)) {
++				of_node_put(remote);
++				continue;
++			} else if (!of_device_is_available(remote->parent)) {
++				dev_warn(
++					dev,
++					"parent device of %pOF is not available\n",
++					remote);
++				of_node_put(remote);
++				continue;
++			}
++
++#ifdef CONFIG_ESWIN_DW_HDMI
++			if (!strcmp(remote->name, "hdmi")) {
++				matched = true;
++			}
++#endif
++
++#ifdef CONFIG_ESWIN_VIRTUAL_DISPLAY
++			if (!strcmp(remote->name, "es_wb")) {
++				matched = true;
++			}
++#endif
++
++#ifdef CONFIG_ESWIN_MIPI_DSI
++			if (!strcmp(remote->name, "mipi_dsi")) {
++				matched = true;
++			}
++#endif
++			if (matched == true) {
++				drm_of_component_match_add(dev, &match,
++							   compare_of, remote);
++				matched = false;
++				dev_dbg(dev, "matched: %pOF, remote->name:%s\n",
++					 remote, remote->name);
++			}
++
++			of_node_put(remote);
++		}
++		of_node_put(port);
++	}
++	return component_master_add_with_match(dev, m_ops, match);
+ }
+ 
+ static int es_drm_platform_probe(struct platform_device *pdev)
+ {
+-	struct device *dev = &pdev->dev;
+-	struct component_match *match;
+-	int ret;
+-
+-	ret = es_drm_platform_of_probe(dev);
+-	if (ret)
+-		return ret;
+-
+-	match = es_drm_match_add(dev);
+-	if (IS_ERR(match))
+-		return PTR_ERR(match);
++	DRM_INFO("drm platform probe enter\n");
+ 
+-	return component_master_add_with_match(dev, &es_drm_ops, match);
++	return es_drm_of_component_probe(&pdev->dev, compare_of, &es_drm_ops);
+ }
+ 
+ static int es_drm_platform_remove(struct platform_device *pdev)
+@@ -499,25 +513,52 @@ static struct platform_driver es_drm_platform_driver = {
+     },
+ };
+ 
+-static int __init es_drm_init(void)
+-{
+-	int ret;
++static struct platform_driver *const drivers[] = {
++	&es_drm_platform_driver,
++	/* put display control driver at start */
++	&dc_platform_driver,
+ 
+-	ret = platform_register_drivers(drm_sub_drivers, NUM_DRM_DRIVERS);
+-	if (ret)
+-		return ret;
++/* connector */
+ 
+-	ret = platform_driver_register(&es_drm_platform_driver);
+-	if (ret)
+-		platform_unregister_drivers(drm_sub_drivers, NUM_DRM_DRIVERS);
++/* bridge */
++#if 1
++#ifdef CONFIG_ESWIN_DW_HDMI
++	&dw_hdmi_eswin_pltfm_driver,
++#endif
++#ifdef CONFIG_DW_HDMI_I2S_AUDIO
++	&snd_dw_hdmi_driver,
++#endif
+ 
+-	return ret;
++#ifdef CONFIG_DW_HDMI_CEC
++	&dw_hdmi_cec_driver,
++#endif
++
++#ifdef CONFIG_DW_HDMI_HDCP
++	&dw_hdmi_hdcp_driver,
++#endif
++#endif
++
++#ifdef CONFIG_ESWIN_VIRTUAL_DISPLAY
++	&virtual_display_platform_driver,
++#endif
++
++#ifdef CONFIG_ESWIN_MIPI_DSI
++	&es_mipi_dsi_driver,
++#endif
++};
++
++static int __init es_drm_init(void)
++{
++	DRM_INFO("drm init enter\n");
++
++	return platform_register_drivers(drivers, ARRAY_SIZE(drivers));
+ }
+ 
+ static void __exit es_drm_fini(void)
+ {
+-	platform_driver_unregister(&es_drm_platform_driver);
+-	platform_unregister_drivers(drm_sub_drivers, NUM_DRM_DRIVERS);
++	DRM_INFO("drm exit enter\n");
++
++	platform_unregister_drivers(drivers, ARRAY_SIZE(drivers));
+ }
+ 
+ module_init(es_drm_init);
+diff --git a/drivers/gpu/drm/eswin/es_drv.h b/drivers/gpu/drm/eswin/es_drv.h
+index 85465f559de0..863e4b1da74a 100644
+--- a/drivers/gpu/drm/eswin/es_drv.h
++++ b/drivers/gpu/drm/eswin/es_drv.h
+@@ -43,7 +43,9 @@ struct es_drm_private {
+ 
+ #ifdef CONFIG_ESWIN_MMU
+ 	dc_mmu *mmu;
++	bool mmu_constructed;
+ #endif
++	unsigned int die_id;
+ 
+ 	unsigned int pitch_alignment;
+ };
+diff --git a/drivers/gpu/drm/eswin/es_gem.c-dbg b/drivers/gpu/drm/eswin/es_gem.c-dbg
+new file mode 100644
+index 000000000000..641fde6cc44e
+--- /dev/null
++++ b/drivers/gpu/drm/eswin/es_gem.c-dbg
+@@ -0,0 +1,607 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2020 Eswin Holdings Co., Ltd.
++ */
++
++#include <linux/dma-buf.h>
++#include <drm/drm_prime.h>
++
++#include "es_drv.h"
++#include "es_gem.h"
++
++MODULE_IMPORT_NS(DMA_BUF);
++
++static const struct drm_gem_object_funcs es_gem_default_funcs;
++
++static void nonseq_free(struct page **pages, unsigned int nr_page)
++{
++	u32 i;
++
++	if (!pages)
++		return;
++
++	for (i = 0; i < nr_page; i++)
++		__free_page(pages[i]);
++}
++
++#ifdef CONFIG_ESWIN_MMU
++static int get_pages(unsigned int nr_page, struct es_gem_object *es_obj)
++{
++	struct page *pages;
++	u32 i, num_page, page_count = 0;
++	int order = 0;
++	gfp_t gfp = GFP_KERNEL;
++
++	if (!es_obj->pages)
++		return -EINVAL;
++
++	gfp &= ~__GFP_HIGHMEM;
++	gfp |= __GFP_DMA32;
++
++	num_page = nr_page;
++
++	do {
++		pages = NULL;
++		order = get_order(num_page * PAGE_SIZE);
++		num_page = 1 << order;
++
++		if ((num_page + page_count > nr_page) || (order >= MAX_ORDER)) {
++			num_page = num_page >> 1;
++			continue;
++		}
++
++		pages = alloc_pages(gfp, order);
++		if (!pages) {
++			if (num_page == 1) {
++				nonseq_free(es_obj->pages, page_count);
++				return -ENOMEM;
++			}
++
++			num_page = num_page >> 1;
++		} else {
++			for (i = 0; i < num_page; i++) {
++				es_obj->pages[page_count + i] = &pages[i];
++				SetPageReserved(es_obj->pages[page_count + i]);
++			}
++
++			page_count += num_page;
++			num_page = nr_page - page_count;
++		}
++
++	} while (page_count < nr_page);
++
++	es_obj->get_pages = true;
++
++	return 0;
++}
++#endif
++
++static void put_pages(unsigned int nr_page, struct es_gem_object *es_obj)
++{
++	u32 i;
++
++	for (i = 0; i < nr_page; i++)
++		ClearPageReserved(es_obj->pages[i]);
++
++	nonseq_free(es_obj->pages, nr_page);
++
++	return;
++}
++
++static int es_gem_alloc_buf(struct es_gem_object *es_obj)
++{
++	struct drm_device *dev = es_obj->base.dev;
++	unsigned int nr_pages;
++	struct sg_table sgt;
++	int ret = -ENOMEM;
++#ifdef CONFIG_ESWIN_MMU
++	struct es_drm_private *priv = dev->dev_private;
++#endif
++
++	if (es_obj->dma_addr) {
++		DRM_DEV_DEBUG_KMS(dev->dev, "already allocated.\n");
++		return 0;
++	}
++
++	es_obj->dma_attrs = DMA_ATTR_WRITE_COMBINE;
++
++	if (!is_iommu_enabled(dev))
++		es_obj->dma_attrs |= DMA_ATTR_FORCE_CONTIGUOUS;
++
++	nr_pages = es_obj->size >> PAGE_SHIFT;
++
++	es_obj->pages = kvmalloc_array(nr_pages, sizeof(struct page *),
++				       GFP_KERNEL | __GFP_ZERO);
++	if (!es_obj->pages) {
++		DRM_DEV_ERROR(dev->dev, "failed to allocate pages.\n");
++		return -ENOMEM;
++	}
++
++	es_obj->cookie = dma_alloc_attrs(to_dma_dev(dev), es_obj->size,
++					 &es_obj->dma_addr, GFP_KERNEL,
++					 es_obj->dma_attrs);
++	printk("lijun cma_phy:0x%llx, size:%ld dev name %s\n", es_obj->dma_addr,dev_name(dev->dev));
++	if (!es_obj->cookie) {
++#ifdef CONFIG_ESWIN_MMU
++		ret = get_pages(nr_pages, es_obj);
++		if (ret) {
++			DRM_DEV_ERROR(dev->dev, "fail to allocate buffer.\n");
++			goto err_free;
++		}
++#else
++		DRM_DEV_ERROR(dev->dev, "failed to allocate buffer.\n");
++		goto err_free;
++#endif
++	}
++
++#ifdef CONFIG_ESWIN_MMU
++	/* MMU map*/
++	if (!priv->mmu) {
++		DRM_DEV_ERROR(dev->dev, "invalid mmu.\n");
++		ret = -EINVAL;
++		goto err_mem_free;
++	}
++
++	if (!es_obj->get_pages)
++		ret = dc_mmu_map_memory(priv->mmu, (u64)es_obj->dma_addr,
++					nr_pages, &es_obj->iova, true);
++	else
++		ret = dc_mmu_map_memory(priv->mmu, (u64)es_obj->pages, nr_pages,
++					&es_obj->iova, false);
++
++	if (ret) {
++		DRM_DEV_ERROR(dev->dev, "failed to do mmu map.\n");
++		goto err_mem_free;
++	}
++#else
++	es_obj->iova = es_obj->dma_addr;
++#endif
++
++	if (!es_obj->get_pages) {
++		ret = dma_get_sgtable_attrs(to_dma_dev(dev), &sgt,
++					    es_obj->cookie, es_obj->dma_addr,
++					    es_obj->size, es_obj->dma_attrs);
++		if (ret < 0) {
++			DRM_DEV_ERROR(dev->dev, "failed to get sgtable.\n");
++			goto err_mem_free;
++		}
++
++		if (drm_prime_sg_to_page_array(&sgt, es_obj->pages, nr_pages)) {
++			DRM_DEV_ERROR(dev->dev, "invalid sgtable.\n");
++			ret = -EINVAL;
++			goto err_sgt_free;
++		}
++
++		sg_free_table(&sgt);
++	}
++
++	return 0;
++
++err_sgt_free:
++	sg_free_table(&sgt);
++err_mem_free:
++	if (!es_obj->get_pages)
++		dma_free_attrs(to_dma_dev(dev), es_obj->size, es_obj->cookie,
++			       es_obj->dma_addr, es_obj->dma_attrs);
++	else
++		put_pages(nr_pages, es_obj);
++err_free:
++	kvfree(es_obj->pages);
++
++	return ret;
++}
++
++static void es_gem_free_buf(struct es_gem_object *es_obj)
++{
++	struct drm_device *dev = es_obj->base.dev;
++#ifdef CONFIG_ESWIN_MMU
++	struct es_drm_private *priv = dev->dev_private;
++	unsigned int nr_pages;
++#endif
++
++	if ((!es_obj->get_pages) && (!es_obj->dma_addr)) {
++		DRM_DEV_DEBUG_KMS(dev->dev, "dma_addr is invalid.\n");
++		return;
++	}
++
++#ifdef CONFIG_ESWIN_MMU
++	if (!priv->mmu) {
++		DRM_DEV_ERROR(dev->dev, "invalid mmu.\n");
++		return;
++	}
++
++	if (!es_obj->sgt) { // dumb buffer release
++		nr_pages = es_obj->size >> PAGE_SHIFT;
++		if (es_obj->iova) {
++			dc_mmu_unmap_memory(priv->mmu, es_obj->iova, nr_pages);
++		}
++	} else { // prime buffer release
++		if (es_obj->iova_list) {
++			if (es_obj->iova_list->iova) {
++				dc_mmu_unmap_memory(
++					priv->mmu, es_obj->iova_list->iova,
++					es_obj->iova_list->nr_pages);
++				kfree(es_obj->iova_list);
++			}
++		}
++	}
++#endif
++
++	if (!es_obj->get_pages) {
++		dma_free_attrs(to_dma_dev(dev), es_obj->size, es_obj->cookie,
++			       (dma_addr_t)es_obj->dma_addr, es_obj->dma_attrs);
++	} else {
++		if (!es_obj->dma_addr) {
++			DRM_DEV_ERROR(dev->dev, "No dma addr allocated, no need to free\n");
++			return;
++		}
++		put_pages(es_obj->size >> PAGE_SHIFT, es_obj);
++	}
++
++	kvfree(es_obj->pages);
++}
++
++static void es_gem_free_object(struct drm_gem_object *obj)
++{
++	struct es_gem_object *es_obj = to_es_gem_object(obj);
++
++#ifdef CONFIG_ESWIN_MMU
++	if (es_obj)
++		es_gem_free_buf(es_obj);
++#endif
++	if (obj->import_attach) {
++		drm_prime_gem_destroy(obj, es_obj->sgt);
++	}
++
++	drm_gem_object_release(obj);
++
++	kfree(es_obj);
++}
++
++static struct es_gem_object *es_gem_alloc_object(struct drm_device *dev,
++						 size_t size)
++{
++	struct es_gem_object *es_obj;
++	struct drm_gem_object *obj;
++	int ret;
++
++	es_obj = kzalloc(sizeof(*es_obj), GFP_KERNEL);
++	if (!es_obj)
++		return ERR_PTR(-ENOMEM);
++
++	es_obj->size = size;
++	obj = &es_obj->base;
++
++	ret = drm_gem_object_init(dev, obj, size);
++	if (ret)
++		goto err_free;
++
++	es_obj->base.funcs = &es_gem_default_funcs;
++
++	ret = drm_gem_create_mmap_offset(obj);
++	if (ret) {
++		drm_gem_object_release(obj);
++		goto err_free;
++	}
++
++	return es_obj;
++
++err_free:
++	kfree(es_obj);
++	return ERR_PTR(ret);
++}
++
++struct es_gem_object *es_gem_create_object(struct drm_device *dev, size_t size)
++{
++	struct es_gem_object *es_obj;
++	int ret;
++
++	size = PAGE_ALIGN(size);
++
++	es_obj = es_gem_alloc_object(dev, size);
++	if (IS_ERR(es_obj))
++		return es_obj;
++
++	ret = es_gem_alloc_buf(es_obj);
++	if (ret) {
++		drm_gem_object_release(&es_obj->base);
++		kfree(es_obj);
++		return ERR_PTR(ret);
++	}
++
++	return es_obj;
++}
++
++static struct es_gem_object *es_gem_create_with_handle(struct drm_device *dev,
++						       struct drm_file *file,
++						       size_t size,
++						       unsigned int *handle)
++{
++	struct es_gem_object *es_obj;
++	struct drm_gem_object *obj;
++	int ret;
++
++	es_obj = es_gem_create_object(dev, size);
++	if (IS_ERR(es_obj))
++		return es_obj;
++
++	obj = &es_obj->base;
++
++	ret = drm_gem_handle_create(file, obj, handle);
++	drm_gem_object_put(obj);
++	if (ret) {
++		pr_err("Drm GEM handle create failed\n");
++		return ERR_PTR(ret);
++	}
++
++	return es_obj;
++}
++
++static int es_gem_mmap_obj(struct drm_gem_object *obj,
++			   struct vm_area_struct *vma)
++{
++	struct es_gem_object *es_obj = to_es_gem_object(obj);
++	struct drm_device *drm_dev = es_obj->base.dev;
++	unsigned long vm_size;
++	int ret = 0;
++
++	vm_size = vma->vm_end - vma->vm_start;
++	if (vm_size > es_obj->size)
++		return -EINVAL;
++
++	vma->vm_pgoff = 0;
++
++	if (!es_obj->get_pages) {
++		vm_flags_clear(vma, VM_PFNMAP);
++
++		ret = dma_mmap_attrs(to_dma_dev(drm_dev), vma, es_obj->cookie,
++				     es_obj->dma_addr, es_obj->size,
++				     es_obj->dma_attrs);
++	} else {
++		u32 i, nr_pages, pfn = 0U;
++		unsigned long start;
++
++		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
++		vm_flags_set(vma, VM_IO | VM_DONTCOPY | VM_DONTEXPAND | VM_DONTDUMP);
++		start = vma->vm_start;
++		vm_size = PAGE_ALIGN(vm_size);
++		nr_pages = vm_size >> PAGE_SHIFT;
++
++		for (i = 0; i < nr_pages; i++) {
++			pfn = page_to_pfn(es_obj->pages[i]);
++
++			ret = remap_pfn_range(vma, start, pfn, PAGE_SIZE,
++					      vma->vm_page_prot);
++			if (ret < 0)
++				break;
++
++			start += PAGE_SIZE;
++		}
++	}
++
++	if (ret)
++		drm_gem_vm_close(vma);
++
++	return ret;
++}
++
++struct sg_table *es_gem_prime_get_sg_table(struct drm_gem_object *obj)
++{
++	struct es_gem_object *es_obj = to_es_gem_object(obj);
++
++	return drm_prime_pages_to_sg(obj->dev, es_obj->pages,
++				     es_obj->size >> PAGE_SHIFT);
++}
++
++static int es_gem_prime_vmap(struct drm_gem_object *obj,
++			     struct iosys_map *map)
++{
++	struct es_gem_object *es_obj = to_es_gem_object(obj);
++
++	void * vaddr = es_obj->dma_attrs & DMA_ATTR_NO_KERNEL_MAPPING ?
++		       page_address(es_obj->cookie) : es_obj->cookie;
++
++	iosys_map_set_vaddr(map, vaddr);
++
++	return 0;
++}
++
++static void es_gem_prime_vunmap(struct drm_gem_object *obj,
++				struct iosys_map *map)
++{
++	/* Nothing to do */
++}
++
++static const struct vm_operations_struct es_vm_ops = {
++	.open = drm_gem_vm_open,
++	.close = drm_gem_vm_close,
++};
++
++static const struct drm_gem_object_funcs es_gem_default_funcs = {
++	.free = es_gem_free_object,
++	.get_sg_table = es_gem_prime_get_sg_table,
++	.vmap = es_gem_prime_vmap,
++	.vunmap = es_gem_prime_vunmap,
++	.vm_ops = &es_vm_ops,
++};
++
++int es_gem_dumb_create(struct drm_file *file, struct drm_device *dev,
++		       struct drm_mode_create_dumb *args)
++{
++	struct es_drm_private *priv = dev->dev_private;
++	struct es_gem_object *es_obj;
++	unsigned int pitch = args->width * DIV_ROUND_UP(args->bpp, 8);
++
++	args->pitch = ALIGN(pitch, priv->pitch_alignment);
++	args->size = PAGE_ALIGN(args->pitch * args->height);
++
++	es_obj =
++		es_gem_create_with_handle(dev, file, args->size, &args->handle);
++	return PTR_ERR_OR_ZERO(es_obj);
++}
++
++struct drm_gem_object *es_gem_prime_import(struct drm_device *dev,
++					   struct dma_buf *dma_buf)
++{
++	return drm_gem_prime_import_dev(dev, dma_buf, to_dma_dev(dev));
++}
++
++struct drm_gem_object *
++es_gem_prime_import_sg_table(struct drm_device *dev,
++			     struct dma_buf_attachment *attach,
++			     struct sg_table *sgt)
++{
++	struct es_gem_object *es_obj;
++	int npages;
++	int ret;
++	struct scatterlist *s = NULL;
++	u32 i = 0;
++	dma_addr_t expected;
++	size_t size = attach->dmabuf->size;
++#ifdef CONFIG_ESWIN_MMU
++	u32 iova, j;
++	struct scatterlist **splist;
++	struct es_drm_private *priv = dev->dev_private;
++
++	if (!priv->mmu) {
++		DRM_ERROR("invalid mmu.\n");
++		ret = -EINVAL;
++		return ERR_PTR(ret);
++	}
++#endif
++
++	size = PAGE_ALIGN(size);
++
++	es_obj = es_gem_alloc_object(dev, size);
++	if (IS_ERR(es_obj))
++		return ERR_CAST(es_obj);
++
++	npages = es_obj->size >> PAGE_SHIFT;
++	es_obj->pages =
++		kvmalloc_array(npages, sizeof(struct page *), GFP_KERNEL);
++	if (!es_obj->pages) {
++		ret = -ENOMEM;
++		goto err_gemalloc;
++	}
++
++	ret = drm_prime_sg_to_page_array(sgt, es_obj->pages, npages);
++	if (ret)
++		goto err_free_page;
++
++	expected = sg_dma_address(sgt->sgl);
++	printk("lijun : dma sgl dma:0x%llx, phy:0x%llx\n", expected);
++#ifdef CONFIG_ESWIN_MMU
++	splist = (struct scatterlist **)kzalloc(sizeof(s) * sgt->nents,
++						GFP_KERNEL);
++	if (!splist) {
++		DRM_ERROR("Allocate splist failed");
++		ret = -ENOMEM;
++		goto err_free_page;
++	}
++
++	es_obj->iova_list =
++		(iova_info_t *)kzalloc(sizeof(iova_info_t), GFP_KERNEL);
++	if (!es_obj->iova_list) {
++		DRM_ERROR("Allocate splist failed");
++		ret = -ENOMEM;
++		goto err_sp;
++	}
++
++	for_each_sg (sgt->sgl, s, sgt->nents, i) {
++		splist[i] = s;
++	}
++	i = 0;
++	es_obj->nr_iova = sgt->nents;
++
++	for (j = sgt->nents; j > 0; j--) {
++		s = splist[j - 1];
++#else
++	for_each_sg (sgt->sgl, s, sgt->nents, i) {
++#endif
++		if (sg_dma_address(s) != expected) {
++#ifndef CONFIG_ESWIN_MMU
++			DRM_ERROR("sg_table is not contiguous");
++			ret = -EINVAL;
++			goto err;
++#endif
++		}
++
++		if (sg_dma_len(s) & (PAGE_SIZE - 1)) {
++			ret = -EINVAL;
++			goto err;
++		}
++
++#ifdef CONFIG_ESWIN_MMU
++		iova = 0;
++
++		if (j == 1) {
++			ret = dc_mmu_map_memory(priv->mmu, (u64)es_obj->pages,
++						npages, &iova, false);
++			if (ret) {
++				DRM_ERROR("failed to do mmu map.\n");
++				goto err;
++			}
++			es_obj->iova_list->iova = iova;
++			es_obj->iova_list->nr_pages = npages;
++		}
++
++		if (i == 0)
++			es_obj->iova = iova;
++#else
++		if (i == 0)
++			es_obj->iova = sg_dma_address(s);
++#endif
++
++		expected = sg_dma_address(s) + sg_dma_len(s);
++	}
++
++	es_obj->dma_addr = sg_dma_address(sgt->sgl);
++
++	es_obj->sgt = sgt;
++#ifdef CONFIG_ESWIN_MMU
++	kfree(splist);
++#endif
++
++	return &es_obj->base;
++
++#ifdef CONFIG_ESWIN_MMU
++err:
++	kfree(es_obj->iova_list);
++err_sp:
++	kfree(splist);
++#endif
++err_free_page:
++	kvfree(es_obj->pages);
++err_gemalloc:
++	es_gem_free_object(&es_obj->base);
++
++	return ERR_PTR(ret);
++}
++
++int es_gem_prime_mmap(struct drm_gem_object *obj, struct vm_area_struct *vma)
++{
++	int ret = 0;
++
++	ret = drm_gem_mmap_obj(obj, obj->size, vma);
++	if (ret < 0)
++		return ret;
++
++	return es_gem_mmap_obj(obj, vma);
++}
++
++int es_gem_mmap(struct file *filp, struct vm_area_struct *vma)
++{
++	struct drm_gem_object *obj;
++	int ret;
++
++	ret = drm_gem_mmap(filp, vma);
++	if (ret)
++		return ret;
++
++	obj = vma->vm_private_data;
++
++	if (obj->import_attach)
++		return dma_buf_mmap(obj->dma_buf, vma, 0);
++
++	return es_gem_mmap_obj(obj, vma);
++}
+diff --git a/drivers/gpu/drm/eswin/es_mipi_dsi.c b/drivers/gpu/drm/eswin/es_mipi_dsi.c
+index 9f8d4c4a25b8..a083eebdea4d 100644
+--- a/drivers/gpu/drm/eswin/es_mipi_dsi.c
++++ b/drivers/gpu/drm/eswin/es_mipi_dsi.c
+@@ -81,6 +81,8 @@
+ #define HSTX_TO_CNT(p) (((p) & 0xffff) << 16)
+ #define LPRX_TO_CNT(p) ((p) & 0xffff)
+ 
++static bool panel_driver_registed = false;
++
+ struct hstt {
+ 	unsigned int maxfreq;
+ 	struct dw_mipi_dsi_dphy_timing timing;
+@@ -647,7 +649,10 @@ static const struct component_ops es_mipi_dsi_ops = {
+ 
+ static int es_mipi_dsi_probe(struct platform_device *pdev)
+ {
+-	mipi_dsi_driver_register(&es_panel_driver);
++	if(panel_driver_registed == false) {
++		mipi_dsi_driver_register(&es_panel_driver);
++		panel_driver_registed = true;
++	}
+ 
+ 	return component_add(&pdev->dev, &es_mipi_dsi_ops);
+ }
+@@ -655,7 +660,10 @@ static int es_mipi_dsi_probe(struct platform_device *pdev)
+ static int es_mipi_dsi_remove(struct platform_device *pdev)
+ {
+ 	DRM_INFO("mipi dsi remove\n");
+-	mipi_dsi_driver_unregister(&es_panel_driver);
++	if(panel_driver_registed == true) {
++		panel_driver_registed = false;
++		mipi_dsi_driver_unregister(&es_panel_driver);
++	}
+ 	component_del(&pdev->dev, &es_mipi_dsi_ops);
+ 
+ 	return 0;
+diff --git a/drivers/gpu/drm/eswin/es_panel.c b/drivers/gpu/drm/eswin/es_panel.c
+index 7342ab287c70..45424570364c 100644
+--- a/drivers/gpu/drm/eswin/es_panel.c
++++ b/drivers/gpu/drm/eswin/es_panel.c
+@@ -834,7 +834,6 @@ int es_panel_probe(struct mipi_dsi_device *dsi)
+ 	int ret;
+ 	struct device_node *dsi_node, *remote_node = NULL, *endpoint = NULL;
+ 	int val;
+-
+ 	// for print
+ 	pr_dev = dev;
+ 	dev_info(pr_dev, "[%s] Enter\n", __func__);
+@@ -886,6 +885,7 @@ int es_panel_probe(struct mipi_dsi_device *dsi)
+ 			PTR_ERR(ctx->gpio_reset));
+ 		return PTR_ERR(ctx->gpio_reset);
+ 	}
++
+ 	msleep(50);
+ 
+ 	gpiod_set_value(ctx->gpio_reset, 1);
+@@ -904,11 +904,12 @@ int es_panel_probe(struct mipi_dsi_device *dsi)
+ 	if (ret < 0)
+ 		drm_panel_remove(&ctx->panel);
+ 
+-	es_panel_chrdev_create(ctx);
++	// es_panel_chrdev_create(ctx);
+ 	INIT_LIST_HEAD(&ctx->init_cmd_list);
+ 	ctx->init_cmd_writted = 0;
+ 	memset(&ctx->enable_cmd_buf, 0, sizeof(user_cmd_buffer_t));
+ 	memset(&ctx->disable_cmd_buf, 0, sizeof(user_cmd_buffer_t));
++	dev_info(pr_dev, "[%s] Leave\n", __func__);
+ 	return ret;
+ }
+ 
+@@ -923,7 +924,7 @@ void es_panel_remove(struct mipi_dsi_device *dsi)
+ 	devm_gpiod_put(ctx->dev, ctx->gpio_backlight0);
+ 	devm_gpiod_put(ctx->dev, ctx->gpio_reset);
+ 
+-	es_panel_chrdev_destroy(ctx);
++	// es_panel_chrdev_destroy(ctx);
+ 	mipi_dsi_detach(dsi);
+ 	drm_panel_remove(&ctx->panel);
+ 
+diff --git a/drivers/gpu/drm/eswin/es_virtual.c b/drivers/gpu/drm/eswin/es_virtual.c
+index 1d35ada1c0c0..eb546d32b4f3 100644
+--- a/drivers/gpu/drm/eswin/es_virtual.c
++++ b/drivers/gpu/drm/eswin/es_virtual.c
+@@ -1147,7 +1147,76 @@ static void vd_connector_destroy(struct drm_connector *connector)
+ static enum drm_connector_status
+ vd_connector_detect(struct drm_connector *connector, bool force)
+ {
+-	return connector_status_connected;
++	struct es_virtual_display *vd;
++	enum drm_connector_status status = connector_status_unknown;
++
++	vd = to_virtual_display_with_connector(connector);
++
++	if (vd->enable) {
++		status = connector_status_connected;
++	} else {
++		status = connector_status_disconnected;
++	}
++	return status;
++}
++
++static ssize_t virtual_enable_read(struct file *file, char __user *buf,
++				   size_t count, loff_t *ppos)
++{
++	struct es_virtual_display *vd = file->private_data;
++	char kbuf[16];
++	int len;
++
++	len = snprintf(kbuf, sizeof(kbuf), "%u\n", vd->enable);
++
++	return simple_read_from_buffer(buf, count, ppos, kbuf, len);
++}
++
++static ssize_t virtual_enable_write(struct file *file, const char __user *buf,
++				    size_t count, loff_t *ppos)
++{
++	struct es_virtual_display *vd = file->private_data;
++	char kbuf[16];
++	unsigned long val;
++
++	if (count >= sizeof(kbuf))
++		return -EINVAL;
++
++	if (copy_from_user(kbuf, buf, count))
++		return -EFAULT;
++
++	kbuf[count] = '\0';
++
++	if (kstrtoul(kbuf, 10, &val))
++		return -EINVAL;
++
++	vd->enable = val ? 1 : 0;
++
++	return count;
++}
++
++static const struct file_operations virtual_enable_debugfs_fops = {
++	.owner = THIS_MODULE,
++	.read = virtual_enable_read,
++	.write = virtual_enable_write,
++	.open = simple_open,
++	.llseek = default_llseek,
++};
++
++static void vd_connector_debugfs_init(struct drm_connector *connector,
++				      struct dentry *root)
++{
++	struct es_virtual_display *vd;
++
++	vd = to_virtual_display_with_connector(connector);
++
++	if (!connector->debugfs_entry) {
++		DRM_WARN("The connector debugsf_entry invalid");
++	} else {
++		debugfs_create_file("enable", 0444, connector->debugfs_entry,
++				    vd, &virtual_enable_debugfs_fops);
++	}
++	DRM_INFO("Creat debugfs file for Vitual dev:%s", connector->name);
+ }
+ 
+ static const struct drm_connector_funcs vd_connector_funcs = {
+@@ -1157,8 +1226,8 @@ static const struct drm_connector_funcs vd_connector_funcs = {
+ 	.atomic_duplicate_state = drm_atomic_helper_connector_duplicate_state,
+ 	.atomic_destroy_state = drm_atomic_helper_connector_destroy_state,
+ 	.reset = drm_atomic_helper_connector_reset,
++	.debugfs_init = vd_connector_debugfs_init,
+ };
+-
+ static int vd_bind(struct device *dev, struct device *master, void *data)
+ {
+ 	struct drm_device *drm_dev = data;
+@@ -1193,8 +1262,8 @@ static int vd_bind(struct device *dev, struct device *master, void *data)
+ 	connector->interlace_allowed = false;
+ 	connector->doublescan_allowed = false;
+ 	connector->dpms = DRM_MODE_DPMS_OFF;
+-	connector->polled =
+-		DRM_CONNECTOR_POLL_CONNECT | DRM_CONNECTOR_POLL_DISCONNECT;
++	connector->polled = DRM_CONNECTOR_POLL_CONNECT |
++			    DRM_CONNECTOR_POLL_DISCONNECT;
+ 	ret = drm_connector_register(connector);
+ 	if (ret)
+ 		goto connector_reg_err;
+diff --git a/drivers/gpu/drm/eswin/es_virtual.h b/drivers/gpu/drm/eswin/es_virtual.h
+index 16371232d605..484d146ea178 100644
+--- a/drivers/gpu/drm/eswin/es_virtual.h
++++ b/drivers/gpu/drm/eswin/es_virtual.h
+@@ -7,6 +7,7 @@
+ #define __ES_VIRTUAL_H_
+ 
+ struct es_virtual_display {
++	u32 enable;
+ 	struct drm_encoder encoder;
+ 	struct drm_connector connector;
+ 	struct device *dc;
+-- 
+2.47.0
+

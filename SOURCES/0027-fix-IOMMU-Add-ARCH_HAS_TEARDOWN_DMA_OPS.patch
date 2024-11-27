@@ -1,0 +1,47 @@
+From dbeff8a1e4c7f47ba963c764cee84aa6d3ec5f7e Mon Sep 17 00:00:00 2001
+From: linmin <linmin@eswincomputing.com>
+Date: Mon, 29 Apr 2024 08:59:44 +0800
+Subject: [PATCH 027/215] fix(IOMMU):Add ARCH_HAS_TEARDOWN_DMA_OPS
+
+Changelogs:
+1.Added "select ARCH_HAS_TEARDOWN_DMA_OPS if IOMMU_SUPPORT"
+  in drivers/soc/sifive/Kconfig
+2.Added arch_teardown_dma_ops() function in arch/riscv/mm/dma-noncoherent.c
+---
+ arch/riscv/mm/dma-noncoherent.c | 7 +++++++
+ drivers/soc/sifive/Kconfig      | 1 +
+ 2 files changed, 8 insertions(+)
+
+diff --git a/arch/riscv/mm/dma-noncoherent.c b/arch/riscv/mm/dma-noncoherent.c
+index 75d3f1e6f884..ba27d4765fb7 100644
+--- a/arch/riscv/mm/dma-noncoherent.c
++++ b/arch/riscv/mm/dma-noncoherent.c
+@@ -138,6 +138,13 @@ void arch_dma_prep_coherent(struct page *page, size_t size)
+ 	ALT_CMO_OP(flush, flush_addr, size, riscv_cbom_block_size);
+ }
+ 
++#ifdef CONFIG_IOMMU_DMA
++void arch_teardown_dma_ops(struct device *dev)
++{
++	dev->dma_ops = NULL;
++}
++#endif
++
+ void arch_setup_dma_ops(struct device *dev, u64 dma_base, u64 size,
+ 		const struct iommu_ops *iommu, bool coherent)
+ {
+diff --git a/drivers/soc/sifive/Kconfig b/drivers/soc/sifive/Kconfig
+index d78b8c3f72a8..f10259ca60ae 100644
+--- a/drivers/soc/sifive/Kconfig
++++ b/drivers/soc/sifive/Kconfig
+@@ -20,6 +20,7 @@ config ARCH_ESWIN_EIC770X_SOC_FAMILY
+ 	select ESWIN_RSV_MEMBLOCK
+ 	select ESWIN_CODACACHE_CONTROLLER
+ 	select IOMMU_DMA if IOMMU_SUPPORT
++	select ARCH_HAS_TEARDOWN_DMA_OPS if IOMMU_SUPPORT
+ 
+ menu "ESWIN EIC770X SoC Family Selection"
+ 	depends on ARCH_ESWIN_EIC770X_SOC_FAMILY
+-- 
+2.47.0
+

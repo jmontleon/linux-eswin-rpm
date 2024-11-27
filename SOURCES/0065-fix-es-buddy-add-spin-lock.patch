@@ -1,0 +1,44 @@
+From 2a1f3c824221feb4d86691bb1313ceed0c68c72d Mon Sep 17 00:00:00 2001
+From: linmin <linmin@eswincomputing.com>
+Date: Fri, 5 Jul 2024 17:23:03 +0800
+Subject: [PATCH 065/215] fix(es buddy):add spin lock
+
+Changelogs:
+1.The es_spin_lock() should be used in es_alloc_pages() and es_free_pages,
+  otherwise the compound_order of the kernel page may be modified by other
+  thread while es_free_pages
+
+Signed-off-by: linmin <linmin@eswincomputing.com>
+Reviewed-by: ningyu <ningyu@eswincomputing.com>
+---
+ drivers/memory/eswin/buddy.h | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/memory/eswin/buddy.h b/drivers/memory/eswin/buddy.h
+index bc0fd6eb6ddb..2c40d1116ad8 100644
+--- a/drivers/memory/eswin/buddy.h
++++ b/drivers/memory/eswin/buddy.h
+@@ -15,17 +15,12 @@
+ #define buddy_print(fmt...)
+ #define BUDDY_BUG_ON(condition) WARN_ON(condition)
+ 
+-#define buddy_spin_lock_init(lock)	spin_lock_init(lock)
+-#define buddy_spin_lock(lock)		spin_lock(lock)
+-#define buddy_spin_unlock(lock)		spin_unlock(lock)
+-/*
+ #define es_spin_lock_init(esLock)	spin_lock_init(esLock)
+ #define es_spin_lock(esLock)		spin_lock(esLock)
+ #define es_spin_unlock(esLock)		spin_unlock(esLock)
+-*/
+-#define es_spin_lock_init(esLock)
+-#define es_spin_lock(esLock)
+-#define es_spin_unlock(esLock)
++#define buddy_spin_lock_init(lock)
++#define buddy_spin_lock(lock)
++#define buddy_spin_unlock(lock)
+ #else
+ #include "list.h"
+ #include <stdio.h>  //printf
+-- 
+2.47.0
+

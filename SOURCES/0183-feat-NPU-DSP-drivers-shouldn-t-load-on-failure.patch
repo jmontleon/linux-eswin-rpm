@@ -1,0 +1,84 @@
+From d349c1646d09f1c66b6b6a1da60e24a5d0160662 Mon Sep 17 00:00:00 2001
+From: yangqiang <yangqiang1@eswincomputing.com>
+Date: Thu, 26 Sep 2024 13:07:50 +0800
+Subject: [PATCH 183/215] feat:NPU & DSP drivers shouldn't load on failure.
+
+Changelogs:
+1. NPU & DSP drivers shouldn't load into the kernel on failure.
+
+Signed-off-by: yangqiang <yangqiang1@eswincomputing.com>
+---
+ drivers/soc/eswin/ai_driver/dsp/dsp_main.c | 9 +++++++++
+ drivers/soc/eswin/ai_driver/npu/npu_main.c | 8 ++++++++
+ 2 files changed, 17 insertions(+)
+
+diff --git a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+index 130479f6d778..117aedc5e33d 100644
+--- a/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
++++ b/drivers/soc/eswin/ai_driver/dsp/dsp_main.c
+@@ -949,6 +949,8 @@ static void dsp_init_prio_array(struct es_dsp *dsp)
+ 	set_bit(DSP_MAX_PRIO, array->bitmap);
+ }
+ 
++static int32_t  dsp_probe_result = 0;
++
+ static int es_dsp_hw_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+@@ -1093,6 +1095,7 @@ static int es_dsp_hw_probe(struct platform_device *pdev)
+ 	es_dsp_put_subsys(dsp);
+ 	dsp_free_hw(dsp);
+ 	dev_err(&pdev->dev, "%s: ret = %d\n", __func__, ret);
++	dsp_probe_result = ret;
+ 	return ret;
+ }
+ 
+@@ -1157,6 +1160,12 @@ static int __init es_dsp_module_init(void)
+ 		return ret;
+ 	}
+ 
++	if (dsp_probe_result < 0) {
++		dsp_err("es dsp_probe_result error:%d\n", dsp_probe_result);
++		platform_driver_unregister(&es_dsp_hw_driver);
++		return dsp_probe_result;
++	}
++
+ 	ret = es_dsp_platform_init();
+ 	if (ret) {
+ 		dsp_err("es dsp platform init error.\n");
+diff --git a/drivers/soc/eswin/ai_driver/npu/npu_main.c b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+index d045a32b5b59..6830563337cc 100644
+--- a/drivers/soc/eswin/ai_driver/npu/npu_main.c
++++ b/drivers/soc/eswin/ai_driver/npu/npu_main.c
+@@ -309,6 +309,8 @@ struct nvdla_device *get_nvdla_dev(int i)
+ 	return static_nvdla_dev[i];
+ }
+ 
++static int32_t  npu_probe_result = 0;
++
+ static int32_t edla_probe(struct platform_device *pdev)
+ {
+ 	int32_t err = 0;
+@@ -511,6 +513,7 @@ static int32_t edla_probe(struct platform_device *pdev)
+ 	release_mem_region(E31_EMISSION_DTIM_BASE, E31_EMISSION_DTIM_SIZE);
+ err_mem0:
+ 	npu_put_dt_resources(nvdla_dev);
++	npu_probe_result = err;
+ 	return err;
+ }
+ 
+@@ -704,6 +707,11 @@ static int __init npu_modules_init(void)
+ 		dla_error("NPU:platform_register_drivers failed!err=%d\n", err);
+ 		return err;
+ 	}
++	if (npu_probe_result < 0) {
++		dla_error("NPU:npu_probe_result failed:%d\n", npu_probe_result);
++		platform_driver_unregister(&edla_driver);
++		return npu_probe_result;
++	}
+ 	err = npu_platform_init();
+ 	if (err) {
+ 		dla_error("npu platform init err, err=%d.\n", err);
+-- 
+2.47.0
+

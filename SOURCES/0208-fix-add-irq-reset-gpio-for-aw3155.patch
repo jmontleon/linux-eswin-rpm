@@ -1,0 +1,86 @@
+From 25c21d9a0cdc53b48c48589655efb00d575eedc0 Mon Sep 17 00:00:00 2001
+From: liangshuang <liangshuang@eswincomputing.com>
+Date: Thu, 31 Oct 2024 09:46:25 +0800
+Subject: [PATCH 208/215] fix:add irq/reset gpio for aw3155.
+
+Changelogs:
+1.add irq/reset gpio for aw3155.
+
+Signed-off-by: liangshuang <liangshuang@eswincomputing.com>
+---
+ arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts         | 12 ++++++++++++
+ .../boot/dts/eswin/eic7700-hifive-premier-p550.dts   | 11 +++++++++++
+ .../riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi |  5 ++++-
+ 3 files changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+index bf2bf5e2c920..d329b5d3652e 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-evb-a2.dts
+@@ -487,6 +487,18 @@ &sdio1 {
+ 	non-removable;
+ 	no-sd;
+ 	no-mmc;
++	aw3155:wifi_aw3155@0 {
++		compatible = "aml_w1_sdio";
++		reg = <0x0>;
++		interrupt-parent = <&porta>;
++		interrupts = <15 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-names = "default", "default";
++		pinctrl-0 = <&pinctrl_gpio15_default>;
++		pinctrl-1 = <&pinctrl_gpio34_default>;
++		irq-gpios = <&porta 15 GPIO_ACTIVE_HIGH>;
++		rst-gpios = <&portb 2 GPIO_ACTIVE_HIGH>;
++
++	};
+ };
+ 
+ &d0_gmac0 {
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts b/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+index 4b6772710ab6..0a8342376dbc 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
++++ b/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+@@ -436,6 +436,17 @@ &sdio1 {
+ 	keep-power-in-suspend;
+ 	no-sd;
+ 	no-mmc;
++	aw3155:wifi_aw3155@0 {
++		compatible = "aml_w1_sdio";
++		reg = <0x0>;
++		interrupt-parent = <&porta>;
++		interrupts = <15 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-names = "default", "default";
++		pinctrl-0 = <&pinctrl_gpio15_default>;
++		pinctrl-1 = <&pinctrl_gpio79_default>;
++		irq-gpios = <&porta 15 GPIO_ACTIVE_HIGH>;
++		rst-gpios = <&portc 15 GPIO_ACTIVE_HIGH>;
++	};
+ };
+ 
+ &d0_gmac0 {
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index daf927d2b3df..ad9cd4db5802 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -987,7 +987,8 @@ sdio1: mmc@0x50470000{
+ 			core-clk-reg = <0x51828168>;
+ 			clock-frequency = <208000000>;
+ 			max-frequency = <208000000>;
+-			#size-cells = <2>;
++			#address-cells = <1>;
++			#size-cells = <0>;
+ 			dma-ranges = <0x0 0x20000000 0x0 0xc0000000 0x0 0x40000000>;
+ 			iommus = <&smmu0 WIN2030_SID_SD1>;
+ 			tbus = <WIN2030_TBUID_SD>;
+@@ -1519,6 +1520,8 @@ porta: gpio-port@0 {
+ 				ngpios = <32>;
+ 				reg = <0>;
+ 				interrupt-parent = <&plic0>;
++				interrupt-controller;
++				#interrupt-cells = <2>;
+ 				interrupts = <303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318
+ 								319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 334>;
+ 			};
+-- 
+2.47.0
+

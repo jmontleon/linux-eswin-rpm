@@ -1,0 +1,29 @@
+From 0d2b2788aaeeb33ee8ace5009ba9145646606cec Mon Sep 17 00:00:00 2001
+From: zhouliang2 <zhouliang2@eswincomputing.com>
+Date: Wed, 30 Oct 2024 10:50:24 +0800
+Subject: [PATCH 202/215] fix:open card sleep 0.5ms then set volume
+
+Changelogs:
+1. es8328
+
+Signed-off-by: zhouliang2 <zhouliang2@eswincomputing.com>
+---
+ sound/soc/codecs/eswin/es8328.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/soc/codecs/eswin/es8328.c b/sound/soc/codecs/eswin/es8328.c
+index dee9086d612e..29d7c5f0c612 100644
+--- a/sound/soc/codecs/eswin/es8328.c
++++ b/sound/soc/codecs/eswin/es8328.c
+@@ -1087,7 +1087,7 @@ static int thread_set_volume(void *data)
+ 	struct snd_soc_component *comp = (struct snd_soc_component *)data;
+ 	struct es8328_priv *es8328 = snd_soc_component_get_drvdata(comp);
+ 
+-	ssleep(5);
++	msleep(500);
+ 
+ 	mutex_lock(&es8328->vol_mutex);
+ 	es8328->vol_set_flag = true;
+-- 
+2.47.0
+
