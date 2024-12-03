@@ -159,17 +159,17 @@ Summary: The Linux kernel
 #  to build the base kernel using the debug configuration. (Specifying
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
-%define buildid .eswin_20241127
+%define buildid .eswin_1130
 %define specrpmversion 6.6.63
 %define specversion 6.6.63
 %define patchversion 6.6
-%define pkgrelease 200
+%define pkgrelease 204
 %define kversion 6
 %define tarfile_release 6.6.63
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 200%{?buildid}%{?dist}
+%define specrelease 204%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.6.63
 
@@ -1209,10 +1209,11 @@ Patch0311: 0211-fix-remove-csr-clk-from-eth-driver.patch
 Patch0312: 0212-feat-add-audio-proc-mutex.patch
 Patch0313: 0213-feat-skip-the-user-memory-cache-flush.patch
 Patch0314: 0214-feat-modify-the-audio-proc-license-statement.patch
-Patch0315: 0215-update-pwm_apply_state-to-pwm_apply_might_sleep.patch
-Patch0316: 0216-.SECONDARY-conflicts-with-.NOTINTERMEDIATE.patch
+Patch0315: 0215-release-1130.patch
+Patch0316: 0216-Update-pwm_apply_state-to-pwm_apply_might_sleep.patch
 Patch0317: 0217-rename-cpr_val-to-cpr_value.patch
 Patch0318: 0218-header-workarounds.patch
+
 
 
 
@@ -2185,10 +2186,11 @@ ApplyOptionalPatch 0211-fix-remove-csr-clk-from-eth-driver.patch
 ApplyOptionalPatch 0212-feat-add-audio-proc-mutex.patch
 ApplyOptionalPatch 0213-feat-skip-the-user-memory-cache-flush.patch
 ApplyOptionalPatch 0214-feat-modify-the-audio-proc-license-statement.patch
-ApplyOptionalPatch 0215-update-pwm_apply_state-to-pwm_apply_might_sleep.patch
-ApplyOptionalPatch 0216-.SECONDARY-conflicts-with-.NOTINTERMEDIATE.patch
+ApplyOptionalPatch 0215-release-1130.patch
+ApplyOptionalPatch 0216-Update-pwm_apply_state-to-pwm_apply_might_sleep.patch
 ApplyOptionalPatch 0217-rename-cpr_val-to-cpr_value.patch
 ApplyOptionalPatch 0218-header-workarounds.patch
+
 
 
 
