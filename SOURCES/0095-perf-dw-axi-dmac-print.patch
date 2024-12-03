@@ -1,7 +1,7 @@
 From cf5b9c80f9e1fa56460ecef40f4cd125501c503e Mon Sep 17 00:00:00 2001
 From: xuxiang <xuxiang@eswincomputing.com>
 Date: Fri, 12 Jul 2024 16:12:45 +0800
-Subject: [PATCH 095/215] perf:dw-axi-dmac print
+Subject: [PATCH 095/218] perf:dw-axi-dmac print
 
 Changelogs:
 1. Change source code :	dev_err(chip->dev, "apb_regs not initialized\n"); to dev_dbg(...);

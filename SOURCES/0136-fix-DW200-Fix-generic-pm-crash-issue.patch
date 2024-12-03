@@ -1,7 +1,7 @@
 From 02ebc450ffdbd9603413c7833d3ee3ff92f58767 Mon Sep 17 00:00:00 2001
 From: lilijun <lilijun@eswincomputing.com>
 Date: Tue, 30 Jul 2024 10:24:25 +0800
-Subject: [PATCH 136/215] fix(DW200): Fix generic pm crash issue
+Subject: [PATCH 136/218] fix(DW200): Fix generic pm crash issue
 
 Changelogs:
 1.Reduce waiting time to 10s->1s

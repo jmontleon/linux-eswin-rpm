@@ -1,7 +1,7 @@
 From fbf7ad81805231a9dc7bf96319d21bab1b9edc58 Mon Sep 17 00:00:00 2001
 From: liangshuang <liangshuang@eswincomputing.com>
 Date: Fri, 7 Jun 2024 11:10:10 +0800
-Subject: [PATCH 049/215] fix:optimize SDHCI driver.
+Subject: [PATCH 049/218] fix:optimize SDHCI driver.
 
 Changelogs:
 1.Fix the issue of failed tuning of the Sandisk SD card.

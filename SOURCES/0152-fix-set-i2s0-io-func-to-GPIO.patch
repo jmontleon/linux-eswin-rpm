@@ -1,7 +1,7 @@
 From 1b03699cbb725b6a2bb5b404a84eba731755a2e1 Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Thu, 15 Aug 2024 10:30:29 +0800
-Subject: [PATCH 152/215] fix:set i2s0 io func to GPIO.
+Subject: [PATCH 152/218] fix:set i2s0 io func to GPIO.
 
 Changelogs:
 	Resolve the issue of i2S0 playback impact on i2S2.

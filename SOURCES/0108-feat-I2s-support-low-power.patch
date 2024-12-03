@@ -1,7 +1,7 @@
 From e6e3a62d2f398948fe8542c2cc5c340749deae80 Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Mon, 15 Jul 2024 09:00:09 +0800
-Subject: [PATCH 108/215] feat:I2s support low power.
+Subject: [PATCH 108/218] feat:I2s support low power.
 
 Changelogs:
 	I2s support low power.

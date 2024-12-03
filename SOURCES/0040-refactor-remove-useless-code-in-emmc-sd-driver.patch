@@ -1,7 +1,7 @@
 From c57a027d5695accb579e6465188122f1b39b62de Mon Sep 17 00:00:00 2001
 From: liangshuang <liangshuang@eswincomputing.com>
 Date: Thu, 30 May 2024 09:50:56 +0800
-Subject: [PATCH 040/215] refactor:remove useless code in emmc/sd driver.
+Subject: [PATCH 040/218] refactor:remove useless code in emmc/sd driver.
 
 Changelogs:
 1.Remove useless code related to HAPS/ZEBU.
