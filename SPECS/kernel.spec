@@ -163,13 +163,13 @@ Summary: The Linux kernel
 %define specrpmversion 6.6.63
 %define specversion 6.6.63
 %define patchversion 6.6
-%define pkgrelease 204
+%define pkgrelease 200
 %define kversion 6
 %define tarfile_release 6.6.63
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 204%{?buildid}%{?dist}
+%define specrelease 210%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.6.63
 
@@ -1213,9 +1213,7 @@ Patch0315: 0215-release-1130.patch
 Patch0316: 0216-Update-pwm_apply_state-to-pwm_apply_might_sleep.patch
 Patch0317: 0217-rename-cpr_val-to-cpr_value.patch
 Patch0318: 0218-header-workarounds.patch
-
-
-
+Patch0319: 0219-stop-triggering-vmlinux-rebuild.patch
 
 
 
@@ -2190,7 +2188,7 @@ ApplyOptionalPatch 0215-release-1130.patch
 ApplyOptionalPatch 0216-Update-pwm_apply_state-to-pwm_apply_might_sleep.patch
 ApplyOptionalPatch 0217-rename-cpr_val-to-cpr_value.patch
 ApplyOptionalPatch 0218-header-workarounds.patch
-
+ApplyOptionalPatch 0219-stop-triggering-vmlinux-rebuild.patch
 
 
 

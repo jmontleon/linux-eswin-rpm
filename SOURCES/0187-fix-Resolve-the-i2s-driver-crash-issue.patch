@@ -1,7 +1,7 @@
 From 7d4102fc34cbfbe2a1afc6bc4df16ccb0bbc256c Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Mon, 14 Oct 2024 14:35:38 +0800
-Subject: [PATCH 187/218] fix:Resolve the i2s driver crash issue.
+Subject: [PATCH 187/219] fix:Resolve the i2s driver crash issue.
 
 Changelogs:
 	When async_tx and async_tx_dma are enabled, the async module will occupy all DMA channels,

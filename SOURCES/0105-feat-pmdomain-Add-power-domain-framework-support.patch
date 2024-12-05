@@ -1,7 +1,7 @@
 From 69e136aa331672bcc7001d1f57b5036bfffc28a1 Mon Sep 17 00:00:00 2001
 From: gengzonglin <gengzonglin@eswincomputing.com>
 Date: Wed, 17 Jul 2024 17:15:31 +0800
-Subject: [PATCH 105/218] feat(pmdomain): Add power domain framework support.
+Subject: [PATCH 105/219] feat(pmdomain): Add power domain framework support.
 
     Changelogs:
     1.Add PMU drive.

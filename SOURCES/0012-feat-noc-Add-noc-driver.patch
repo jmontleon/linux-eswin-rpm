@@ -2,7 +2,7 @@ From be3e5d146febd7d2dea229e86265c855e6824c2f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E2=80=9Chuangyifeng=E2=80=9D?=
  <huangyifeng@eswincomputing.com>
 Date: Tue, 21 May 2024 14:17:38 +0800
-Subject: [PATCH 012/218] feat(noc):Add noc driver
+Subject: [PATCH 012/219] feat(noc):Add noc driver
 
 Changelogs:
         1.Added noc driver

@@ -1,7 +1,7 @@
 From cc190924dd3e00753b68a0c33cc8d9d1aa5eb656 Mon Sep 17 00:00:00 2001
 From: xuxiang <xuxiang@eswincomputing.com>
 Date: Fri, 24 May 2024 13:24:28 +0800
-Subject: [PATCH 030/218] feat:add fan,rtc,wdt,dw-spi,pwm
+Subject: [PATCH 030/219] feat:add fan,rtc,wdt,dw-spi,pwm
 
 Changelogs:
 1. support pwm, fan control

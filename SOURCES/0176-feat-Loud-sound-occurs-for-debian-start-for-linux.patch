@@ -1,7 +1,7 @@
 From c4270806f264e74e732354297b6214d3e3ee6267 Mon Sep 17 00:00:00 2001
 From: zhouliang2 <zhouliang2@eswincomputing.com>
 Date: Mon, 23 Sep 2024 15:07:31 +0800
-Subject: [PATCH 176/218] feat:Loud sound occurs for debian start for linux
+Subject: [PATCH 176/219] feat:Loud sound occurs for debian start for linux
 
 Changelogs:
 	1. change for linux
