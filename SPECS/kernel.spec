@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .eswin_1130
-%define specrpmversion 6.6.63
-%define specversion 6.6.63
+%define specrpmversion 6.6.64
+%define specversion 6.6.64
 %define patchversion 6.6
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.6.63
+%define tarfile_release 6.6.64
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 212%{?buildid}%{?dist}
+%define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.6.63
+%define kabiversion 6.6.64
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4181,8 +4181,8 @@ fi\
 #
 #
 %changelog
-* Tue Nov 26 2024 Jason Montleon <jason@montleon.com> [6.6.63-200.hifive]
-- Initial attempt
+* Thu Dec 05 2024 Jason Montleon <jason@montleon.com> [6.6.63-212.eswin_1130]
+- First version that boots with working ethernet.
 
 * Sun Dec 03 2023 David Abdurachmanov <davidlt@rivosinc.com> [6.6.4-0.0.riscv64]
 - Add support for riscv64

@@ -1,4 +1,4 @@
-From c63a3d724ffc6f69e220ab6da090149400c9fead Mon Sep 17 00:00:00 2001
+From 8e55236d009840fde96501cf280dd37af4a910bc Mon Sep 17 00:00:00 2001
 From: fanglifei <fanglifei@eswincomputing.com>
 Date: Tue, 27 Aug 2024 17:29:07 +0800
 Subject: [PATCH 159/219] feat: A series patch applyed for mmu
@@ -266,10 +266,10 @@ index 013da4b8b327..67bb9794b875 100644
  
 +#endif /* _LINUX_SYNC_CORE_H */
 diff --git a/init/Kconfig b/init/Kconfig
-index 6054ba684c53..e4d125c31422 100644
+index 60ed7713b5ee..18176301c6b9 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -1985,6 +1985,9 @@ source "kernel/Kconfig.locks"
+@@ -1994,6 +1994,9 @@ source "kernel/Kconfig.locks"
  config ARCH_HAS_NON_OVERLAPPING_ADDRESS_SPACE
  	bool
  

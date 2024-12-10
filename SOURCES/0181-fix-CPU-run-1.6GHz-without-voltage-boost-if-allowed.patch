@@ -1,4 +1,4 @@
-From 4e7ff6e731f7c40e3575b4a862b370061b9c971f Mon Sep 17 00:00:00 2001
+From 88b725a9123edd59916d849909b4f408df1374b1 Mon Sep 17 00:00:00 2001
 From: huangyifeng <huangyifeng@eswincomputing.com>
 Date: Mon, 30 Sep 2024 13:26:53 +0800
 Subject: [PATCH 181/219] fix:CPU run 1.6GHz without voltage boost if allowed

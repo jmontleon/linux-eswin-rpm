@@ -1,4 +1,4 @@
-From dc6d601be26af4820cb6f7fb9d7e61190de85d76 Mon Sep 17 00:00:00 2001
+From c60cfa71a059c798a125e2f389433244f38022cb Mon Sep 17 00:00:00 2001
 From: ningyu <ningyu@eswincomputing.com>
 Date: Fri, 26 Jul 2024 14:49:38 +0800
 Subject: [PATCH 122/219] refactor:add eic7700 defconfig and adjust mmz size

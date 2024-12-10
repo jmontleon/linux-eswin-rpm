@@ -1,4 +1,4 @@
-From 2f0799e6b2682fe768ce0d3a0a81a6d6d6966812 Mon Sep 17 00:00:00 2001
+From edf490c924c7d24bcbd83209a737573094754656 Mon Sep 17 00:00:00 2001
 From: xuxiang <xuxiang@eswincomputing.com>
 Date: Mon, 27 May 2024 18:53:47 +0800
 Subject: [PATCH 038/219] perf:update dma, pwm, timer driver
@@ -54,7 +54,7 @@ index 7311283d7c6d..61b8f4de69ad 100644
 +CONFIG_TIMER_ESWIN=y
 \ No newline at end of file
 diff --git a/drivers/clocksource/Kconfig b/drivers/clocksource/Kconfig
-index 0ba0dc4ecf06..6c88cb2d65d4 100644
+index 8208a3d89563..db73c2254f75 100644
 --- a/drivers/clocksource/Kconfig
 +++ b/drivers/clocksource/Kconfig
 @@ -73,6 +73,11 @@ config DW_APB_TIMER_OF
