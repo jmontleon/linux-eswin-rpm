@@ -1,4 +1,4 @@
-From aac785dddd4cb0bdfa49da31ff6015559cd7473f Mon Sep 17 00:00:00 2001
+From 7f3f27b2bc89055dec02e301ef3096caf86fb098 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Mon, 2 Dec 2024 14:26:06 -0500
 Subject: [PATCH 216/219] Update pwm_apply_state to pwm_apply_might_sleep

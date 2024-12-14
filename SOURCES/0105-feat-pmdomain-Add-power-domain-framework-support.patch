@@ -1,4 +1,4 @@
-From 5a749e47867c9c5b26b511031bcc6e7ef62dac62 Mon Sep 17 00:00:00 2001
+From 9c32405c9505e77321850fbe0b3fc1733bc64906 Mon Sep 17 00:00:00 2001
 From: gengzonglin <gengzonglin@eswincomputing.com>
 Date: Wed, 17 Jul 2024 17:15:31 +0800
 Subject: [PATCH 105/219] feat(pmdomain): Add power domain framework support.

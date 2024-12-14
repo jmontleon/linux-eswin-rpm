@@ -1,4 +1,4 @@
-From 8e55236d009840fde96501cf280dd37af4a910bc Mon Sep 17 00:00:00 2001
+From b6378d18d7f5f904eef84708502c07f56913b3e0 Mon Sep 17 00:00:00 2001
 From: fanglifei <fanglifei@eswincomputing.com>
 Date: Tue, 27 Aug 2024 17:29:07 +0800
 Subject: [PATCH 159/219] feat: A series patch applyed for mmu
@@ -280,10 +280,10 @@ index 60ed7713b5ee..18176301c6b9 100644
  	bool
  
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index b6f922a20f83..bf0614514d45 100644
+index 228f7c07da72..278d7390594e 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -6608,7 +6608,9 @@ static void __sched notrace __schedule(unsigned int sched_mode)
+@@ -6605,7 +6605,9 @@ static void __sched notrace __schedule(unsigned int sched_mode)
  	 *     if (signal_pending_state())	    if (p->state & @state)
  	 *
  	 * Also, the membarrier system call requires a full memory barrier
@@ -294,7 +294,7 @@ index b6f922a20f83..bf0614514d45 100644
  	 */
  	rq_lock(rq, &rf);
  	smp_mb__after_spinlock();
-@@ -6686,6 +6688,13 @@ static void __sched notrace __schedule(unsigned int sched_mode)
+@@ -6683,6 +6685,13 @@ static void __sched notrace __schedule(unsigned int sched_mode)
  		 *   architectures where spin_unlock is a full barrier,
  		 * - switch_to() for arm64 (weakly-ordered, spin_unlock
  		 *   is a RELEASE barrier),

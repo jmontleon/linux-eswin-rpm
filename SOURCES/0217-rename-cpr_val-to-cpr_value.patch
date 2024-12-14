@@ -1,4 +1,4 @@
-From ce9cdb789133c9c56b9bed5beeff1334d891541c Mon Sep 17 00:00:00 2001
+From 580e3c265199e6f55355fbc20a7491ee9a2a13ac Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Wed, 27 Nov 2024 02:54:49 -0500
 Subject: [PATCH 217/219] rename cpr_val to cpr_value
@@ -8,7 +8,7 @@ Subject: [PATCH 217/219] rename cpr_val to cpr_value
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/tty/serial/8250/8250_dw.c b/drivers/tty/serial/8250/8250_dw.c
-index 6230d68f098d..662985101d73 100644
+index 629466a07c6a..e82300aa21cc 100644
 --- a/drivers/tty/serial/8250/8250_dw.c
 +++ b/drivers/tty/serial/8250/8250_dw.c
 @@ -767,7 +767,7 @@ static const struct dev_pm_ops dw8250_pm_ops = {

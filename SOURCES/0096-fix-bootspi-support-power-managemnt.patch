@@ -1,4 +1,4 @@
-From 346241de9b8d6ba12411393ed69123e6b736ffab Mon Sep 17 00:00:00 2001
+From e261a906662d58a1efc32088812273ba55cd2fc2 Mon Sep 17 00:00:00 2001
 From: huangyifeng <huangyifeng@eswincomputing.com>
 Date: Thu, 4 Jul 2024 17:28:16 +0800
 Subject: [PATCH 096/219] fix:bootspi support power managemnt

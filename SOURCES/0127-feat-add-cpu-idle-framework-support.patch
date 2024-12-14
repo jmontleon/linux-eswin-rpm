@@ -1,4 +1,4 @@
-From ec566f5a2654cfa5914cf5507f88c0667d0228b4 Mon Sep 17 00:00:00 2001
+From 96cd7e2fc2f620d1254b00b3dfd634ebf28ebba3 Mon Sep 17 00:00:00 2001
 From: congyuyang <congyuyang@eswincomputing.com>
 Date: Thu, 25 Jul 2024 16:21:19 +0800
 Subject: [PATCH 127/219] feat:add cpu-idle framework support
