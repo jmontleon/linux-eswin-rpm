@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 200%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.6.65
 
@@ -545,8 +545,8 @@ Summary: The Linux kernel
 %ifarch riscv64
 %define asmarch riscv
 %define hdrarch riscv
-%define make_target Image.gz
-%define kernel_image arch/riscv/boot/Image.gz
+%define make_target vmlinuz.efi
+%define kernel_image arch/riscv/boot/vmlinuz.efi
 %endif
 
 # Should make listnewconfig fail if there's config options
@@ -4181,6 +4181,9 @@ fi\
 #
 #
 %changelog
+* Thu Dec 05 2024 Jason Montleon <jason@montleon.com> [6.6.65-201.eswin_1130]
+- Switch riscv target to vmlinuz.efi
+
 * Thu Dec 05 2024 Jason Montleon <jason@montleon.com> [6.6.63-212.eswin_1130]
 - First version that boots with working ethernet.
 
