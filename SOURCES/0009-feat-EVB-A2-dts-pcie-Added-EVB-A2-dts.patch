@@ -1,4 +1,4 @@
-From 388dd02ef99e7dbd81e742e946696364dc53edfd Mon Sep 17 00:00:00 2001
+From fe7c74cb3d4cbfa7957789002875ed628699842b Mon Sep 17 00:00:00 2001
 From: ningyu <ningyu@eswincomputing.com>
 Date: Sat, 18 May 2024 11:16:41 +0800
 Subject: [PATCH 009/219] feat(EVB-A2 dts+pcie):Added EVB-A2 dts

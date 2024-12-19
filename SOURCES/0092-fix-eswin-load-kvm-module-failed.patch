@@ -1,4 +1,4 @@
-From 58d07ca01dc6452536d593a4e7f8d8a16094ee8f Mon Sep 17 00:00:00 2001
+From 70377cb591ee83504c46549f0224907f8d7f9e7a Mon Sep 17 00:00:00 2001
 From: Han Gao <gaohan@iscas.ac.cn>
 Date: Mon, 15 Jul 2024 23:51:22 +0800
 Subject: [PATCH 092/219] fix: eswin: load kvm module failed
