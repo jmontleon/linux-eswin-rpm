@@ -1,7 +1,7 @@
-From 68a40226e282b35a34569e56e031031145b6dba2 Mon Sep 17 00:00:00 2001
+From 000dab82febbdf2a94f6e74d0b8682b00beb4e0a Mon Sep 17 00:00:00 2001
 From: huangyifeng <huangyifeng@eswincomputing.com>
 Date: Fri, 16 Aug 2024 16:17:38 +0800
-Subject: [PATCH 154/219] fix(noc):fix kmemleak warning
+Subject: [PATCH 154/222] fix(noc):fix kmemleak warning
 
 Changelogs:
     1.kfree bf_name in sideband_mgr_init when it is no need.

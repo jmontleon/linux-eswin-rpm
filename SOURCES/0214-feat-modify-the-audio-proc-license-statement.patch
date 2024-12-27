@@ -1,7 +1,7 @@
-From 68175ab47245ffbe498e7208f90af0a425c9b411 Mon Sep 17 00:00:00 2001
+From 2635f964fdae72020ce0a8450533f1f4024ca983 Mon Sep 17 00:00:00 2001
 From: yangqiang <yangqiang1@eswincomputing.com>
 Date: Tue, 12 Nov 2024 10:49:47 +0800
-Subject: [PATCH 214/219] feat:modify the audio proc license statement.
+Subject: [PATCH 214/222] feat:modify the audio proc license statement.
 
 Changelogs:
 	modify the audio proc license statement.

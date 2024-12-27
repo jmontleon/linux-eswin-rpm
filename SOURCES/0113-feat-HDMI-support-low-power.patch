@@ -1,7 +1,7 @@
-From d47d17a98d30ef1fc3efecf3e48b87b72c9ac3f1 Mon Sep 17 00:00:00 2001
+From e838277eb66e5e00a1084a32ac76ee4eaba72178 Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Thu, 18 Jul 2024 16:38:30 +0800
-Subject: [PATCH 113/219] feat:HDMI support low power.
+Subject: [PATCH 113/222] feat:HDMI support low power.
 
 Changelogs:
 	HDMI support low power.

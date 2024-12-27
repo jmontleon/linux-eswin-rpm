@@ -1,7 +1,7 @@
-From 8c1f5edf94a29230ce2cd29fe313569029caad6a Mon Sep 17 00:00:00 2001
+From 79fc9503806d805e2aa712ba81c51a95529ab607 Mon Sep 17 00:00:00 2001
 From: zouxiaojun <zouxiaojun@eswincomputing.com>
 Date: Mon, 29 Jul 2024 17:05:54 +0800
-Subject: [PATCH 157/219] fix(enc):fix hang issue of ve roi
+Subject: [PATCH 157/222] fix(enc):fix hang issue of ve roi
 
 Changelogs:
 A certain timeout cycles might lead hw bug, causing ve to get stuck when

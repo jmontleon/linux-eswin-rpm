@@ -1,7 +1,7 @@
-From e205a619c77cd02985ccc8311d02b6c50c5544b2 Mon Sep 17 00:00:00 2001
+From f6d23c1276f7d1c75ac462d11533c83aec318ea0 Mon Sep 17 00:00:00 2001
 From: Sakura286 <sakura286@outlook.com>
 Date: Wed, 10 Jul 2024 18:03:36 +0800
-Subject: [PATCH 074/219] img gpu kmd: use arch_sync_dma_for_device() instead
+Subject: [PATCH 074/222] img gpu kmd: use arch_sync_dma_for_device() instead
  of sifive_l2_flush64_range()
 
 ---

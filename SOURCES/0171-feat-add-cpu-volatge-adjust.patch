@@ -1,7 +1,7 @@
-From 785e1b03850b298955416c69df6f02e23a686e8b Mon Sep 17 00:00:00 2001
+From f00855ef84fdfd0e9112ced0be80993adfaa021c Mon Sep 17 00:00:00 2001
 From: huangyifeng <huangyifeng@eswincomputing.com>
 Date: Thu, 29 Aug 2024 16:17:29 +0800
-Subject: [PATCH 171/219] feat:add cpu volatge adjust
+Subject: [PATCH 171/222] feat:add cpu volatge adjust
 
 Changelogs:
     add cpu volatge adjust.When the CPU frequency is scaled above

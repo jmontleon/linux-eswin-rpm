@@ -1,7 +1,7 @@
-From a99c01b4d66ae72d2849889e86e8b62e7f312ff1 Mon Sep 17 00:00:00 2001
+From 9b6035bc63cb1c00eea32739ba6119ff114588ea Mon Sep 17 00:00:00 2001
 From: yangwei1 <yangwei1@eswincomputing.com>
 Date: Thu, 23 May 2024 20:30:07 +0800
-Subject: [PATCH 026/219] fix:modify ina226 addr and hold time
+Subject: [PATCH 026/222] fix:modify ina226 addr and hold time
 
 Changelogs:
 	1.modify ina226 addr form 0x4c to 0x48 in i2c11

@@ -1,7 +1,7 @@
-From 2688043419f9d0da02d9ddb3db8b72875096ba92 Mon Sep 17 00:00:00 2001
+From cb01ebfdc690994726088d45a70ebed33feaf816 Mon Sep 17 00:00:00 2001
 From: fanglifei <fanglifei@eswincomputing.com>
 Date: Thu, 11 Jul 2024 14:04:35 +0800
-Subject: [PATCH 098/219] feat(eth): ETH support power management
+Subject: [PATCH 098/222] feat(eth): ETH support power management
 
 Changelogs:
 1. Add a callback func clks_config() which will be called

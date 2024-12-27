@@ -1,7 +1,7 @@
-From d3514f42166a71daff59f6cada2b4de7a0fb6d19 Mon Sep 17 00:00:00 2001
+From db1a72a8fe8a23e48af6ff79056388eea80e1153 Mon Sep 17 00:00:00 2001
 From: yangwei1 <yangwei1@eswincomputing.com>
 Date: Tue, 30 Jul 2024 13:56:07 +0800
-Subject: [PATCH 179/219] fix:Correct word errors,remove unused define
+Subject: [PATCH 179/222] fix:Correct word errors,remove unused define
 
 Changelogs:
 	1.Correct word error

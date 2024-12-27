@@ -1,7 +1,7 @@
-From 93492a9b57b3e3b75bf46df7d49acd209a5c44c5 Mon Sep 17 00:00:00 2001
+From 79c8c7ada144328e8973eaca0177973db3d696e3 Mon Sep 17 00:00:00 2001
 From: tangdaoyong <tangdaoyong@eswincomputing.com>
 Date: Tue, 22 Oct 2024 09:35:00 +0800
-Subject: [PATCH 196/219] feat:add license description
+Subject: [PATCH 196/222] feat:add license description
 
 Changelogs:
   add license description.

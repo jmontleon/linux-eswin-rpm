@@ -1,7 +1,7 @@
-From 3585a23aa7e4b2c99775743de946f8015bf08ad1 Mon Sep 17 00:00:00 2001
+From a8df5c91080d15c837062e92619c3eb7c698ea51 Mon Sep 17 00:00:00 2001
 From: liangshuang <liangshuang@eswincomputing.com>
 Date: Wed, 14 Aug 2024 10:50:26 +0800
-Subject: [PATCH 155/219] fix:chang the delayline of sdio0.
+Subject: [PATCH 155/222] fix:chang the delayline of sdio0.
 
 Changelogs:
 1.Change the delaycode of sdio.

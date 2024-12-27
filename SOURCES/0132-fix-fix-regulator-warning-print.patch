@@ -1,7 +1,7 @@
-From 1b7db59be27bf231e14c83f1764fb97ff9406e80 Mon Sep 17 00:00:00 2001
+From ce4de07a9120a3b799207ffdabcf0191a8316a31 Mon Sep 17 00:00:00 2001
 From: luyulin <luyulin@eswincomputing.com>
 Date: Tue, 30 Jul 2024 14:03:46 +0800
-Subject: [PATCH 132/219] fix:fix regulator warning print
+Subject: [PATCH 132/222] fix:fix regulator warning print
 
 Changelogs:
 	1. fix bug of regulator warning print when rtcwake

@@ -1,7 +1,7 @@
-From 940b24ba1836f5e07ce6fc839145a4914acc216d Mon Sep 17 00:00:00 2001
+From c304ec11a2c2bb6afbf989f22d3b7526d2e13291 Mon Sep 17 00:00:00 2001
 From: zouxiaojun <zouxiaojun@eswincomputing.com>
 Date: Thu, 18 Jul 2024 16:24:24 +0800
-Subject: [PATCH 126/219] feat(VE): VE support power management
+Subject: [PATCH 126/222] feat(VE): VE support power management
 
 Changelogs:
 	Add generic & runtime power management for VENC&JENC;

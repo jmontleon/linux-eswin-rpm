@@ -159,19 +159,19 @@ Summary: The Linux kernel
 #  to build the base kernel using the debug configuration. (Specifying
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
-%define buildid .eswin_1130
-%define specrpmversion 6.6.67
-%define specversion 6.6.67
+%define buildid .eswin_1230
+%define specrpmversion 6.6.68
+%define specversion 6.6.68
 %define patchversion 6.6
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.6.67
+%define tarfile_release 6.6.68
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.6.67
+%define kabiversion 6.6.68
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1210,10 +1210,13 @@ Patch0312: 0212-feat-add-audio-proc-mutex.patch
 Patch0313: 0213-feat-skip-the-user-memory-cache-flush.patch
 Patch0314: 0214-feat-modify-the-audio-proc-license-statement.patch
 Patch0315: 0215-release-1130.patch
-Patch0316: 0216-Update-pwm_apply_state-to-pwm_apply_might_sleep.patch
-Patch0317: 0217-rename-cpr_val-to-cpr_value.patch
-Patch0318: 0218-header-workarounds.patch
-Patch0319: 0219-stop-triggering-vmlinux-rebuild.patch
+Patch0316: 0216-release-1230.patch
+Patch0317: 0217-Update-pwm_apply_state-to-pwm_apply_might_sleep.patch
+Patch0318: 0218-rename-cpr_val-to-cpr_value.patch
+Patch0319: 0219-header-workarounds.patch
+Patch0320: 0220-stop-triggering-vmlinux-rebuild.patch
+Patch0321: 0221-add-missing-newline.patch
+Patch0322: 0222-add-missing-include.patch
 
 
 
@@ -2185,10 +2188,13 @@ ApplyOptionalPatch 0212-feat-add-audio-proc-mutex.patch
 ApplyOptionalPatch 0213-feat-skip-the-user-memory-cache-flush.patch
 ApplyOptionalPatch 0214-feat-modify-the-audio-proc-license-statement.patch
 ApplyOptionalPatch 0215-release-1130.patch
-ApplyOptionalPatch 0216-Update-pwm_apply_state-to-pwm_apply_might_sleep.patch
-ApplyOptionalPatch 0217-rename-cpr_val-to-cpr_value.patch
-ApplyOptionalPatch 0218-header-workarounds.patch
-ApplyOptionalPatch 0219-stop-triggering-vmlinux-rebuild.patch
+ApplyOptionalPatch 0216-release-1230.patch
+ApplyOptionalPatch 0217-Update-pwm_apply_state-to-pwm_apply_might_sleep.patch
+ApplyOptionalPatch 0218-rename-cpr_val-to-cpr_value.patch
+ApplyOptionalPatch 0219-header-workarounds.patch
+ApplyOptionalPatch 0220-stop-triggering-vmlinux-rebuild.patch
+ApplyOptionalPatch 0221-add-missing-newline.patch
+ApplyOptionalPatch 0222-add-missing-include.patch
 
 
 
@@ -4181,6 +4187,9 @@ fi\
 #
 #
 %changelog
+* Fri Dec 27 2024 Jason Montleon <jason@montleon.com> [6.6.68-200.eswin_1230]
+- Update to eswin 1230
+
 * Thu Dec 05 2024 Jason Montleon <jason@montleon.com> [6.6.65-201.eswin_1130]
 - Switch riscv target to vmlinuz.efi
 

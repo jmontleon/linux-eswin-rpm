@@ -1,7 +1,7 @@
-From 8ad2a57341855d8b022d623afbae2d9c9cc3a5fe Mon Sep 17 00:00:00 2001
+From cea8777b9c119f9cd335bf2e32104dc9270fa6c2 Mon Sep 17 00:00:00 2001
 From: Xiang Xu <xuxiang@eswincomputing.com>
 Date: Tue, 10 Sep 2024 10:35:02 +0800
-Subject: [PATCH 168/219] chore:Remove redundant log
+Subject: [PATCH 168/222] chore:Remove redundant log
 
 Changelogs:
 1.Remove redundant log

@@ -1,7 +1,7 @@
-From b117e2db65091737deb4d4d3c1579d8e0bf15db9 Mon Sep 17 00:00:00 2001
+From 95c5adb8a600cd74cd20cf3d646f62590d730648 Mon Sep 17 00:00:00 2001
 From: liusheng <liusheng@eswincomputing.com>
 Date: Tue, 6 Aug 2024 14:29:38 +0800
-Subject: [PATCH 142/219] fix:signal to wait the gpu idle
+Subject: [PATCH 142/222] fix:signal to wait the gpu idle
 
 Changelogs:
 1. power on -> off, it would call pmcacheflush. After cmd finish,

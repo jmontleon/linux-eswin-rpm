@@ -1,7 +1,7 @@
-From 9ce33313a204219b3e6cbda17a085e54daa649a4 Mon Sep 17 00:00:00 2001
+From 4863b168b958164688b3ec0a62b441c1b1db11f0 Mon Sep 17 00:00:00 2001
 From: liusheng <liusheng@eswincomputing.com>
 Date: Tue, 30 Jul 2024 19:16:18 +0800
-Subject: [PATCH 131/219] fix:use timer 500ms to try gpu idle
+Subject: [PATCH 131/222] fix:use timer 500ms to try gpu idle
 
 Changelogs:
 1. Default the gpu idle is fast after interrupt came, often the cmd
