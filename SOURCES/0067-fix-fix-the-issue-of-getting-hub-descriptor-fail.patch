@@ -1,4 +1,4 @@
-From 4c1e23b780e86fb9edbe07a550b2a91b07ac142d Mon Sep 17 00:00:00 2001
+From 52c8f2e112ec5369e46a40d8b8582bee6210b217 Mon Sep 17 00:00:00 2001
 From: liangshuang <liangshuang@eswincomputing.com>
 Date: Tue, 9 Jul 2024 09:38:51 +0800
 Subject: [PATCH 067/222] fix:fix the issue of getting hub descriptor fail.

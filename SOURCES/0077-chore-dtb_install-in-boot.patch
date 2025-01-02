@@ -1,4 +1,4 @@
-From 193fc0edb2a2524b572d92957ebbd51bdf48feda Mon Sep 17 00:00:00 2001
+From 09eafc6ddedbf136d77a0aa4a643b84f36e014ee Mon Sep 17 00:00:00 2001
 From: Han Gao <gaohan@iscas.ac.cn>
 Date: Wed, 26 Jun 2024 21:40:08 +0800
 Subject: [PATCH 077/222] chore: dtb_install in /boot

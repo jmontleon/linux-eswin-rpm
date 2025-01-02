@@ -1,4 +1,4 @@
-From d3cbf4c3a34126b372cb4367f646d0638e51afb5 Mon Sep 17 00:00:00 2001
+From ac0308a2d3d60c4606b3205464756259c82d96f5 Mon Sep 17 00:00:00 2001
 From: ningyu <ningyu@eswincomputing.com>
 Date: Fri, 21 Jun 2024 09:53:26 +0800
 Subject: [PATCH 058/222] feat:add hifive premier 550 dts

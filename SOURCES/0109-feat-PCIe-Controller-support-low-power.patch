@@ -1,4 +1,4 @@
-From 86b1555f1b066394b8f1c844a9c32f3841ffbf0d Mon Sep 17 00:00:00 2001
+From 22332be979c414b395478576feef3eaaeac69647 Mon Sep 17 00:00:00 2001
 From: huzhixuan <huzhixuan@eswincomputing.com>
 Date: Thu, 18 Jul 2024 19:22:23 +0800
 Subject: [PATCH 109/222] feat:PCIe Controller support low power.

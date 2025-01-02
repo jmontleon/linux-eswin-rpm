@@ -1,4 +1,4 @@
-From 585604ca6545b8ebf3df9ab6c85127203deec2b2 Mon Sep 17 00:00:00 2001
+From 13f40a3fb2419373ab5fd4e0f8b16878a1196f7d Mon Sep 17 00:00:00 2001
 From: linmin <linmin@eswincomputing.com>
 Date: Tue, 21 May 2024 13:50:46 +0800
 Subject: [PATCH 010/222] feat(CMA):Select CONFIG_CMA and CONFIG_DMA_CMA

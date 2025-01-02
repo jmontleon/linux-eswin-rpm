@@ -1,4 +1,4 @@
-From 216789d120ebbb18a39799c7f27725b4af8c98cb Mon Sep 17 00:00:00 2001
+From 72154e2c461ee9eb4b90812db9161227820da8fe Mon Sep 17 00:00:00 2001
 From: hujiamiao <hujiamiao@eswincomputing.com>
 Date: Thu, 1 Aug 2024 13:42:23 +0800
 Subject: [PATCH 135/222] feat:add lpcpu eic7700 defconfig and dts

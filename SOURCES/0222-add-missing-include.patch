@@ -1,0 +1,25 @@
+From 4dfbe4096c72e47c92b82b3240956abef2682b74 Mon Sep 17 00:00:00 2001
+From: Jason Montleon <jmontleo@redhat.com>
+Date: Fri, 27 Dec 2024 13:28:28 -0500
+Subject: [PATCH 222/222] add missing include
+
+---
+ include/uapi/linux/dma_memcp.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/uapi/linux/dma_memcp.h b/include/uapi/linux/dma_memcp.h
+index 3cb75a348ba8..94f3c16cbcfc 100644
+--- a/include/uapi/linux/dma_memcp.h
++++ b/include/uapi/linux/dma_memcp.h
+@@ -21,6 +21,8 @@
+  *          Yuyang Cong <congyuyang@eswincomputing.com>
+  */
+ 
++#include <stddef.h>
++
+ #ifndef ES_DMA_MEMCP_H
+ #define ES_DMA_MEMCP_H
+ 
+-- 
+2.47.0
+

@@ -1,4 +1,4 @@
-From 5bac4ca9b0b0535612c2bb5f8974afc36b41df0d Mon Sep 17 00:00:00 2001
+From 14b2651fea8120a0696ffad52fec084c3dc77b64 Mon Sep 17 00:00:00 2001
 From: linmin <linmin@eswincomputing.com>
 Date: Sat, 31 Aug 2024 12:24:04 +0800
 Subject: [PATCH 161/222] feat:Disable CONFIG_PM

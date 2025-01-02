@@ -1,4 +1,4 @@
-From 3236f11a6e92cd8ec91e993ba2a6f4aa3cc80b03 Mon Sep 17 00:00:00 2001
+From c82180c8bc978126efa6914e5e5601ebf9a50197 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Wed, 27 Nov 2024 03:40:23 -0500
 Subject: [PATCH 219/222] header workarounds
