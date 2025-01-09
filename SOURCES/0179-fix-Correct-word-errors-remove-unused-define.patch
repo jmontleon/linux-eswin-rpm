@@ -1,4 +1,4 @@
-From 49a7491b081eb1c6e057faa685adeea72318c0b1 Mon Sep 17 00:00:00 2001
+From 30065dac4f5f5692975c2a6eb31553d79fec91d4 Mon Sep 17 00:00:00 2001
 From: yangwei1 <yangwei1@eswincomputing.com>
 Date: Tue, 30 Jul 2024 13:56:07 +0800
 Subject: [PATCH 179/222] fix:Correct word errors,remove unused define

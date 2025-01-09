@@ -1,4 +1,4 @@
-From 05857bfafe176af2a07d8df1007be571e9c9aece Mon Sep 17 00:00:00 2001
+From d7536c00ba3a3ebafbafc71d5e1f110ec5331ad0 Mon Sep 17 00:00:00 2001
 From: Han Gao <gaohan@iscas.ac.cn>
 Date: Thu, 30 May 2024 20:34:08 +0800
 Subject: [PATCH 082/222] configs: enable initrd

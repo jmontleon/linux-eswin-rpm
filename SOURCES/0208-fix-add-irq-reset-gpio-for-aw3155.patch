@@ -1,4 +1,4 @@
-From f6f8ee71cb826509243df490cb44f78b89230655 Mon Sep 17 00:00:00 2001
+From 90336ad6064b282760e8682c1fd47875b0d16063 Mon Sep 17 00:00:00 2001
 From: liangshuang <liangshuang@eswincomputing.com>
 Date: Thu, 31 Oct 2024 09:46:25 +0800
 Subject: [PATCH 208/222] fix:add irq/reset gpio for aw3155.

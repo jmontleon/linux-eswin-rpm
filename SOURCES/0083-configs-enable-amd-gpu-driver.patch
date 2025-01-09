@@ -1,4 +1,4 @@
-From 9245b7a10e74ae0e750c6cb94830c7c058d9f11f Mon Sep 17 00:00:00 2001
+From 18631992043f27d62ab8f1cc24cbab4f83b3d202 Mon Sep 17 00:00:00 2001
 From: Han Gao <gaohan@iscas.ac.cn>
 Date: Thu, 30 May 2024 20:43:13 +0800
 Subject: [PATCH 083/222] configs: enable amd gpu driver

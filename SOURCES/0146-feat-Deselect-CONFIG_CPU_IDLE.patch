@@ -1,4 +1,4 @@
-From d4baf2f98e4682d1004715819ea5e2f6077f90c5 Mon Sep 17 00:00:00 2001
+From 3ea74981e5a08d9261e64f81b23e26fca0b3e033 Mon Sep 17 00:00:00 2001
 From: linmin <linmin@eswincomputing.com>
 Date: Fri, 9 Aug 2024 16:16:21 +0800
 Subject: [PATCH 146/222] feat:Deselect CONFIG_CPU_IDLE
