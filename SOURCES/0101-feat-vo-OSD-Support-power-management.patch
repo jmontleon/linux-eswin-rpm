@@ -1,4 +1,4 @@
-From a72ecb2011aa2bf19b8b9b7b06d5c1ab7da45080 Mon Sep 17 00:00:00 2001
+From d0595f23a6e115b9bb8da9b2e1c6a1428dfdfa37 Mon Sep 17 00:00:00 2001
 From: fanglifei <fanglifei@eswincomputing.com>
 Date: Tue, 16 Jul 2024 17:43:26 +0800
 Subject: [PATCH 101/222] feat(vo): OSD Support power management

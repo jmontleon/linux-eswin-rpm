@@ -1,4 +1,4 @@
-From f764c3ad24f7ea846cdc47ee2a11dbd0bd7c03e2 Mon Sep 17 00:00:00 2001
+From 035a762799f7bc5f402b98634fc854e79807b5f0 Mon Sep 17 00:00:00 2001
 From: hujiamiao <hujiamiao@eswincomputing.com>
 Date: Fri, 12 Jul 2024 18:30:09 +0800
 Subject: [PATCH 129/222] feat:Add lpcpu driver for linux-6.6
