@@ -1,4 +1,4 @@
-From 362d5ca6b8b0f874b59c538ab03734c04672835f Mon Sep 17 00:00:00 2001
+From bccb4f160071c4d4530ca498b4736bc371c83a1f Mon Sep 17 00:00:00 2001
 From: linmin <linmin@eswincomputing.com>
 Date: Sun, 7 Apr 2024 17:38:16 +0800
 Subject: [PATCH 003/222] feat(dma coherent/noncoherent):Support dma
@@ -275,7 +275,7 @@ index f896708e8331..dbe56bc01230 100644
  #define _PAGE_TABLE     _PAGE_PRESENT
  
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 37829dab4a0a..00811a820de9 100644
+index f540b2625714..172273b8ea8b 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
 @@ -205,9 +205,192 @@ extern struct pt_alloc_ops pt_ops __initdata;

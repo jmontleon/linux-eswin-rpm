@@ -1,4 +1,4 @@
-From 2a8cf58eb2fead3657258211cc9339ba31814106 Mon Sep 17 00:00:00 2001
+From fc1e2c09d1afc507ed9568d319adbb4c9adb98f5 Mon Sep 17 00:00:00 2001
 From: huangyifeng <huangyifeng@eswincomputing.com>
 Date: Thu, 29 Aug 2024 16:17:29 +0800
 Subject: [PATCH 171/222] feat:add cpu volatge adjust

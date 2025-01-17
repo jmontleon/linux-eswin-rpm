@@ -1,4 +1,4 @@
-From dc8affe8a15e0bb295cc64154a32ac2ff23c7f24 Mon Sep 17 00:00:00 2001
+From f98f9198227097b5f0aa697893060713d66674ef Mon Sep 17 00:00:00 2001
 From: yangwei1 <yangwei1@eswincomputing.com>
 Date: Fri, 14 Jun 2024 16:39:47 +0800
 Subject: [PATCH 052/222] fix:modify LSB for mpq8785 to 1mdegress/LSB

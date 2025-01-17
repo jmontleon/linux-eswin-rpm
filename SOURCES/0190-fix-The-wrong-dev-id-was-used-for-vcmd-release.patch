@@ -1,4 +1,4 @@
-From 259c2c2a8bb997be210e182ad9be0859ee548330 Mon Sep 17 00:00:00 2001
+From fa013dad29dec849165632cc949a3e4884fcf3f7 Mon Sep 17 00:00:00 2001
 From: tangdaoyong <tangdaoyong@eswincomputing.com>
 Date: Tue, 15 Oct 2024 14:00:44 +0800
 Subject: [PATCH 190/222] fix:The wrong dev id was used for vcmd release
