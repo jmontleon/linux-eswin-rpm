@@ -1,4 +1,4 @@
-From 0a2b8673e63a4b43a6dc89400b53d4027c55ad0d Mon Sep 17 00:00:00 2001
+From bdd3efca315f768b9974be6c6f4a07c580579fcf Mon Sep 17 00:00:00 2001
 From: donghuawei <donghuawei@eswincomputing.com>
 Date: Wed, 29 May 2024 14:11:20 +0800
 Subject: [PATCH 039/222] fix:dsp dma-ranges buf fix

@@ -1,4 +1,4 @@
-From 6936b22f934f1aea1cc62edea9577c9494aa40e0 Mon Sep 17 00:00:00 2001
+From 8d9f27d816e599f541f7d2de72c013ede9e1e7fb Mon Sep 17 00:00:00 2001
 From: huangyifeng <huangyifeng@eswincomputing.com>
 Date: Fri, 16 Aug 2024 16:17:38 +0800
 Subject: [PATCH 154/222] fix(noc):fix kmemleak warning

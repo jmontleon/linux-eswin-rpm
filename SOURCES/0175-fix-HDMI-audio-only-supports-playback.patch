@@ -1,4 +1,4 @@
-From 21b2aa93982b9ec9a0c3fb6d3f5e78e6ca88f05d Mon Sep 17 00:00:00 2001
+From 02ea5470be907afe7a6736cc45345aafcbc880d5 Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Tue, 24 Sep 2024 14:29:26 +0800
 Subject: [PATCH 175/222] fix:HDMI audio only supports playback.

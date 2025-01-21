@@ -1,4 +1,4 @@
-From 9de12d8add1b3a468d524060c3ea826fc56a360b Mon Sep 17 00:00:00 2001
+From 1a876bea3b6ae2206bfde2faec696dc7dd2d9571 Mon Sep 17 00:00:00 2001
 From: lilijun <lilijun@eswincomputing.com>
 Date: Wed, 14 Aug 2024 14:54:12 +0800
 Subject: [PATCH 149/222] feat:dsi support set bus-format

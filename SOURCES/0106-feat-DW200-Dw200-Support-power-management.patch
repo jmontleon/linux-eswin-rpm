@@ -1,4 +1,4 @@
-From d3ab453c848f0fcd0c3b411a6428083d8071155e Mon Sep 17 00:00:00 2001
+From 9094435cdd1d5ed9673137657722c29dc9946be1 Mon Sep 17 00:00:00 2001
 From: lilijun <lilijun@eswincomputing.com>
 Date: Wed, 17 Jul 2024 10:14:04 +0800
 Subject: [PATCH 106/222] feat(DW200): Dw200 Support power management

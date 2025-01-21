@@ -1,4 +1,4 @@
-From a2854f35dcda6ef7640a48e264a6af4e37b33822 Mon Sep 17 00:00:00 2001
+From 442437528b71ec142b7754a465114a4062a1f700 Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Tue, 8 Oct 2024 16:36:27 +0800
 Subject: [PATCH 186/222] feat:NPU & DSP driver port.
