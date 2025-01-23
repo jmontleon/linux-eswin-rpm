@@ -4189,7 +4189,7 @@ fi\
 #
 #
 %changelog
-* Thu Jan 23 2024 Jason Montleon <jason@montleon.com> [6.6.74-200.eswin_1230]
+* Thu Jan 23 2025 Jason Montleon <jason@montleon.com> [6.6.74-200.eswin_1230]
 - Add fix: modify critical temperature patch
 
 * Fri Dec 27 2024 Jason Montleon <jason@montleon.com> [6.6.68-200.eswin_1230]
