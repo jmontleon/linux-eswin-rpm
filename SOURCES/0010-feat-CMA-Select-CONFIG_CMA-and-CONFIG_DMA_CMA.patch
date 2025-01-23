@@ -1,7 +1,7 @@
-From 02c9a30a177bfbe610c03372bcfda2c219c28c49 Mon Sep 17 00:00:00 2001
+From ce82e2f786746bdf51f6fc8dcc2f388e6836a2ab Mon Sep 17 00:00:00 2001
 From: linmin <linmin@eswincomputing.com>
 Date: Tue, 21 May 2024 13:50:46 +0800
-Subject: [PATCH 010/222] feat(CMA):Select CONFIG_CMA and CONFIG_DMA_CMA
+Subject: [PATCH 010/223] feat(CMA):Select CONFIG_CMA and CONFIG_DMA_CMA
 
 Changelogs:
 1.Select CONFIG_CMA and CONFIG_DMA_CMA, save it to win2030_defconfig

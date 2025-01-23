@@ -1,7 +1,7 @@
-From ce318c9812a2dabab75b7322fe71328077b4a11b Mon Sep 17 00:00:00 2001
+From fa51cab16ec53397cfa9e5ffed5019a7c13954ac Mon Sep 17 00:00:00 2001
 From: linmin <linmin@eswincomputing.com>
 Date: Fri, 27 Dec 2024 16:54:16 +0800
-Subject: [PATCH 216/222] release-1230
+Subject: [PATCH 216/223] release-1230
 
 Changelogs:
 1.fix:improve numa-node-id of each module

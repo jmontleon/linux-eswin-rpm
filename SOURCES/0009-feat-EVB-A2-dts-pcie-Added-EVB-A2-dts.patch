@@ -1,7 +1,7 @@
-From fdce5fd68d9dafa547ea3793ced01335055211ee Mon Sep 17 00:00:00 2001
+From 78f3075a19a600a0248ba4f9466684e047a8b4bd Mon Sep 17 00:00:00 2001
 From: ningyu <ningyu@eswincomputing.com>
 Date: Sat, 18 May 2024 11:16:41 +0800
-Subject: [PATCH 009/222] feat(EVB-A2 dts+pcie):Added EVB-A2 dts
+Subject: [PATCH 009/223] feat(EVB-A2 dts+pcie):Added EVB-A2 dts
 
 Changelogs:
 1.Added EVB-A2 dts file "eic7700-evb-a2.dts"

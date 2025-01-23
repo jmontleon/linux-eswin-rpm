@@ -1,7 +1,7 @@
-From 29c36ea75a40cc7f96f19403c31d379248107136 Mon Sep 17 00:00:00 2001
+From 3fc9dcd7c80e7e34af8f5dc47872903e14315db5 Mon Sep 17 00:00:00 2001
 From: yangwei1 <yangwei1@eswincomputing.com>
 Date: Mon, 27 May 2024 14:44:34 +0800
-Subject: [PATCH 035/222] fix:add sysfs in pac1934 to set update interval
+Subject: [PATCH 035/223] fix:add sysfs in pac1934 to set update interval
 
 Changelogs:
 1.read and modify the value by update_interval in it's hwmon

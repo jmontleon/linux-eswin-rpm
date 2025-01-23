@@ -1,7 +1,7 @@
-From d346d863a9561562e439600334e4ae30dc59ee68 Mon Sep 17 00:00:00 2001
+From acf21131c59f3943c4259cf24c5ad5f9464dcac4 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Mon, 2 Dec 2024 14:26:06 -0500
-Subject: [PATCH 217/222] Update pwm_apply_state to pwm_apply_might_sleep
+Subject: [PATCH 217/223] Update pwm_apply_state to pwm_apply_might_sleep
 
 ---
  drivers/hwmon/eswin-fan-control.c | 6 +++---

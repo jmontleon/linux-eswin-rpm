@@ -1,7 +1,7 @@
-From f9fd175a29543b4df841e6f958e42f8faed1875c Mon Sep 17 00:00:00 2001
+From 6b310942b850de21332feeb628f2ce0466f5956b Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Fri, 27 Dec 2024 11:47:16 -0500
-Subject: [PATCH 221/222] add missing newline
+Subject: [PATCH 221/223] add missing newline
 
 ---
  drivers/soc/eswin/ai_driver/Kconfig | 2 +-

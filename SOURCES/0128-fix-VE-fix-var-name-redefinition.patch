@@ -1,7 +1,7 @@
-From 9c8b3806755f3b32c5ccf878edc2cbfb749017f6 Mon Sep 17 00:00:00 2001
+From b45f1fd60bda85d6875c44b9baa9fc55159267a9 Mon Sep 17 00:00:00 2001
 From: zouxiaojun <zouxiaojun@eswincomputing.com>
 Date: Tue, 30 Jul 2024 15:42:23 +0800
-Subject: [PATCH 128/222] fix(VE): fix var name redefinition
+Subject: [PATCH 128/223] fix(VE): fix var name redefinition
 
 Changelogs:
 	fix the compilation error:name redefinition

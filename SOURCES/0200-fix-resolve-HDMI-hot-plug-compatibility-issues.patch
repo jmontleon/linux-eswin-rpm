@@ -1,7 +1,7 @@
-From 884bff4515e19693beb81f33969fbcbe187767e7 Mon Sep 17 00:00:00 2001
+From db38947acaf19c3526697b1ad33cd5eeb5c0e6df Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Fri, 25 Oct 2024 10:36:46 +0800
-Subject: [PATCH 200/222] fix:resolve HDMI hot plug compatibility issues.
+Subject: [PATCH 200/223] fix:resolve HDMI hot plug compatibility issues.
 
 Changelogs:
 	resolve HDMI hot plug issues with HKC display.

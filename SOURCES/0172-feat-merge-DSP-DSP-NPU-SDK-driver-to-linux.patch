@@ -1,7 +1,7 @@
-From e73b5fd3c945a76d284afa0e1dc803293d6d9ee2 Mon Sep 17 00:00:00 2001
+From caae2add22e679d8de54f2677f100437a3b507e1 Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Wed, 18 Sep 2024 16:34:12 +0800
-Subject: [PATCH 172/222] feat:merge DSP DSP & NPU SDK driver to linux.
+Subject: [PATCH 172/223] feat:merge DSP DSP & NPU SDK driver to linux.
 
 Changelogs:
 	1.feat: dsp drv support multi op at the same time.

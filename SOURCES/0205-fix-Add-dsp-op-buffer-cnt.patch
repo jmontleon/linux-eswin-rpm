@@ -1,7 +1,7 @@
-From e756b8cbc633cf8f07c43dcbbdc37ca821cce7ba Mon Sep 17 00:00:00 2001
+From 53ab9a164d3901e46912f2ee86f1cde852c8bd0f Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Mon, 28 Oct 2024 19:37:10 +0800
-Subject: [PATCH 205/222] fix:Add dsp op buffer cnt.
+Subject: [PATCH 205/223] fix:Add dsp op buffer cnt.
 
 Changelogs:
 	add dsp op buffer cnt.

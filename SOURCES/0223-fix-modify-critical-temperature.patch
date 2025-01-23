@@ -1,0 +1,43 @@
+From 90d7cc7cf4cb4e525793053f5834a694cd5fdb04 Mon Sep 17 00:00:00 2001
+From: ningyu <ningyu@eswincomputing.com>
+Date: Wed, 22 Jan 2025 11:12:59 +0800
+Subject: [PATCH 223/223] fix: modify critical temperature
+
+Changelogs:
+Change critical temperature from 80 to 110
+
+Signed-off-by: ningyu <ningyu@eswincomputing.com>
+---
+ arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi | 2 +-
+ arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+index 8858283c1e68..b6d4e88e747c 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die0-soc.dtsi
+@@ -53,7 +53,7 @@ target: trip-point1 {
+ 				};
+ 				*/
+ 				crit: trip-point2 {
+-					temperature     = <88000>;
++					temperature     = <110000>;
+ 					hysteresis      = <0>;
+ 					type            = "critical";
+ 				};
+diff --git a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+index 725e811f0825..371be4330cf3 100644
+--- a/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
++++ b/arch/riscv/boot/dts/eswin/eswin-win2030-die1-soc.dtsi
+@@ -52,7 +52,7 @@ d1_target: trip-point1 {
+ 				};
+ 				*/
+ 				d1_crit: trip-point2 {
+-					temperature     = <88000>;
++					temperature     = <110000>;
+ 					hysteresis      = <0>;
+ 					type            = "critical";
+ 				};
+-- 
+2.47.0
+

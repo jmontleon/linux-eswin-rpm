@@ -1,7 +1,7 @@
-From eae9ce99d83e378c2ca1c1821c5178cf67b420bc Mon Sep 17 00:00:00 2001
+From 013e04d92d784a9b470a6e5570b9d102c10876e3 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Wed, 27 Nov 2024 02:54:49 -0500
-Subject: [PATCH 218/222] rename cpr_val to cpr_value
+Subject: [PATCH 218/223] rename cpr_val to cpr_value
 
 ---
  drivers/tty/serial/8250/8250_dw.c | 2 +-

@@ -1,7 +1,7 @@
-From 7d1835d7004f597b9698b9dd0b937431c0fa9a02 Mon Sep 17 00:00:00 2001
+From 32a5e0987bd25ddcd167aa4771e0df844a1569af Mon Sep 17 00:00:00 2001
 From: linmin <linmin@eswincomputing.com>
 Date: Mon, 22 Apr 2024 15:15:55 +0800
-Subject: [PATCH 007/222] feat(eswin pinctrl):Added eswin pinctrl related
+Subject: [PATCH 007/223] feat(eswin pinctrl):Added eswin pinctrl related
  changes
 
 Changelogs:

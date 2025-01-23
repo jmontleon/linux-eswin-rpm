@@ -1,7 +1,7 @@
-From d341818b088d24558605b15e6295e11c12fcec64 Mon Sep 17 00:00:00 2001
+From 511231dbb0bf955ba54a12fcae6fa152272789d5 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Wed, 27 Nov 2024 03:40:23 -0500
-Subject: [PATCH 219/222] header workarounds
+Subject: [PATCH 219/223] header workarounds
 
 ---
  include/uapi/linux/es_vb_user.h     |  4 +++

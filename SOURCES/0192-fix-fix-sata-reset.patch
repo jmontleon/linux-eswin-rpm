@@ -1,7 +1,7 @@
-From 57819799ba34a4b03c2c0e86af35102e4de4502e Mon Sep 17 00:00:00 2001
+From 6ad8f6d3f4aa320352c848c91bf95b5b3781ec06 Mon Sep 17 00:00:00 2001
 From: luyulin <luyulin@eswincomputing.com>
 Date: Fri, 18 Oct 2024 13:36:16 +0800
-Subject: [PATCH 192/222] fix:fix sata reset
+Subject: [PATCH 192/223] fix:fix sata reset
 
 Changelogs:
 1.fix sata reset

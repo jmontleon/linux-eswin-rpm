@@ -1,7 +1,7 @@
-From dd132ee84b16e8a8008becdcf44caed2c80826f5 Mon Sep 17 00:00:00 2001
+From 130a1c69f5c9053e624dd56c6b1d093ec2816b5a Mon Sep 17 00:00:00 2001
 From: yangwei1 <yangwei1@eswincomputing.com>
 Date: Fri, 24 May 2024 19:55:33 +0800
-Subject: [PATCH 033/222] fix:modify fan control and read fan speed
+Subject: [PATCH 033/223] fix:modify fan control and read fan speed
 
 Changelogs:
 	eswin,pwm_inverted enable pwm invert

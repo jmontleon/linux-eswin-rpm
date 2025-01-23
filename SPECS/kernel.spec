@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .eswin_1230
-%define specrpmversion 6.6.73
-%define specversion 6.6.73
+%define specrpmversion 6.6.74
+%define specversion 6.6.74
 %define patchversion 6.6
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.6.73
+%define tarfile_release 6.6.74
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.6.73
+%define kabiversion 6.6.74
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1217,6 +1217,7 @@ Patch0319: 0219-header-workarounds.patch
 Patch0320: 0220-stop-triggering-vmlinux-rebuild.patch
 Patch0321: 0221-add-missing-newline.patch
 Patch0322: 0222-add-missing-include.patch
+Patch0323: 0223-fix-modify-critical-temperature.patch
 
 
 
@@ -2195,6 +2196,7 @@ ApplyOptionalPatch 0219-header-workarounds.patch
 ApplyOptionalPatch 0220-stop-triggering-vmlinux-rebuild.patch
 ApplyOptionalPatch 0221-add-missing-newline.patch
 ApplyOptionalPatch 0222-add-missing-include.patch
+ApplyOptionalPatch 0223-fix-modify-critical-temperature.patch
 
 
 
@@ -4187,6 +4189,9 @@ fi\
 #
 #
 %changelog
+* Thu Jan 23 2024 Jason Montleon <jason@montleon.com> [6.6.74-200.eswin_1230]
+- Add fix: modify critical temperature patch
+
 * Fri Dec 27 2024 Jason Montleon <jason@montleon.com> [6.6.68-200.eswin_1230]
 - Update to eswin 1230
 
