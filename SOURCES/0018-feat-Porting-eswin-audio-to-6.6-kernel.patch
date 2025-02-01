@@ -1,4 +1,4 @@
-From 48119a6305eaedafb8037003c5d26d4bdfa234b0 Mon Sep 17 00:00:00 2001
+From d0f4951d56ca33f39d0b4794b9a30193a01e4b10 Mon Sep 17 00:00:00 2001
 From: yangqiang <yangqiang1@eswincomputing.com>
 Date: Tue, 21 May 2024 09:32:04 +0800
 Subject: [PATCH 018/223] feat:Porting eswin audio to 6.6 kernel
@@ -73,10 +73,10 @@ index 8376fdb217ed..7c3b9197e7b2 100644
  obj-$(CONFIG_SND_SOC)	+= xtensa/
 +obj-$(CONFIG_SND_SOC)	+= eswin/
 diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
-index f1e1dbc509f6..319d89477279 100644
+index 6d105a23c828..363fc75ae167 100644
 --- a/sound/soc/codecs/Kconfig
 +++ b/sound/soc/codecs/Kconfig
-@@ -2404,4 +2404,5 @@ config SND_SOC_LPASS_TX_MACRO
+@@ -2405,4 +2405,5 @@ config SND_SOC_LPASS_TX_MACRO
  	select SND_SOC_LPASS_MACRO_COMMON
  	tristate "Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)"
  

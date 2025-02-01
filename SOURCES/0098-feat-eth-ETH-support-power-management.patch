@@ -1,4 +1,4 @@
-From f8bb38b1a17ce607f72d56ab7cc898284fa8bc1a Mon Sep 17 00:00:00 2001
+From 49971ace6336639ecfd829c066c67d83d0d23e05 Mon Sep 17 00:00:00 2001
 From: fanglifei <fanglifei@eswincomputing.com>
 Date: Thu, 11 Jul 2024 14:04:35 +0800
 Subject: [PATCH 098/223] feat(eth): ETH support power management

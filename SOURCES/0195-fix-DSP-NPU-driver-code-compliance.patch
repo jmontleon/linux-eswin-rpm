@@ -1,4 +1,4 @@
-From 31557dd811d87905b8246cd9e2ed5cfe8bea1b4d Mon Sep 17 00:00:00 2001
+From f5ce23ae5d1d2b03a81717ff3c615775ac045777 Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Tue, 22 Oct 2024 11:22:48 +0800
 Subject: [PATCH 195/223] fix:DSP & NPU driver code compliance.

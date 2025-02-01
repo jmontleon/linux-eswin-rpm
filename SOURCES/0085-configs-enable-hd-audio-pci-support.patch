@@ -1,4 +1,4 @@
-From 27294f4cdc85b6d0a1dc16673674acbcab6073f2 Mon Sep 17 00:00:00 2001
+From ad5aa0bf14ba8a59c4bd19a4e5b88de0fdeec8fc Mon Sep 17 00:00:00 2001
 From: Han Gao <gaohan@iscas.ac.cn>
 Date: Thu, 30 May 2024 20:48:25 +0800
 Subject: [PATCH 085/223] configs: enable hd audio pci support

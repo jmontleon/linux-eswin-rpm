@@ -1,4 +1,4 @@
-From 1768f3c668027a3f20612ef12b5e33086dac857e Mon Sep 17 00:00:00 2001
+From fbb5d1f868e189edb88c50ee339c14980434c024 Mon Sep 17 00:00:00 2001
 From: lilijun <lilijun@eswincomputing.com>
 Date: Fri, 18 Oct 2024 10:45:13 +0800
 Subject: [PATCH 193/223] sync:drm support debugfs control virtual

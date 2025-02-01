@@ -1,4 +1,4 @@
-From 04a6bad97b9da9340ff13e0ec2791877d0a18f14 Mon Sep 17 00:00:00 2001
+From d9027846703a08c98a2cdcbe54e8822b32e5047d Mon Sep 17 00:00:00 2001
 From: luyulin <luyulin@eswincomputing.com>
 Date: Fri, 24 May 2024 10:47:11 +0800
 Subject: [PATCH 024/223] feat:sata driver to linux 6.6.
