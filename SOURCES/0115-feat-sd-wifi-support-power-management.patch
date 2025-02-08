@@ -1,4 +1,4 @@
-From 6f7638b69bc4f453e50c92e3b723fda39ee8a073 Mon Sep 17 00:00:00 2001
+From d65ead9a032924af29fb797ad3606132d016bd50 Mon Sep 17 00:00:00 2001
 From: liangshuang <liangshuang@eswincomputing.com>
 Date: Thu, 18 Jul 2024 11:27:17 +0800
 Subject: [PATCH 115/223] feat:sd/wifi support power management.
