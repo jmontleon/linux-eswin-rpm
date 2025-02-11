@@ -1,4 +1,4 @@
-From ecc1e657e68e0ec56a283c7be1c74755a94102a7 Mon Sep 17 00:00:00 2001
+From 94033db476065d8963e0c09a1d73fd3945e2a3bb Mon Sep 17 00:00:00 2001
 From: fanglifei <fanglifei@eswincomputing.com>
 Date: Fri, 26 Jul 2024 10:41:37 +0800
 Subject: [PATCH 121/223] fix(eth): Add tbu power down when clk off

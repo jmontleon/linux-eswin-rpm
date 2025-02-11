@@ -1,4 +1,4 @@
-From d55ce6c197294c6d26b15c174a8dd742d258a45d Mon Sep 17 00:00:00 2001
+From 400c791e1d3025578ab0b7123f8bacd4c27ec2d7 Mon Sep 17 00:00:00 2001
 From: denglei <denglei@eswincomputing.com>
 Date: Fri, 25 Oct 2024 10:36:46 +0800
 Subject: [PATCH 200/223] fix:resolve HDMI hot plug compatibility issues.

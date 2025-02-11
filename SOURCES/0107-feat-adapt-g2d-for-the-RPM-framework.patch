@@ -1,4 +1,4 @@
-From e7e83615b159ed656cfc7341689f56b366b03046 Mon Sep 17 00:00:00 2001
+From 7022afea8d924c20da910dbd7365b448e57251f1 Mon Sep 17 00:00:00 2001
 From: liusheng <liusheng@eswincomputing.com>
 Date: Thu, 18 Jul 2024 17:12:45 +0800
 Subject: [PATCH 107/223] feat:adapt g2d for the RPM framework

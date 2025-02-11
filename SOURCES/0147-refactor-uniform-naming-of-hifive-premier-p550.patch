@@ -1,4 +1,4 @@
-From cdc73d686206c541e9f20dcbd6df308dfdb69714 Mon Sep 17 00:00:00 2001
+From 8d9032b502f8f07454bc01ce196ed75260dbc959 Mon Sep 17 00:00:00 2001
 From: ningyu <ningyu@eswincomputing.com>
 Date: Mon, 12 Aug 2024 13:10:39 +0800
 Subject: [PATCH 147/223] refactor:uniform naming of hifive premier p550
