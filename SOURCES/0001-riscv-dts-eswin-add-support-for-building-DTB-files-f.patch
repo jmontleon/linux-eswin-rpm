@@ -1,0 +1,30 @@
+From 738bf2dc55e4d5501dc52334e5cb18bc60a86c29 Mon Sep 17 00:00:00 2001
+From: Min Lin <linmin@eswincomputing.com>
+Date: Fri, 3 Jan 2025 13:44:11 +0000
+Subject: [PATCH 01/69] riscv: dts: eswin: add support for building DTB files
+ for eswin boards
+
+Initially, this directory will contain the DTS and DTSI files for
+HiFive-Premier-P550 boards.
+
+Signed-off-by: Min Lin <linmin@eswincomputing.com>
+Signed-off-by: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
+---
+ arch/riscv/boot/dts/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/riscv/boot/dts/Makefile b/arch/riscv/boot/dts/Makefile
+index 64a898da9aee..29a97a663ea2 100644
+--- a/arch/riscv/boot/dts/Makefile
++++ b/arch/riscv/boot/dts/Makefile
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
+ subdir-y += allwinner
+ subdir-y += canaan
++subdir-y += eswin
+ subdir-y += microchip
+ subdir-y += renesas
+ subdir-y += sifive
+-- 
+2.51.0
+

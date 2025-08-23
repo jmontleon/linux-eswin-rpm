@@ -1,0 +1,91 @@
+From bb851f9db8e54e9400a5d7b7bacf46588eda4a18 Mon Sep 17 00:00:00 2001
+From: Samuel Holland <samuel.holland@sifive.com>
+Date: Thu, 31 Oct 2024 12:16:27 -0700
+Subject: [PATCH 11/69] riscv: mm: Increment PFN in place when splitting
+ mappings
+
+The current code separates page table entry values into a PFN and a
+pgprot_t before incrementing the PFN and combining the two parts using
+pfn_pXX(). On some hardware with custom page table formats or memory
+aliases, the pfn_pXX() functions need to transform the PTE value, so
+these functions would need to apply the opposite transformation when
+breaking apart the PTE value.
+
+However, both transformations can be avoided by incrementing the PFN in
+place, as done by pte_advance_pfn() and set_ptes().
+
+Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+---
+ arch/riscv/mm/pageattr.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/arch/riscv/mm/pageattr.c b/arch/riscv/mm/pageattr.c
+index d815448758a1..c73d46ff8730 100644
+--- a/arch/riscv/mm/pageattr.c
++++ b/arch/riscv/mm/pageattr.c
+@@ -109,9 +109,8 @@ static int __split_linear_mapping_pmd(pud_t *pudp,
+ 			continue;
+ 
+ 		if (pmd_leaf(pmdp_get(pmdp))) {
++			pte_t pte = pmd_pte(pmdp_get(pmdp));
+ 			struct page *pte_page;
+-			unsigned long pfn = _pmd_pfn(pmdp_get(pmdp));
+-			pgprot_t prot = __pgprot(pmd_val(pmdp_get(pmdp)) & ~_PAGE_PFN_MASK);
+ 			pte_t *ptep_new;
+ 			int i;
+ 
+@@ -121,7 +120,8 @@ static int __split_linear_mapping_pmd(pud_t *pudp,
+ 
+ 			ptep_new = (pte_t *)page_address(pte_page);
+ 			for (i = 0; i < PTRS_PER_PTE; ++i, ++ptep_new)
+-				set_pte(ptep_new, pfn_pte(pfn + i, prot));
++				set_pte(ptep_new,
++					__pte(pte_val(pte) + (i << _PAGE_PFN_SHIFT)));
+ 
+ 			smp_wmb();
+ 
+@@ -149,9 +149,8 @@ static int __split_linear_mapping_pud(p4d_t *p4dp,
+ 			continue;
+ 
+ 		if (pud_leaf(pudp_get(pudp))) {
++			pmd_t pmd = __pmd(pud_val(pudp_get(pudp)));
+ 			struct page *pmd_page;
+-			unsigned long pfn = _pud_pfn(pudp_get(pudp));
+-			pgprot_t prot = __pgprot(pud_val(pudp_get(pudp)) & ~_PAGE_PFN_MASK);
+ 			pmd_t *pmdp_new;
+ 			int i;
+ 
+@@ -162,7 +161,8 @@ static int __split_linear_mapping_pud(p4d_t *p4dp,
+ 			pmdp_new = (pmd_t *)page_address(pmd_page);
+ 			for (i = 0; i < PTRS_PER_PMD; ++i, ++pmdp_new)
+ 				set_pmd(pmdp_new,
+-					pfn_pmd(pfn + ((i * PMD_SIZE) >> PAGE_SHIFT), prot));
++					__pmd(pmd_val(pmd) +
++					      (i << (PMD_SHIFT - PAGE_SHIFT + _PAGE_PFN_SHIFT))));
+ 
+ 			smp_wmb();
+ 
+@@ -198,9 +198,8 @@ static int __split_linear_mapping_p4d(pgd_t *pgdp,
+ 			continue;
+ 
+ 		if (p4d_leaf(p4dp_get(p4dp))) {
++			pud_t pud = __pud(p4d_val(p4dp_get(p4dp)));
+ 			struct page *pud_page;
+-			unsigned long pfn = _p4d_pfn(p4dp_get(p4dp));
+-			pgprot_t prot = __pgprot(p4d_val(p4dp_get(p4dp)) & ~_PAGE_PFN_MASK);
+ 			pud_t *pudp_new;
+ 			int i;
+ 
+@@ -215,7 +214,8 @@ static int __split_linear_mapping_p4d(pgd_t *pgdp,
+ 			pudp_new = (pud_t *)page_address(pud_page);
+ 			for (i = 0; i < PTRS_PER_PUD; ++i, ++pudp_new)
+ 				set_pud(pudp_new,
+-					pfn_pud(pfn + ((i * PUD_SIZE) >> PAGE_SHIFT), prot));
++					__pud(pud_val(pud) +
++					      (i << (PUD_SHIFT - PAGE_SHIFT + _PAGE_PFN_SHIFT))));
+ 
+ 			/*
+ 			 * Make sure the pud filling is not reordered with the
+-- 
+2.51.0
+

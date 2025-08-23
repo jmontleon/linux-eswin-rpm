@@ -1,0 +1,35 @@
+From 4d9ab7caa6e7dd41c1a4b76cb8f5c64cfd7428ed Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Thu, 1 May 2025 01:05:57 -0400
+Subject: [PATCH 45/69] fixup! drivers: pwm: Added ESWIN pwm driver
+
+switch to devm_pwmchip_add
+---
+ drivers/pwm/pwm-eswin.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/pwm/pwm-eswin.c b/drivers/pwm/pwm-eswin.c
+index 75e774752040..57cdbe8e09d9 100644
+--- a/drivers/pwm/pwm-eswin.c
++++ b/drivers/pwm/pwm-eswin.c
+@@ -282,7 +282,7 @@ static int eswin_pwm_probe(struct platform_device *pdev)
+ 
+ 	chip->ops = &eswin_pwm_ops;
+ 
+-	ret = pwmchip_add(chip);
++	ret = devm_pwmchip_add(&pdev->dev, chip);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "pwmchip_add() failed: %d\n", ret);
+ 		goto err_pclk;
+@@ -303,8 +303,6 @@ static void eswin_pwm_remove(struct platform_device *pdev)
+ 	struct pwm_chip *chip = platform_get_drvdata(pdev);
+ 	struct eswin_pwm *pc = to_eswin_pwm(chip);
+ 
+-	pwmchip_remove(chip);
+-
+ 	clk_disable_unprepare(pc->pclk);
+ 	clk_disable_unprepare(pc->clk);
+ }
+-- 
+2.51.0
+

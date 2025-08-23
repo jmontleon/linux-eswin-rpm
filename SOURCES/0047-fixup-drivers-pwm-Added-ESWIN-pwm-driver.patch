@@ -1,0 +1,26 @@
+From f771ea6704d5cf8eec3dd92013c0ecf182eb186e Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Thu, 1 May 2025 01:08:13 -0400
+Subject: [PATCH 47/69] fixup! drivers: pwm: Added ESWIN pwm driver
+
+use to_eswin_pwm helper
+---
+ drivers/pwm/pwm-eswin.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/pwm/pwm-eswin.c b/drivers/pwm/pwm-eswin.c
+index 74d750ed0afe..ff949906939a 100644
+--- a/drivers/pwm/pwm-eswin.c
++++ b/drivers/pwm/pwm-eswin.c
+@@ -217,7 +217,7 @@ static int eswin_pwm_probe(struct platform_device *pdev)
+ 	if(IS_ERR(chip))
+ 		return PTR_ERR(chip);
+ 
+-	pc = pwmchip_get_drvdata(chip);
++	pc = to_eswin_pwm(chip);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res)
+-- 
+2.51.0
+

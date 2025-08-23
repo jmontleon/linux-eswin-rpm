@@ -1,0 +1,31 @@
+From d08d4fef8966226bc3608e5ee72185b1af0747ca Mon Sep 17 00:00:00 2001
+From: Min Lin <linmin@eswincomputing.com>
+Date: Mon, 6 Jan 2025 11:17:34 +0000
+Subject: [PATCH 02/69] arch: riscv: add option for building EIC7700X resources
+
+Create a config option to build EIC7700X SoC specific resources
+
+Signed-off-by: Min Lin <linmin@eswincomputing.com>
+Signed-off-by: Darshan Prajapati <darshan.prajapati@einfochips.com>
+Signed-off-by: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
+---
+ arch/riscv/Kconfig.socs | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/riscv/Kconfig.socs b/arch/riscv/Kconfig.socs
+index a9c3d2f6debc..3383b2140bcd 100644
+--- a/arch/riscv/Kconfig.socs
++++ b/arch/riscv/Kconfig.socs
+@@ -85,4 +85,9 @@ config SOC_CANAAN_K210
+ 	help
+ 	  This enables support for Canaan Kendryte K210 SoC platform hardware.
+ 
++config SOC_SIFIVE_EIC7700
++	bool "ESWIN EIC7700x SoCs"
++	help
++	  This enables support for ESWIN EIC7700X SoC platform hardware.
++
+ endmenu # "SoC selection"
+-- 
+2.51.0
+
