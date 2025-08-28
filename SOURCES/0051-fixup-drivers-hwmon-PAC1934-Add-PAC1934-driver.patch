@@ -1,4 +1,4 @@
-From 516b336caa1452e061c684a771a67f721ebc9486 Mon Sep 17 00:00:00 2001
+From 96709028ac672168fadce49ebbf52505805a47bc Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 14 May 2025 20:06:09 -0400
 Subject: [PATCH 51/69] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver

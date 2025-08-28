@@ -1,4 +1,4 @@
-From 6e7404b593f720198c495f20d06e94953713bc4c Mon Sep 17 00:00:00 2001
+From 26d5599bbdf4b5f3f9931a4e0e8ad739f43b78d4 Mon Sep 17 00:00:00 2001
 From: Yulin Lu <luyulin@eswincomputing.com>
 Date: Tue, 30 Jul 2024 11:27:26 +0000
 Subject: [PATCH 23/69] drivers: ata: Add ESWIN sata driver
@@ -13,10 +13,10 @@ Signed-off-by: Pritesh Patel <pritesh.patel@einfochips.com>
  create mode 100644 drivers/ata/ahci_eswin.c
 
 diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index e00536b49552..0d0ff6967005 100644
+index 120a2b7067fc..695229f95338 100644
 --- a/drivers/ata/Kconfig
 +++ b/drivers/ata/Kconfig
-@@ -215,6 +215,15 @@ config AHCI_CEVA
+@@ -231,6 +231,15 @@ config AHCI_CEVA
  
  	  If unsure, say N.
  
