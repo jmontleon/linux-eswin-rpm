@@ -1,4 +1,4 @@
-From 6d38f4adf6012d693ee1ea8ccc0a45c22bcbd36d Mon Sep 17 00:00:00 2001
+From ce6fb70743e9e5707632cd5c8e0754ad7a532923 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 21:50:52 -0400
 Subject: [PATCH 33/69] fixup! include: dt-bindings: Add dt-bindings for

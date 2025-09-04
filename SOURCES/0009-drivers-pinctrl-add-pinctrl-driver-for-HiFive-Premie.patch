@@ -1,4 +1,4 @@
-From 63b7d4c1e56ac1ea2e85d26ab0840ed724e6bc11 Mon Sep 17 00:00:00 2001
+From ad4333e25f1572a7d920a4a50e84c439fca4ee6f Mon Sep 17 00:00:00 2001
 From: Yulin Lu <luyulin@eswincomputing.com>
 Date: Tue, 7 Jan 2025 03:55:52 +0000
 Subject: [PATCH 09/69] drivers: pinctrl: add pinctrl driver for HiFive Premier
@@ -17,7 +17,7 @@ Signed-off-by: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
  create mode 100644 drivers/pinctrl/pinctrl-eic7700.c
 
 diff --git a/drivers/pinctrl/Kconfig b/drivers/pinctrl/Kconfig
-index 33db9104df17..ce49f69dcd93 100644
+index 3952f77081a3..b042a6024b02 100644
 --- a/drivers/pinctrl/Kconfig
 +++ b/drivers/pinctrl/Kconfig
 @@ -232,6 +232,16 @@ config PINCTRL_EQUILIBRIUM
