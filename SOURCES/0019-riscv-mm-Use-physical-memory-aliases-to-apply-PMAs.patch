@@ -1,4 +1,4 @@
-From 48c1ea95885fb05167b38c43821eb1a88793163e Mon Sep 17 00:00:00 2001
+From 807606c6264cff1dd2054e4a979fc7df34a8175d Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Thu, 31 Oct 2024 19:33:42 -0700
 Subject: [PATCH 19/69] riscv: mm: Use physical memory aliases to apply PMAs
@@ -40,7 +40,7 @@ Conflicts:
  create mode 100644 arch/riscv/mm/memory-alias.S
 
 diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 1c5544401530..2d2c2fd886b1 100644
+index b29eff4ace2d..5aa45fb5b820 100644
 --- a/arch/riscv/Kconfig
 +++ b/arch/riscv/Kconfig
 @@ -624,6 +624,9 @@ config RISCV_ISA_SVPBMT
