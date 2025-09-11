@@ -1,4 +1,4 @@
-From b85bf612339af1d03fb0ec71660b5ded343680a9 Mon Sep 17 00:00:00 2001
+From 70904a23f49cc4ddc7338148e2b9a376b69d921d Mon Sep 17 00:00:00 2001
 From: Yifeng Huang <huangyifeng@eswincomputing.com>
 Date: Mon, 6 Jan 2025 12:51:30 +0000
 Subject: [PATCH 07/69] drivers: reset: Add reset driver for EIC770X SoC
