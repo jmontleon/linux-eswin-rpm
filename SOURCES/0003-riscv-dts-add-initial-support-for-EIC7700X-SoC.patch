@@ -1,4 +1,4 @@
-From a3d4583cf7b6ad7f3a6d963cf6038115233bce4d Mon Sep 17 00:00:00 2001
+From 92898d4441d15214acb68254f9f6778f6d42f1b4 Mon Sep 17 00:00:00 2001
 From: Min Lin <linmin@eswincomputing.com>
 Date: Mon, 6 Jan 2025 06:54:32 +0000
 Subject: [PATCH 03/69] riscv: dts: add initial support for EIC7700X SoC
