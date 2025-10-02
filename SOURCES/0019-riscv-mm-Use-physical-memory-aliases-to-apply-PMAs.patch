@@ -1,4 +1,4 @@
-From 14a740579602ef8382fda9710d8b0d2ee4f01920 Mon Sep 17 00:00:00 2001
+From 1a078bcceb2e729cf4654e4110bc1416b434bd4c Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Thu, 31 Oct 2024 19:33:42 -0700
 Subject: [PATCH 19/69] riscv: mm: Use physical memory aliases to apply PMAs
@@ -129,10 +129,10 @@ index 486bfb03d9aa..a0bf655d8e53 100644
  			  "andi	t0, t0, 0xd\n\t"					\
  			  "srli	t1, t0, 1\n\t"						\
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 61e6b0e74842..cbcbf8993058 100644
+index 2c18ab0a795e..7a51d285a9b6 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
-@@ -1110,6 +1110,14 @@ extern u64 satp_mode;
+@@ -1127,6 +1127,14 @@ extern u64 satp_mode;
  void paging_init(void);
  void misc_mem_init(void);
  

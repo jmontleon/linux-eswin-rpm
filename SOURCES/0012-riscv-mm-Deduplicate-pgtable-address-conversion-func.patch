@@ -1,4 +1,4 @@
-From c166e24685df71557e8c8b0528a1c9a46e506d9c Mon Sep 17 00:00:00 2001
+From 5a0bcdc161d9f296d2bded78f2b7533f4d85a822 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Fri, 25 Oct 2024 09:53:11 -0700
 Subject: [PATCH 12/69] riscv: mm: Deduplicate pgtable address conversion
@@ -131,7 +131,7 @@ index 7de05db7d3bd..7ba65abc68ab 100644
  #define p4d_index(addr) (((addr) >> P4D_SHIFT) & (PTRS_PER_P4D - 1))
  
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 5bd5aae60d53..07a7645d986b 100644
+index 4d9fe4ea78af..af70b84d5f9d 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
 @@ -263,19 +263,19 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)

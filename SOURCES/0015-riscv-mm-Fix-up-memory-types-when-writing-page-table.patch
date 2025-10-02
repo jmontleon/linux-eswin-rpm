@@ -1,4 +1,4 @@
-From ecc08b1e026266eaca1f8b3ba4299d67e3903b05 Mon Sep 17 00:00:00 2001
+From 24f09e7c42db94646a7c34dfb44a2ef0e757d8c3 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 30 Oct 2024 18:46:03 -0700
 Subject: [PATCH 15/69] riscv: mm: Fix up memory types when writing page tables
@@ -338,7 +338,7 @@ index 72b6cd602aea..68ea80945476 100644
  
  static inline unsigned long p4d_pfn(p4d_t p4d)
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 2a3b0462a033..61e6b0e74842 100644
+index 95dae4ef15b6..2c18ab0a795e 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
 @@ -262,11 +262,11 @@ static inline void pmd_clear(pmd_t *pmdp)
