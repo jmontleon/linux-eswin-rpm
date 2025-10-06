@@ -1,4 +1,4 @@
-From b7572949c27da058feac110041f41efd58439ec0 Mon Sep 17 00:00:00 2001
+From b00c109c5f757d46d2f4bfead752d0810bfbbcb9 Mon Sep 17 00:00:00 2001
 From: Wei Yang <yangwei1@eswincomputing.com>
 Date: Wed, 11 Sep 2024 15:27:06 +0000
 Subject: [PATCH 53/69] driver: usb: typec: fusb303b: Update FUSB303B driver

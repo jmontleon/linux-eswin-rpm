@@ -1,4 +1,4 @@
-From e9d0bb53dede5276c5dd7e9da2a724e37a6943ea Mon Sep 17 00:00:00 2001
+From 3db8912aadce4dc321dc65645e5a4e82809fe112 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Tue, 29 Oct 2024 18:11:53 -0700
 Subject: [PATCH 10/69] dt-bindings: riscv: Describe physical memory regions

@@ -1,4 +1,4 @@
-From 5cbfe0ee94daf0e9fc32c753cdf763a0f2d63c9d Mon Sep 17 00:00:00 2001
+From fe7030575e585d20f544410fc1e749b5e62a0ff0 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 10:44:57 -0400
 Subject: [PATCH 57/69] fixup! drivers: rtc: Added EIC7700 Internal RTC driver
