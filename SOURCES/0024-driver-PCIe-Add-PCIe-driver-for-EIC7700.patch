@@ -1,4 +1,4 @@
-From f0351b720ee6e3da5e2ba8bbe0108e83d364ddb4 Mon Sep 17 00:00:00 2001
+From d76e0179dbbbce9590e67a7405c9ce190a4d5504 Mon Sep 17 00:00:00 2001
 From: Yu Ning <ningyu@eswincomputing.com>
 Date: Tue, 30 Jul 2024 08:09:50 +0000
 Subject: [PATCH 24/69] driver: PCIe: Add PCIe driver for EIC7700

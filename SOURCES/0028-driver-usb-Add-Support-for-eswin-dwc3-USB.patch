@@ -1,4 +1,4 @@
-From 2f1da5c452885ad00bfd96188a7d5d387ac52fbb Mon Sep 17 00:00:00 2001
+From 2ebad7aeea41f0e9d825eda077767ff81d7ddee8 Mon Sep 17 00:00:00 2001
 From: Wei Yang <yangwei1@eswincomputing.com>
 Date: Tue, 30 Jul 2024 09:44:55 +0000
 Subject: [PATCH 28/69] driver: usb: Add Support for eswin dwc3 USB
