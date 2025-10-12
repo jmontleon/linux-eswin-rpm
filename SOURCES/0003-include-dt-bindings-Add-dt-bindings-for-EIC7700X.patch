@@ -1,0 +1,1738 @@
+From f317c9576fe4910a31e84ddeb00ac56f322bc071 Mon Sep 17 00:00:00 2001
+From: Min Lin <linmin@eswincomputing.com>
+Date: Mon, 6 Jan 2025 12:45:00 +0000
+Subject: [PATCH 03/69] include: dt-bindings: Add dt-bindings for EIC7700X
+
+Add dt-binding files required for EIC7700X SoC builds
+
+Signed-off-by: Min Lin <linmin@eswincomputing.com>
+Signed-off-by: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
+---
+ include/dt-bindings/clock/eic7700-clock.h   | 623 ++++++++++++++++++
+ include/dt-bindings/interconnect/eic7700.h  | 141 ++++
+ include/dt-bindings/mailbox/eswin-mailbox.h |  88 +++
+ include/dt-bindings/memory/eic7700-sid.h    | 138 ++++
+ include/dt-bindings/reset/eic7700-syscrg.h  | 693 ++++++++++++++++++++
+ 5 files changed, 1683 insertions(+)
+ create mode 100755 include/dt-bindings/clock/eic7700-clock.h
+ create mode 100644 include/dt-bindings/interconnect/eic7700.h
+ create mode 100755 include/dt-bindings/mailbox/eswin-mailbox.h
+ create mode 100644 include/dt-bindings/memory/eic7700-sid.h
+ create mode 100755 include/dt-bindings/reset/eic7700-syscrg.h
+
+diff --git a/include/dt-bindings/clock/eic7700-clock.h b/include/dt-bindings/clock/eic7700-clock.h
+new file mode 100755
+index 000000000000..866507498876
+--- /dev/null
++++ b/include/dt-bindings/clock/eic7700-clock.h
+@@ -0,0 +1,623 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN Clk Provider Driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: HuangYiFeng<huangyifeng@eswincomputing.com>
++ */
++
++#ifndef __DTS_EIC7700_CLOCK_H
++#define __DTS_EIC7700_CLOCK_H
++
++#define EIC7700_NONE_CLOCK	0
++
++/* fixed rate */
++#define EIC7700_XTAL_24M                        1
++#define EIC7700_XTAL_32K                        2
++#define EIC7700_PLL_CPU                         3	/*for cpu clk*/
++#define EIC7700_SPLL0_FOUT1                     4
++#define EIC7700_SPLL0_FOUT2                     5
++#define EIC7700_SPLL0_FOUT3                     6
++#define EIC7700_SPLL1_FOUT1                     7
++#define EIC7700_SPLL1_FOUT2                     8
++#define EIC7700_SPLL1_FOUT3                     9
++#define EIC7700_SPLL2_FOUT1                     10
++#define EIC7700_SPLL2_FOUT2                     11
++#define EIC7700_SPLL2_FOUT3                     12
++#define EIC7700_VPLL_FOUT1                      13
++#define EIC7700_VPLL_FOUT2                      14
++#define EIC7700_VPLL_FOUT3                      15
++#define EIC7700_APLL_FOUT1                      16
++#define EIC7700_APLL_FOUT2                      17
++#define EIC7700_APLL_FOUT3                      18
++#define EIC7700_EXT_MCLK                        19
++#define EIC7700_PLL_DDR                         20
++#define EIC7700_LPDDR_REF_BAK                   21
++
++
++/* mux clocks */
++#define  EIC7700_MUX_U_CPU_ROOT_3MUX1_GFREE                         30	/*for cpu clk*/
++#define  EIC7700_MUX_U_CPU_ACLK_2MUX1_GFREE                         31	/*for cpu clk*/
++#define  EIC7700_MUX_U_DSP_ACLK_ROOT_2MUX1_GFREE                    32
++#define  EIC7700_MUX_U_D2D_ACLK_ROOT_2MUX1_GFREE                    33
++#define  EIC7700_MUX_U_MSHCORE_ROOT_3MUX1_0                         34
++#define  EIC7700_MUX_U_MSHCORE_ROOT_3MUX1_1                         35
++#define  EIC7700_MUX_U_MSHCORE_ROOT_3MUX1_2                         36
++#define  EIC7700_MUX_U_NPU_LLCLK_3MUX1_GFREE                        37
++#define  EIC7700_MUX_U_NPU_CORE_3MUX1_GFREE                         38
++#define  EIC7700_MUX_U_VI_ACLK_ROOT_2MUX1_GFREE                     39
++#define  EIC7700_MUX_U_VI_DVP_ROOT_2MUX1_GFREE                      40
++#define  EIC7700_MUX_U_VI_DIG_ISP_ROOT_2MUX1_GFREE                  41
++#define  EIC7700_MUX_U_VO_ACLK_ROOT_2MUX1_GFREE                     42
++#define  EIC7700_MUX_U_VO_PIXEL_ROOT_2MUX1                          43
++#define  EIC7700_MUX_U_VO_CEC_2MUX1                                 44
++#define  EIC7700_MUX_U_VCDEC_ROOT_2MUX1_GFREE                       45
++#define  EIC7700_MUX_U_VCACLK_ROOT_2MUX1_GFREE                      46
++#define  EIC7700_MUX_U_RTC_2MUX1                                    47
++#define  EIC7700_MUX_U_SYSCFG_CLK_ROOT_2MUX1_GFREE                  48
++#define  EIC7700_MUX_U_NOCNSP_XTAL_2MUX1                            49
++#define  EIC7700_MUX_U_BOOTSPI_CLK_2MUX1_GFREE                      50
++#define  EIC7700_MUX_U_SCPU_CORE_CLK_2MUX1_GFREE                    51
++#define  EIC7700_MUX_U_LPCPU_CORE_CLK_2MUX1_GFREE                   52
++#define  EIC7700_MUX_GPU_ACLK_XTAL_2MUX1                            53
++#define  EIC7700_MUX_U_DSP_ACLK_XTAL_2MUX1                          54
++#define  EIC7700_MUX_U_D2D_ACLK_XTAL_2MUX1                          55
++#define  EIC7700_MUX_U_HSP_ACLK_XTAL_2MUX1                          56
++#define  EIC7700_MUX_U_PCIE_ACLK_XTAL_2MUX1                         57
++#define  EIC7700_MUX_U_NPU_ACLK_XTAL_2MUX1                          58
++#define  EIC7700_MUX_U_NPU_LLC_XTAL_2MUX1                           59
++#define  EIC7700_MUX_U_NPU_CORE_XTAL_2MUX1                          60
++#define  EIC7700_MUX_U_VI_ACLK_XTAL_2MUX1                           61
++#define  EIC7700_MUX_U_VI_DVP_XTAL_2MUX1                            62
++#define  EIC7700_MUX_U_VI_DIG_ISP_XTAL_2MUX1                        63
++#define  EIC7700_MUX_U_VI_SHUTTER_XTAL_2MUX1_0                      64
++#define  EIC7700_MUX_U_VI_SHUTTER_XTAL_2MUX1_1                      65
++#define  EIC7700_MUX_U_VI_SHUTTER_XTAL_2MUX1_2                      66
++#define  EIC7700_MUX_U_VI_SHUTTER_XTAL_2MUX1_3                      67
++#define  EIC7700_MUX_U_VI_SHUTTER_XTAL_2MUX1_4                      68
++#define  EIC7700_MUX_U_VI_SHUTTER_XTAL_2MUX1_5                      69
++#define  EIC7700_MUX_U_VO_ACLK_XTAL_2MUX1                           70
++#define  EIC7700_MUX_U_IESMCLK_XTAL_2MUX1                           71
++#define  EIC7700_MUX_U_VO_PIXEL_XTAL_2MUX1                          72
++#define  EIC7700_MUX_U_VO_MCLK_2MUX_EXT_MCLK                        73
++#define  EIC7700_MUX_U_VC_ACLK_XTAL_2MUX1                           74
++#define  EIC7700_MUX_U_JD_XTAL_2MUX1                                75
++#define  EIC7700_MUX_U_JE_XTAL_2MUX1                                76
++#define  EIC7700_MUX_U_VE_XTAL_2MUX1                                77
++#define  EIC7700_MUX_U_VD_XTAL_2MUX1                                78
++#define  EIC7700_MUX_U_SATA_PHY_2MUX1                               79
++#define  EIC7700_MUX_U_AONDMA_AXI2MUX1_GFREE                        80
++#define  EIC7700_MUX_U_CRYPTO_XTAL_2MUX1                            81
++#define  EIC7700_MUX_U_RMII_REF_2MUX                                82
++#define  EIC7700_MUX_U_ETH_CORE_2MUX1                               83
++#define  EIC7700_MUX_U_VI_DW_ROOT_2MUX1                             84
++#define  EIC7700_MUX_U_VI_DW_XTAL_2MUX1                             85
++#define  EIC7700_MUX_U_NPU_E31_3MUX1_GFREE                          86
++#define  EIC7700_MUX_U_DDR_ACLK_ROOT_2MUX1_GFREE                    87
++
++/* divider clocks */
++#define EIC7700_DIVDER_U_SYS_CFG_DIV_DYNM                           100
++#define EIC7700_DIVDER_U_NOC_NSP_DIV_DYNM                           101
++#define EIC7700_DIVDER_U_BOOTSPI_DIV_DYNM                           102
++#define EIC7700_DIVDER_U_SCPU_CORE_DIV_DYNM                         103
++#define EIC7700_DIVDER_U_LPCPU_CORE_DIV_DYNM                        104
++#define EIC7700_DIVDER_U_GPU_ACLK_DIV_DYNM                          105
++#define EIC7700_DIVDER_U_DSP_ACLK_DIV_DYNM                          106
++#define EIC7700_DIVDER_U_D2D_ACLK_DIV_DYNM                          107
++#define EIC7700_DIVDER_U_HSP_ACLK_DIV_DYNM                          108
++#define EIC7700_DIVDER_U_ETH_TXCLK_DIV_DYNM_0                       109
++#define EIC7700_DIVDER_U_ETH_TXCLK_DIV_DYNM_1                       110
++#define EIC7700_DIVDER_U_MSHC_CORE_DIV_DYNM_0                       111
++#define EIC7700_DIVDER_U_MSHC_CORE_DIV_DYNM_1                       112
++#define EIC7700_DIVDER_U_MSHC_CORE_DIV_DYNM_2                       113
++#define EIC7700_DIVDER_U_PCIE_ACLK_DIV_DYNM                         114
++#define EIC7700_DIVDER_U_NPU_ACLK_DIV_DYNM                          115
++#define EIC7700_DIVDER_U_NPU_LLC_SRC0_DIV_DYNM                      116
++#define EIC7700_DIVDER_U_NPU_LLC_SRC1_DIV_DYNM                      117
++#define EIC7700_DIVDER_U_NPU_CORECLK_DIV_DYNM                       118
++#define EIC7700_DIVDER_U_VI_ACLK_DIV_DYNM                           119
++#define EIC7700_DIVDER_U_VI_DVP_DIV_DYNM                            120
++#define EIC7700_DIVDER_U_VI_DIG_ISP_DIV_DYNM                        121
++#define EIC7700_DIVDER_U_VI_SHUTTER_DIV_DYNM_0                      122
++#define EIC7700_DIVDER_U_VI_SHUTTER_DIV_DYNM_1                      123
++#define EIC7700_DIVDER_U_VI_SHUTTER_DIV_DYNM_2                      124
++#define EIC7700_DIVDER_U_VI_SHUTTER_DIV_DYNM_3                      125
++#define EIC7700_DIVDER_U_VI_SHUTTER_DIV_DYNM_4                      126
++#define EIC7700_DIVDER_U_VI_SHUTTER_DIV_DYNM_5                      127
++#define EIC7700_DIVDER_U_VO_ACLK_DIV_DYNM                           128
++#define EIC7700_DIVDER_U_IESMCLK_DIV_DYNM                           129
++#define EIC7700_DIVDER_U_VO_PIXEL_DIV_DYNM                          130
++#define EIC7700_DIVDER_U_VO_MCLK_DIV_DYNM                           131
++#define EIC7700_DIVDER_U_VC_ACLK_DIV_DYNM                           132
++#define EIC7700_DIVDER_U_JD_DIV_DYNM                                133
++#define EIC7700_DIVDER_U_JE_DIV_DYNM                                134
++#define EIC7700_DIVDER_U_VE_DIV_DYNM                                135
++#define EIC7700_DIVDER_U_VD_DIV_DYNM                                136
++#define EIC7700_DIVDER_U_G2D_DIV_DYNM                               137
++#define EIC7700_DIVDER_U_AONDMA_AXI_DIV_DYNM                        138
++#define EIC7700_DIVDER_U_CRYPTO_DIV_DYNM                            139
++#define EIC7700_DIVDER_U_VI_DW_DIV_DYNM                             140
++#define EIC7700_DIVDER_U_NPU_E31_DIV_DYNM                           141
++#define EIC7700_DIVDER_U_SATA_PHY_REF_DIV_DYNM                      142
++#define EIC7700_DIVDER_U_DSP_0_ACLK_DIV_DYNM                        143
++#define EIC7700_DIVDER_U_DSP_1_ACLK_DIV_DYNM                        144
++#define EIC7700_DIVDER_U_DSP_2_ACLK_DIV_DYNM                        145
++#define EIC7700_DIVDER_U_DSP_3_ACLK_DIV_DYNM                        146
++#define EIC7700_DIVDER_U_DDR_ACLK_DIV_DYNM                          147
++#define EIC7700_DIVDER_U_AON_RTC_DIV_DYNM                           148
++#define EIC7700_DIVDER_U_U84_RTC_TOGGLE_DIV_DYNM                    149
++#define EIC7700_DIVDER_U_VO_CEC_DIV_DYNM                            150
++
++/* gate clocks */
++#define EIC7700_GATE_CLK_CPU_EXT_SRC_CORE_CLK_0                 200
++#define EIC7700_GATE_CLK_CPU_EXT_SRC_CORE_CLK_1                 201
++#define EIC7700_GATE_CLK_CPU_EXT_SRC_CORE_CLK_2                 202
++#define EIC7700_GATE_CLK_CPU_EXT_SRC_CORE_CLK_3                 203
++#define EIC7700_GATE_CLK_CPU_TRACE_CLK_0                        204
++#define EIC7700_GATE_CLK_CPU_TRACE_CLK_1                        205
++#define EIC7700_GATE_CLK_CPU_TRACE_CLK_2                        206
++#define EIC7700_GATE_CLK_CPU_TRACE_CLK_3                        207
++#define EIC7700_GATE_CLK_CPU_DEBUG_CLK                          208
++#define EIC7700_GATE_CLK_CPU_TRACE_COM_CLK                      209
++#define EIC7700_GATE_CLK_CPU_CLK                                210
++#define EIC7700_GATE_CLK_SPLL0_FOUT2                            211
++#define EIC7700_GATE_CLK_VPLL_FOUT2                             212
++#define EIC7700_GATE_CLK_VPLL_FOUT3                             213
++#define EIC7700_GATE_CLK_APLL_FOUT1                             214
++#define EIC7700_GATE_CLK_APLL_FOUT2                             215
++#define EIC7700_GATE_CLK_APLL_FOUT3                             216
++#define EIC7700_GATE_EXT_MCLK                                   217
++#define EIC7700_GATE_CLK_1M                                     218
++#define EIC7700_GATE_CLK_SYS_CFG                                219
++#define EIC7700_GATE_CLK_MIPI_TXESC                             220
++#define EIC7700_GATE_NOC_CFG_CLK                                221
++#define EIC7700_GATE_NOC_NSP_CLK                                222
++#define EIC7700_GATE_CLK_BOOTSPI                                223
++#define EIC7700_GATE_CLK_BOOTSPI_CFG                            224
++#define EIC7700_GATE_CLK_U84_CORE_LP                            225
++#define EIC7700_GATE_CLK_SCPU_CORE                              226
++#define EIC7700_GATE_CLK_SCPU_BUS                               227
++#define EIC7700_GATE_CLK_LPCPU_CORE                             228
++#define EIC7700_GATE_CLK_LPCPU_BUS                              229
++#define EIC7700_GATE_GPU_ACLK                                   230
++#define EIC7700_GATE_GPU_GRAY_CLK                               231
++#define EIC7700_GATE_GPU_CFG_CLK                                232
++#define EIC7700_GATE_CLK_DSP_ROOT                               233
++#define EIC7700_GATE_DSPT_ACLK                                  234
++#define EIC7700_GATE_DSPT_CFG_CLK                               235
++#define EIC7700_GATE_CLK_D2DDR_ACLK                             236
++#define EIC7700_GATE_D2D_ACLK                                   237
++#define EIC7700_GATE_D2D_CFG_CLK                                238
++#define EIC7700_GATE_CLK_HSP_ACLK                               239
++#define EIC7700_GATE_CLK_HSP_CFGCLK                             240
++#define EIC7700_GATE_TCU_ACLK                                   241
++#define EIC7700_GATE_TCU_CFG_CLK                                242
++#define EIC7700_GATE_DDRT_CFG_CLK                               243
++#define EIC7700_GATE_DDRT1_CFG_CLK                              244
++#define EIC7700_GATE_DDRT0_P0_ACLK                              245
++#define EIC7700_GATE_DDRT0_P1_ACLK                              246
++#define EIC7700_GATE_DDRT0_P2_ACLK                              247
++#define EIC7700_GATE_DDRT0_P3_ACLK                              248
++#define EIC7700_GATE_DDRT0_P4_ACLK                              249
++#define EIC7700_GATE_DDRT1_P0_ACLK                              250
++#define EIC7700_GATE_DDRT1_P1_ACLK                              251
++#define EIC7700_GATE_DDRT1_P2_ACLK                              252
++#define EIC7700_GATE_DDRT1_P3_ACLK                              253
++#define EIC7700_GATE_DDRT1_P4_ACLK                              254
++#define EIC7700_GATE_HSP_ACLK                                   255
++#define EIC7700_GATE_HSP_CFG_CLK                                256
++#define EIC7700_GATE_HSP_SATA_RBC_CLK                           257
++#define EIC7700_GATE_HSP_SATA_OOB_CLK                           258
++#define EIC7700_GATE_HSP_SATA_PMALIVE_CLK                       259
++#define EIC7700_GATE_HSP_ETH_APP_CLK                            260
++#define EIC7700_GATE_HSP_ETH_CSR_CLK                            261
++#define EIC7700_GATE_HSP_ETH0_CORE_CLK                          262
++#define EIC7700_GATE_HSP_ETH1_CORE_CLK                          263
++#define EIC7700_GATE_HSP_MSHC0_CORE_CLK                         264
++#define EIC7700_GATE_HSP_MSHC1_CORE_CLK                         265
++#define EIC7700_GATE_HSP_MSHC2_CORE_CLK                         266
++#define EIC7700_GATE_HSP_MSHC0_TMR_CLK                          267
++#define EIC7700_GATE_HSP_MSHC1_TMR_CLK                          268
++#define EIC7700_GATE_HSP_MSHC2_TMR_CLK                          269
++#define EIC7700_GATE_HSP_USB0_SUSPEND_CLK                       270
++#define EIC7700_GATE_HSP_USB1_SUSPEND_CLK                       271
++#define EIC7700_GATE_PCIET_ACLK                                 272
++#define EIC7700_GATE_PCIET_CFG_CLK                              273
++#define EIC7700_GATE_PCIET_CR_CLK                               274
++#define EIC7700_GATE_PCIET_AUX_CLK                              275
++#define EIC7700_GATE_NPU_ACLK                                   276
++#define EIC7700_GATE_NPU_CFG_CLK                                277
++#define EIC7700_GATE_CLK_NPU_LLC_SRC0                           278
++#define EIC7700_GATE_CLK_NPU_LLC_SRC1                           279
++#define EIC7700_GATE_NPU_LLC_ACLK                               280
++#define EIC7700_GATE_CLK_NPU_CORE_ST1                           281
++#define EIC7700_GATE_NPU_CLK                                    282
++#define EIC7700_GATE_NPU_E31_CLK                                283
++#define EIC7700_GATE_CLK_VI_ACLK_ST1                            284
++#define EIC7700_GATE_VI_ACLK                                    285
++#define EIC7700_GATE_VI_DVP_CLK                                 286
++#define EIC7700_GATE_VI_CFG_CLK                                 287
++#define EIC7700_GATE_VI_DIG_DW_CLK                              288
++#define EIC7700_GATE_VI_DIG_ISP_CLK                             289
++#define EIC7700_GATE_VI_SHUTTER_0                               290
++#define EIC7700_GATE_VI_SHUTTER_1                               291
++#define EIC7700_GATE_VI_SHUTTER_2                               292
++#define EIC7700_GATE_VI_SHUTTER_3                               293
++#define EIC7700_GATE_VI_SHUTTER_4                               294
++#define EIC7700_GATE_VI_SHUTTER_5                               295
++#define EIC7700_GATE_VI_PHY_TXCLKESC                            296
++#define EIC7700_GATE_VI_PHY_CFG                                 297
++#define EIC7700_GATE_VO_ACLK                                    298
++#define EIC7700_GATE_VO_CFG_CLK                                 299
++#define EIC7700_GATE_VO_HDMI_IESMCLK                            300
++#define EIC7700_GATE_VO_PIXEL_CLK                               301
++#define EIC7700_GATE_VO_I2S_MCLK                                302
++#define EIC7700_GATE_VO_CR_CLK                                  303
++#define EIC7700_GATE_VO_CEC_CLK                                 304
++#define EIC7700_GATE_CLK_VC_ROOT                                305
++#define EIC7700_GATE_VC_ACLK                                    306
++#define EIC7700_GATE_VC_CFG_CLK                                 307
++#define EIC7700_GATE_VC_JE_CLK                                  308
++#define EIC7700_GATE_VC_JD_CLK                                  309
++#define EIC7700_GATE_VC_VE_CLK                                  310
++#define EIC7700_GATE_VC_VD_CLK                                  311
++#define EIC7700_GATE_G2D_CFG_CLK                                312
++#define EIC7700_GATE_CLK_G2D_ST2                                313
++#define EIC7700_GATE_G2D_CLK                                    314
++#define EIC7700_GATE_G2D_ACLK                                   315
++#define EIC7700_GATE_CLK_PVT_INNER                              316
++#define EIC7700_GATE_PVT_CLK_0                                  317
++#define EIC7700_GATE_PVT_CLK_1                                  318
++#define EIC7700_GATE_PVT_CLK_2                                  319
++#define EIC7700_GATE_PVT_CLK_3                                  320
++#define EIC7700_GATE_PVT_CLK_4                                  321
++#define EIC7700_GATE_CLK_AONDMA_CFG                             322
++#define EIC7700_GATE_CLK_AONDMA_AXI_ST3                         323
++#define EIC7700_GATE_AONDMA_ACLK                                324
++#define EIC7700_GATE_AON_ACLK                                   325
++#define EIC7700_GATE_TIMER_CLK_0                                326
++#define EIC7700_GATE_TIMER_CLK_1                                327
++#define EIC7700_GATE_TIMER_CLK_2                                328
++#define EIC7700_GATE_TIMER_CLK_3                                329
++#define EIC7700_GATE_TIMER_PCLK_0                               330
++#define EIC7700_GATE_TIMER_PCLK_1                               331
++#define EIC7700_GATE_TIMER_PCLK_2                               332
++#define EIC7700_GATE_TIMER_PCLK_3                               333
++#define EIC7700_GATE_TIMER3_CLK8                                334
++#define EIC7700_GATE_CLK_RTC_CFG                                335
++#define EIC7700_GATE_CLK_RTC                                    336
++#define EIC7700_GATE_HSP_RMII_REF_0                             337
++#define EIC7700_GATE_HSP_RMII_REF_1                             338
++#define EIC7700_GATE_CLK_PKA_CFG                                339
++#define EIC7700_GATE_CLK_SPACC_CFG                              340
++#define EIC7700_GATE_CLK_CRYPTO                                 341
++#define EIC7700_GATE_CLK_TRNG_CFG                               342
++#define EIC7700_GATE_CLK_OTP_CFG                                343
++#define EIC7700_GATE_CLMM_CFG_CLK                               344
++#define EIC7700_GATE_CLMM_DEB_CLK                               345
++#define EIC7700_GATE_CLK_MAILBOX_0                              346
++#define EIC7700_GATE_CLK_MAILBOX_1                              347
++#define EIC7700_GATE_CLK_MAILBOX_2                              348
++#define EIC7700_GATE_CLK_MAILBOX_3                              349
++#define EIC7700_GATE_CLK_MAILBOX_4                              350
++#define EIC7700_GATE_CLK_MAILBOX_5                              351
++#define EIC7700_GATE_CLK_MAILBOX_6                              352
++#define EIC7700_GATE_CLK_MAILBOX_7                              353
++#define EIC7700_GATE_CLK_MAILBOX_8                              354
++#define EIC7700_GATE_CLK_MAILBOX_9                              355
++#define EIC7700_GATE_CLK_MAILBOX_10                             356
++#define EIC7700_GATE_CLK_MAILBOX_11                             357
++#define EIC7700_GATE_CLK_MAILBOX_12                             358
++#define EIC7700_GATE_CLK_MAILBOX_13                             359
++#define EIC7700_GATE_CLK_MAILBOX_14                             360
++#define EIC7700_GATE_CLK_MAILBOX_15                             361
++#define EIC7700_GATE_CLK_APLL_TEST_OUT                          362
++#define EIC7700_GATE_CLK_CPLL_TEST_OUT                          363
++#define EIC7700_GATE_CLK_HSP_DFT150M                            364
++#define EIC7700_GATE_CLK_HSP_DFT300M                            365
++#define EIC7700_GATE_CLK_HSP_DFT600M                            366
++#define EIC7700_GATE_CLK_VI_DFT400M                             367
++#define EIC7700_GATE_CLK_VI_DFT500M                             368
++#define EIC7700_GATE_CLK_VO_DFT300M                             369
++#define EIC7700_GATE_CLK_VO_DFT600M                             370
++#define EIC7700_GATE_CLK_D2D_DFT300M                            371
++#define EIC7700_GATE_CLK_D2D_DFT600M                            372
++#define EIC7700_GATE_CLK_PCIE_DFT125M                           373
++#define EIC7700_GATE_CLK_PCIE_DFT200M                           374
++#define EIC7700_GATE_CLK_DDR_PLL_BYP_CLK                        375
++#define EIC7700_GATE_CLK_DDR_RX_TEST_CLK                        376
++#define EIC7700_GATE_LSP_I2C0_PCLK                              377
++#define EIC7700_GATE_LSP_I2C1_PCLK                              378
++#define EIC7700_GATE_LSP_I2C2_PCLK                              379
++#define EIC7700_GATE_LSP_I2C3_PCLK                              380
++#define EIC7700_GATE_LSP_I2C4_PCLK                              381
++#define EIC7700_GATE_LSP_I2C5_PCLK                              382
++#define EIC7700_GATE_LSP_I2C6_PCLK                              383
++#define EIC7700_GATE_LSP_I2C7_PCLK                              384
++#define EIC7700_GATE_LSP_I2C8_PCLK                              385
++#define EIC7700_GATE_LSP_I2C9_PCLK                              386
++#define EIC7700_GATE_LSP_WDT0_PCLK                              387
++#define EIC7700_GATE_LSP_WDT1_PCLK                              388
++#define EIC7700_GATE_LSP_WDT2_PCLK                              389
++#define EIC7700_GATE_LSP_WDT3_PCLK                              390
++#define EIC7700_GATE_LSP_SSI0_PCLK                              391
++#define EIC7700_GATE_LSP_SSI1_PCLK                              392
++#define EIC7700_GATE_LSP_PVT_PCLK                               393
++#define EIC7700_GATE_AON_I2C0_PCLK                              394
++#define EIC7700_GATE_AON_I2C1_PCLK                              395
++#define EIC7700_GATE_LSP_UART0_PCLK                             396
++#define EIC7700_GATE_LSP_UART1_PCLK                             397
++#define EIC7700_GATE_LSP_UART2_PCLK                             398
++#define EIC7700_GATE_LSP_UART3_PCLK                             399
++#define EIC7700_GATE_LSP_UART4_PCLK                             400
++#define EIC7700_GATE_LSP_TIMER_PCLK                             401
++#define EIC7700_GATE_LSP_FAN_PCLK                               402
++#define EIC7700_GATE_LSP_PVT0_CLK                               403
++#define EIC7700_GATE_LSP_PVT1_CLK                               404
++#define EIC7700_GATE_RESERVED_1                                 405
++#define EIC7700_GATE_RESERVED_2                                 406
++#define EIC7700_GATE_RESERVED_3                                 407
++#define EIC7700_GATE_VC_JE_PCLK                                 408
++#define EIC7700_GATE_VC_JD_PCLK                                 409
++#define EIC7700_GATE_VC_VE_PCLK                                 410
++#define EIC7700_GATE_VC_VD_PCLK                                 411
++#define EIC7700_GATE_VC_MON_PCLK                                412
++#define EIC7700_GATE_HSP_DMA0_CLK                               413
++
++/*fixed factor clocks*/
++#define EIC7700_FIXED_FACTOR_U_CPU_DIV2                         450
++#define EIC7700_FIXED_FACTOR_U_CLK_1M_DIV24                     451
++#define EIC7700_FIXED_FACTOR_U_MIPI_TXESC_DIV10                 452
++#define EIC7700_FIXED_FACTOR_U_U84_CORE_LP_DIV2                 453
++#define EIC7700_FIXED_FACTOR_U_SCPU_BUS_DIV2                    454
++#define EIC7700_FIXED_FACTOR_U_LPCPU_BUS_DIV2                   455
++#define EIC7700_FIXED_FACTOR_U_PCIE_CR_DIV2                     456
++#define EIC7700_FIXED_FACTOR_U_PCIE_AUX_DIV4                    457
++#define EIC7700_FIXED_FACTOR_U_PVT_DIV20                        458
++#define EIC7700_FIXED_FACTOR_U_DFT100M_DIV4                     459
++#define EIC7700_FIXED_FACTOR_U_DFT125M_DIV2                     460
++#define EIC7700_FIXED_FACTOR_U_DFT150M_DIV2                     461
++#define EIC7700_FIXED_FACTOR_U_DFT100M_DIV2                     462
++#define EIC7700_FIXED_FACTOR_U_DFT500M_DIV3                     463
++#define EIC7700_FIXED_FACTOR_U_DFT500M_DIV2                     464
++#define EIC7700_FIXED_FACTOR_SPLL0_TEST_DIV8                    465
++#define EIC7700_FIXED_FACTOR_SPLL1_TEST_DIV6                    466
++#define EIC7700_FIXED_FACTOR_SPLL2_TEST_DIV4                    467
++#define EIC7700_FIXED_FACTOR_U_HSP_RMII_REF_DIV6                468
++#define EIC7700_FIXED_FACTOR_U_DRR_DIV8                         469
++
++
++/*clocks list for consumer*/
++#define EIC7700_CLK_CPU_EXT_SRC_CORE_CLK_0                      500
++#define EIC7700_CLK_CPU_EXT_SRC_CORE_CLK_1                      501
++#define EIC7700_CLK_CPU_EXT_SRC_CORE_CLK_2                      502
++#define EIC7700_CLK_CPU_EXT_SRC_CORE_CLK_3                      503
++#define EIC7700_CLK_CPU_TRACE_CLK_0                             504
++#define EIC7700_CLK_CPU_TRACE_CLK_1                             505
++#define EIC7700_CLK_CPU_TRACE_CLK_2                             506
++#define EIC7700_CLK_CPU_TRACE_CLK_3                             507
++#define EIC7700_CLK_CPU_DEBUG_CLK                               508
++#define EIC7700_CLK_CPU_TRACE_COM_CLK                           509
++#define EIC7700_CLK_CPU_CLK                                     510
++#define EIC7700_CLK_CLK_1M                                      511
++#define EIC7700_CLK_CLK_SYS_CFG                                 512
++#define EIC7700_CLK_CLK_MIPI_TXESC                              513
++#define EIC7700_CLK_NOC_CFG_CLK                                 514
++#define EIC7700_CLK_NOC_NSP_CLK                                 515
++#define EIC7700_CLK_CLK_BOOTSPI                                 516
++#define EIC7700_CLK_CLK_BOOTSPI_CFG                             517
++#define EIC7700_CLK_CLK_U84_CORE_LP                             518
++#define EIC7700_CLK_CLK_SCPU_CORE                               519
++#define EIC7700_CLK_CLK_SCPU_BUS                                520
++#define EIC7700_CLK_CLK_LPCPU_CORE                              521
++#define EIC7700_CLK_CLK_LPCPU_BUS                               522
++#define EIC7700_CLK_GPU_ACLK                                    523
++#define EIC7700_CLK_GPU_GRAY_CLK                                524
++#define EIC7700_CLK_GPU_CFG_CLK                                 525
++#define EIC7700_CLK_CLK_DSP_ROOT                                526
++#define EIC7700_CLK_DSPT_ACLK                                   527
++#define EIC7700_CLK_DSPT_CFG_CLK                                528
++#define EIC7700_CLK_CLK_D2DDR_ACLK                              529
++#define EIC7700_CLK_D2D_ACLK                                    530
++#define EIC7700_CLK_D2D_CFG_CLK                                 531
++#define EIC7700_CLK_TCU_ACLK                                    532
++#define EIC7700_CLK_TCU_CFG_CLK                                 533
++#define EIC7700_CLK_DDRT_CFG_CLK                                534
++#define EIC7700_CLK_DDRT0_P0_ACLK                               535
++#define EIC7700_CLK_DDRT0_P1_ACLK                               536
++#define EIC7700_CLK_DDRT0_P2_ACLK                               537
++#define EIC7700_CLK_DDRT0_P3_ACLK                               538
++#define EIC7700_CLK_DDRT0_P4_ACLK                               539
++#define EIC7700_CLK_DDRT1_P0_ACLK                               540
++#define EIC7700_CLK_DDRT1_P1_ACLK                               541
++#define EIC7700_CLK_DDRT1_P2_ACLK                               542
++#define EIC7700_CLK_DDRT1_P3_ACLK                               543
++#define EIC7700_CLK_DDRT1_P4_ACLK                               544
++#define EIC7700_CLK_HSP_ACLK                                    545
++#define EIC7700_CLK_HSP_CFG_CLK                                 546
++#define EIC7700_CLK_HSP_SATA_RBC_CLK                            547
++#define EIC7700_CLK_HSP_SATA_OOB_CLK                            548
++#define EIC7700_CLK_HSP_SATA_PMALIVE_CLK                        549
++#define EIC7700_CLK_HSP_ETH_APP_CLK                             550
++#define EIC7700_CLK_HSP_ETH_CSR_CLK                             551
++#define EIC7700_CLK_HSP_ETH0_CORE_CLK                           552
++#define EIC7700_CLK_HSP_ETH1_CORE_CLK                           553
++#define EIC7700_CLK_HSP_MSHC0_CORE_CLK                          554
++#define EIC7700_CLK_HSP_MSHC1_CORE_CLK                          555
++#define EIC7700_CLK_HSP_MSHC2_CORE_CLK                          556
++#define EIC7700_CLK_HSP_MSHC0_TMR_CLK                           557
++#define EIC7700_CLK_HSP_MSHC1_TMR_CLK                           558
++#define EIC7700_CLK_HSP_MSHC2_TMR_CLK                           559
++#define EIC7700_CLK_HSP_USB0_SUSPEND_CLK                        560
++#define EIC7700_CLK_HSP_USB1_SUSPEND_CLK                        561
++#define EIC7700_CLK_PCIET_ACLK                                  562
++#define EIC7700_CLK_PCIET_CFG_CLK                               563
++#define EIC7700_CLK_PCIET_CR_CLK                                564
++#define EIC7700_CLK_PCIET_AUX_CLK                               565
++#define EIC7700_CLK_NPU_ACLK                                    566
++#define EIC7700_CLK_NPU_CFG_CLK                                 567
++#define EIC7700_CLK_CLK_NPU_LLC_SRC0                            568
++#define EIC7700_CLK_CLK_NPU_LLC_SRC1                            569
++#define EIC7700_CLK_NPU_LLC_ACLK                                570
++#define EIC7700_CLK_CLK_NPU_CORE_ST1                            571
++#define EIC7700_CLK_NPU_CLK                                     572
++#define EIC7700_CLK_NPU_E31_CLK                                 573
++#define EIC7700_CLK_CLK_VI_ACLK_ST1                             574
++#define EIC7700_CLK_VI_ACLK                                     575
++#define EIC7700_CLK_VI_DVP_CLK                                  576
++#define EIC7700_CLK_VI_CFG_CLK                                  577
++#define EIC7700_CLK_VI_DIG_DW_CLK                               578
++#define EIC7700_CLK_VI_DIG_ISP_CLK                              579
++#define EIC7700_CLK_VI_SHUTTER_0                                580
++#define EIC7700_CLK_VI_SHUTTER_1                                581
++#define EIC7700_CLK_VI_SHUTTER_2                                582
++#define EIC7700_CLK_VI_SHUTTER_3                                583
++#define EIC7700_CLK_VI_SHUTTER_4                                584
++#define EIC7700_CLK_VI_SHUTTER_5                                585
++#define EIC7700_CLK_VI_PHY_TXCLKESC                             586
++#define EIC7700_CLK_VI_PHY_CFG                                  587
++#define EIC7700_CLK_VO_ACLK                                     588
++#define EIC7700_CLK_VO_CFG_CLK                                  589
++#define EIC7700_CLK_VO_HDMI_IESMCLK                             590
++#define EIC7700_CLK_VO_PIXEL_CLK                                591
++#define EIC7700_CLK_VO_I2S_MCLK                                 592
++#define EIC7700_CLK_VO_CR_CLK                                   593
++#define EIC7700_CLK_VO_CEC_CLK                                  594
++#define EIC7700_CLK_CLK_VC_ROOT                                 595
++#define EIC7700_CLK_VC_ACLK                                     596
++#define EIC7700_CLK_VC_CFG_CLK                                  597
++#define EIC7700_CLK_VC_JE_CLK                                   598
++#define EIC7700_CLK_VC_JD_CLK                                   599
++#define EIC7700_CLK_VC_VE_CLK                                   600
++#define EIC7700_CLK_VC_VD_CLK                                   601
++#define EIC7700_CLK_G2D_CFG_CLK                                 602
++#define EIC7700_CLK_CLK_G2D_ST2                                 603
++#define EIC7700_CLK_G2D_CLK                                     604
++#define EIC7700_CLK_G2D_ACLK                                    605
++#define EIC7700_CLK_CLK_RESERVED                                606
++#define EIC7700_CLK_PVT_CLK_0                                   607
++#define EIC7700_CLK_PVT_CLK_1                                   608
++#define EIC7700_CLK_HSP_RMII_REF_0                              609
++#define EIC7700_CLK_HSP_RMII_REF_1                              610
++#define EIC7700_CLK_HSP_SATA_PHY_REF                            611
++#define EIC7700_CLK_AONDMA_CFG                                  612
++#define EIC7700_CLK_CLK_AONDMA_AXI_ST3                          613
++#define EIC7700_CLK_AONDMA_ACLK                                 614
++#define EIC7700_CLK_AON_ACLK                                    615
++#define EIC7700_CLK_TIMER_CLK_0                                 616      //AON timer
++#define EIC7700_CLK_TIMER_CLK_1                                 617
++#define EIC7700_CLK_TIMER_CLK_2                                 618
++#define EIC7700_CLK_TIMER_CLK_3                                 619
++#define EIC7700_CLK_TIMER_PCLK_0                                620
++#define EIC7700_CLK_TIMER_PCLK_1                                621
++#define EIC7700_CLK_TIMER_PCLK_2                                622
++#define EIC7700_CLK_TIMER_PCLK_3                                623
++#define EIC7700_CLK_TIMER3_CLK8                                 624
++#define EIC7700_CLK_CLK_RTC_CFG                                 625  // AON rtc
++#define EIC7700_CLK_CLK_RTC                                     626  // AON rtc
++#define EIC7700_CLK_CLK_U84_RTC_TOGGLE                          627
++#define EIC7700_CLK_UNUSED_1                                    628
++#define EIC7700_CLK_CLK_PKA_CFG                                 629
++#define EIC7700_CLK_CLK_SPACC_CFG                               630
++#define EIC7700_CLK_CLK_CRYPTO                                  631
++#define EIC7700_CLK_CLK_TRNG_CFG                                632
++#define EIC7700_CLK_CLK_OTP_CFG                                 633
++#define EIC7700_CLK_CLMM_CFG_CLK                                634
++#define EIC7700_CLK_CLMM_DEB_CLK                                635
++#define EIC7700_CLK_DDR_PLL_BYP_CLK                             636
++#define EIC7700_CLK_DDR_PLL_REF_AND_DFI_CLK                     637
++#define EIC7700_CLK_DDR_RX_TEST_CLK                             638
++#define EIC7700_CLK_MAILBOX_0                                   638
++#define EIC7700_CLK_MAILBOX_1                                   639
++#define EIC7700_CLK_MAILBOX_2                                   640
++#define EIC7700_CLK_MAILBOX_3                                   641
++#define EIC7700_CLK_MAILBOX_4                                   642
++#define EIC7700_CLK_MAILBOX_5                                   643
++#define EIC7700_CLK_MAILBOX_6                                   644
++#define EIC7700_CLK_MAILBOX_7                                   645
++#define EIC7700_CLK_MAILBOX_8                                   646
++#define EIC7700_CLK_MAILBOX_9                                   647
++#define EIC7700_CLK_MAILBOX_10                                  648
++#define EIC7700_CLK_MAILBOX_11                                  649
++#define EIC7700_CLK_MAILBOX_12                                  650
++#define EIC7700_CLK_MAILBOX_13                                  651
++#define EIC7700_CLK_MAILBOX_14                                  652
++#define EIC7700_CLK_MAILBOX_15                                  653
++#define EIC7700_CLK_LSP_I2C0_PCLK                               654
++#define EIC7700_CLK_LSP_I2C1_PCLK                               655
++#define EIC7700_CLK_LSP_I2C2_PCLK                               656
++#define EIC7700_CLK_LSP_I2C3_PCLK                               657
++#define EIC7700_CLK_LSP_I2C4_PCLK                               658
++#define EIC7700_CLK_LSP_I2C5_PCLK                               659
++#define EIC7700_CLK_LSP_I2C6_PCLK                               660
++#define EIC7700_CLK_LSP_I2C7_PCLK                               661
++#define EIC7700_CLK_LSP_I2C8_PCLK                               662
++#define EIC7700_CLK_LSP_I2C9_PCLK                               663
++#define EIC7700_CLK_LSP_WDT0_PCLK                               664
++#define EIC7700_CLK_LSP_WDT1_PCLK                               665
++#define EIC7700_CLK_LSP_WDT2_PCLK                               666
++#define EIC7700_CLK_LSP_WDT3_PCLK                               667
++#define EIC7700_CLK_LSP_SSI0_PCLK                               668
++#define EIC7700_CLK_LSP_SSI1_PCLK                               669
++#define EIC7700_CLK_LSP_PVT_PCLK                                670
++#define EIC7700_CLK_AON_I2C0_PCLK                               671
++#define EIC7700_CLK_AON_I2C1_PCLK                               672
++#define EIC7700_CLK_LSP_UART0_PCLK                              673
++#define EIC7700_CLK_LSP_UART1_PCLK                              674
++#define EIC7700_CLK_LSP_UART2_PCLK                              675
++#define EIC7700_CLK_LSP_UART3_PCLK                              676
++#define EIC7700_CLK_LSP_UART4_PCLK                              677
++#define EIC7700_CLK_LSP_TIMER_PCLK                              678         //LSP timer
++#define EIC7700_CLK_LSP_FAN_PCLK                                679
++#define EIC7700_CLK_DSP_ACLK_0                                  680
++#define EIC7700_CLK_DSP_ACLK_1                                  681
++#define EIC7700_CLK_DSP_ACLK_2                                  682
++#define EIC7700_CLK_DSP_ACLK_3                                  683
++
++#define EIC7700_CLK_VC_JE_PCLK                                  685
++#define EIC7700_CLK_VC_JD_PCLK                                  686
++#define EIC7700_CLK_VC_VE_PCLK                                  687
++#define EIC7700_CLK_VC_VD_PCLK                                  688
++#define EIC7700_CLK_VC_MON_PCLK                                 689
++
++#define EIC7700_CLK_HSP_DMA0_CLK                                690
++
++#define EIC7700_NR_CLKS                                         700
++
++/* run frquency */
++#define CLK_FREQ_1800M					1800000000
++#define CLK_FREQ_1700M					1700000000
++#define CLK_FREQ_1600M					1600000000
++#define CLK_FREQ_1500M					1500000000
++#define CLK_FREQ_1400M					1400000000
++#define CLK_FREQ_1300M					1300000000
++#define CLK_FREQ_1200M					1200000000
++#define CLK_FREQ_1000M					1000000000
++#define CLK_FREQ_900M					900000000
++#define CLK_FREQ_800M					800000000
++#define CLK_FREQ_700M					700000000
++#define CLK_FREQ_600M					600000000
++#define CLK_FREQ_500M					500000000
++#define CLK_FREQ_400M					400000000
++#define CLK_FREQ_200M					200000000
++#define CLK_FREQ_100M					100000000
++#define CLK_FREQ_24M					24000000
++
++#define APLL_HIGH_FREQ					983040000
++#define APLL_LOW_FREQ 					225792000
++
++#endif /*endif __DTS_EIC7700_CLOCK_H*/
+diff --git a/include/dt-bindings/interconnect/eic7700.h b/include/dt-bindings/interconnect/eic7700.h
+new file mode 100644
+index 000000000000..984b7cc0840f
+--- /dev/null
++++ b/include/dt-bindings/interconnect/eic7700.h
+@@ -0,0 +1,141 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Interconnect driver for Eswin EIC7700 SoC
++ *
++ * Copyright (C) 2022  Beiging Eswin Co. Ltd
++ * Author: Huangyifeng <huangyifeng@eswincomputing.com>
++ */
++
++#ifndef _DT_BINDINGS_INTERCONNECT_EIC7700_H_
++#define _DT_BINDINGS_INTERCONNECT_EIC7700_H_
++
++#define OFFSET0                              (0)
++#define OFFSET1                              (1)
++#define OFFSET2                              (2)
++#define OFFSET3                              (3)
++#define OFFSET4                              (4)
++#define OFFSET5                              (5)
++#define OFFSET6                              (6)
++#define OFFSET7                              (7)
++#define OFFSET8                              (8)
++#define OFFSET9                              (9)
++#define OFFSET10                             (10)
++#define OFFSET11                             (11)
++#define OFFSET12                             (12)
++#define OFFSET13                             (13)
++#define OFFSET14                             (14)
++#define OFFSET15                             (15)
++#define OFFSET16                             (16)
++#define OFFSET17                             (17)
++#define OFFSET18                             (18)
++#define OFFSET19                             (19)
++#define OFFSET20                             (20)
++#define OFFSET21                             (21)
++#define OFFSET22                             (22)
++#define OFFSET23                             (23)
++
++#define OFFSET31                             (31)
++
++/*sideband manager module id defination*/
++/*sys noc*/
++#define SBM_AON_SNOC_SP0	0
++#define SBM_DSPT_SNOC		1
++#define SBM_JTAG_SNOC		2
++#define SBM_MCPUT_SNOC_D2D	3
++#define SBM_MCPUT_SNOC_MP	4
++#define SBM_MCPUT_SNOC_SP0	5
++#define SBM_MCPUT_SNOC_SP1	6
++#define SBM_NPU_SNOC_SP0	7
++#define SBM_NPU_SNOC_SP1	8
++#define SBM_PCIET_SNOC_P	9
++#define SBM_SPISLV_PCIET_SNOC	10
++#define SBM_TBU4_SNOC		11
++#define SBM_TCU_SNOC		12
++#define SBM_SNOC_AON		13
++#define SBM_SNOC_DDR0_P1	14
++#define SBM_SNOC_DDR0_P2	15
++#define SBM_SNOC_DDR1_P1	16
++#define SBM_SNOC_DDR1_P2	17
++#define SBM_SNOC_DSPT		18
++#define SBM_SNOC_MCPUT_D2D	19
++#define SBM_SNOC_NPU		20
++#define SBM_SNOC_PCIET		21
++
++/*cfg noc*/
++#define SBM_CLMM		30
++#define SBM_CNOC_AON		31
++#define SBM_CNOC_DDRT0_CTRL	32
++#define SBM_CNOC_DDRT0_PHY	33
++#define SBM_CNOC_DDRT1_CTRL	34
++#define SBM_CNOC_DDRT1_PHY	35
++#define SBM_CNOC_DSPT		36
++#define SBM_CNOC_GPU		37
++#define SBM_CNOC_HSP		38
++#define SBM_CNOC_LSP_APB2	39
++#define SBM_CNOC_LSP_APB3	40
++#define SBM_CNOC_LSP_APB4	41
++#define SBM_CNOC_LSP_APB6	42
++#define SBM_CNOC_MCPUT_D2D	43
++#define SBM_CNOC_NPU		44
++#define SBM_CNOC_PCIET_P	45
++#define SBM_CNOC_PCIET_X	46
++#define SBM_CNOC_TCU		47
++#define SBM_CNOC_VC		48
++#define SBM_CNOC_VI		49
++#define SBM_CNOC_VO		50
++
++/*llc noc*/
++#define SBM_LNOC_NPU_LLC0		60
++#define SBM_LNOC_NPU_LLC1		61
++#define SBM_LNOC_DDRT0_P0		62
++#define SBM_LNOC_DDRT1_P0		63
++
++/*media noc*/
++#define SBM_MNOC_GPU			70
++#define SBM_MNOC_TBU2			71
++#define SBM_MNOC_VC			72
++#define SBM_MNOC_DDRT0_P3		73
++#define SBM_MNOC_DDRT1_P3		74
++
++/*realtime noc*/
++#define SBM_RNOC_TBU0			80
++#define SBM_RNOC_VO			81
++#define SBM_RNOC_DDRT0_P4		82
++#define SBM_RNOC_DDRT1_P4		83
++
++/*RouteID defination*/
++#define        aon_snoc_sp0_I_O        0x0
++#define        dspt_snoc_I_O           0x1
++#define        jtag_snoc_I_O           0x2
++#define        mcput_snoc_d2d_I_O      0x3
++#define        mcput_snoc_mp_I_O       0x4
++#define        mcput_snoc_sp0_I_O      0x5
++#define        mcput_snoc_sp1_I_O      0x6
++#define        mnoc_snoc_I_O           0x7
++#define        npu_snoc_sp0_I_O        0x8
++#define        npu_snoc_sp1_I_O        0x9
++#define        pciet_snoc_p_I_O        0xA
++#define        rnoc_snoc_I_O           0xB
++#define        spislv_tbu3_snoc_I_O    0xC
++#define        tbu4_snoc_I_O           0xD
++#define        tcu_snoc_I_O            0xE
++#define        RESERVED0               0xF
++
++#define        snoc_aon_T_O            0x0
++#define        snoc_cnoc_T_O           0x1
++#define        snoc_ddrt0_p1_T_O       0x2
++#define        snoc_ddrt0_p2_T_O       0x3
++#define        snoc_ddrt1_p1_T_O       0x4
++#define        snoc_ddrt1_p2_T_O       0x5
++#define        snoc_dspt_T_O           0x6
++#define        snoc_lnoc_T_O           0x7
++#define        snoc_mcput_d2d_T_O      0x8
++#define        snoc_mnoc_T_O           0x9
++#define        snoc_npu_T_O            0xA
++#define        snoc_pciet_T_O          0xB
++#define        snoc_rnoc_T_O           0xC
++#define        snoc_service_T_O        0xD
++#define        RESERVED1               0xE
++#define        RESERVED2               0xF
++
++#endif /* _DT_BINDINGS_INTERCONNECT_EIC7700_H_ */
+diff --git a/include/dt-bindings/mailbox/eswin-mailbox.h b/include/dt-bindings/mailbox/eswin-mailbox.h
+new file mode 100755
+index 000000000000..1c82418dbadc
+--- /dev/null
++++ b/include/dt-bindings/mailbox/eswin-mailbox.h
+@@ -0,0 +1,88 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN Mailbox Driver
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: HuangYiFeng<huangyifeng@eswincomputing.com>
++ */
++
++#ifndef _DTS_ESWIN_MAILBOX_H_
++#define _DTS_ESWIN_MAILBOX_H_
++
++#define ESWIN_MAILBOX_U84_TO_SCPU_REG_BASE   0x50a00000 /*maibox 0*/
++#define ESWIN_MAILBOX_SCPU_TO_U84_REG_BASE   0x50a10000 /*maibox 1*/
++
++#define ESWIN_MAILBOX_U84_TO_LPCPU_REG_BASE  0x50a20000 /*maibox 2*/
++#define ESWIN_MAILBOX_LPCPU_TO_U84_REG_BASE  0x50a30000 /*maibox 3*/
++
++#define ESWIN_MAILBOX_U84_TO_NPU_0_REG_BASE  0x50a40000 /*maibox 4*/
++#define ESWIN_MAILBOX_NPU_0_TO_U84_REG_BASE  0x50a50000 /*maibox 5*/
++
++#define ESWIN_MAILBOX_U84_TO_NPU_1_REG_BASE  0x50a60000 /*maibox 6*/
++#define ESWIN_MAILBOX_NP1_0_TO_U84_REG_BASE  0x50a70000 /*maibox 7*/
++
++#define ESWIN_MAILBOX_U84_TO_DSP_0_REG_BASE  0x50a80000 /*maibox 8*/
++#define ESWIN_MAILBOX_DSP_0_TO_U84_REG_BASE  0x50a90000 /*maibox 9*/
++
++#define ESWIN_MAILBOX_U84_TO_DSP_1_REG_BASE  0x50aa0000 /*maibox 10*/
++#define ESWIN_MAILBOX_DSP_1_TO_U84_REG_BASE  0x50ab0000 /*maibox 11*/
++
++#define ESWIN_MAILBOX_U84_TO_DSP_2_REG_BASE  0x50ac0000 /*maibox 12*/
++#define ESWIN_MAILBOX_DSP_2_TO_U84_REG_BASE  0x50ad0000 /*maibox 13*/
++
++#define ESWIN_MAILBOX_U84_TO_DSP_3_REG_BASE  0x50ae0000 /*maibox 14*/
++#define ESWIN_MAILBOX_DSP_3_TO_U84_REG_BASE  0x50af0000 /*maibox 15*/
++
++#define BIT0                              (1 << 0)
++#define BIT1                              (1 << 1)
++#define BIT2                              (1 << 2)
++#define BIT3                              (1 << 3)
++#define BIT4                              (1 << 4)
++#define BIT5                              (1 << 5)
++#define BIT6                              (1 << 6)
++#define BIT7                              (1 << 7)
++#define BIT8                              (1 << 8)
++#define BIT9                              (1 << 9)
++#define BIT10                             (1 << 10)
++#define BIT11                             (1 << 11)
++#define BIT12                             (1 << 12)
++#define BIT13                             (1 << 13)
++#define BIT14                             (1 << 14)
++#define BIT31                             (1 << 31)
++
++#define ESWIN_MAILBOX_WR_LOCK_BIT_U84      BIT0
++#define ESWIN_MAILBOX_WR_LOCK_BIT_SCPU     BIT1
++#define ESWIN_MAILBOX_WR_LOCK_BIT_LPCPU    BIT2
++#define ESWIN_MAILBOX_WR_LOCK_BIT_NPU_0    BIT3
++#define ESWIN_MAILBOX_WR_LOCK_BIT_NPU_1    BIT4
++#define ESWIN_MAILBOX_WR_LOCK_BIT_DSP_0    BIT5
++#define ESWIN_MAILBOX_WR_LOCK_BIT_DSP_1    BIT6
++#define ESWIN_MAILBOX_WR_LOCK_BIT_DSP_2    BIT7
++#define ESWIN_MAILBOX_WR_LOCK_BIT_DSP_3    BIT8
++
++
++#define ESWIN_MAIBOX_U84_IRQ_BIT           BIT0
++#define ESWIN_MAIBOX_SCPU_IRQ_BIT          BIT1
++#define ESWIN_MAIBOX_LPCPU_IRQ_BIT         BIT2
++#define ESWIN_MAIBOX_NPU_0_IRQ_BIT         BIT3
++#define ESWIN_MAIBOX_NPU_1_IRQ_BIT         BIT4
++#define ESWIN_MAIBOX_DSP_0_IRQ_BIT         BIT5
++#define ESWIN_MAIBOX_DSP_1_IRQ_BIT         BIT6
++#define ESWIN_MAIBOX_DSP_2_IRQ_BIT         BIT7
++#define ESWIN_MAIBOX_DSP_3_IRQ_BIT         BIT8
++
++#endif /* _DTS_ESWIN_MAILBOX_H_ */
+diff --git a/include/dt-bindings/memory/eic7700-sid.h b/include/dt-bindings/memory/eic7700-sid.h
+new file mode 100644
+index 000000000000..0fa589ec93b1
+--- /dev/null
++++ b/include/dt-bindings/memory/eic7700-sid.h
+@@ -0,0 +1,138 @@
++#ifndef DT_BINDINGS_MEMORY_EIC7700_SID_H
++#define DT_BINDINGS_MEMORY_EIC7700_SID_H
++
++#define EIC7700_SID_DMA0	1
++
++#define EIC7700_SID_JDEC	2
++
++#define EIC7700_SID_JENC	3
++
++/* NPU DMA*/
++#define EIC7700_SID_NPU_DMA	4
++
++/* NPU-E31 */
++#define EIC7700_SID_NPU_E31	5
++
++/* Video In */
++#define EIC7700_SID_ISP0	6
++
++//#define EIC7700_SID_ISP1	EIC7700_SID_ISP0
++
++#define EIC7700_SID_DW		8
++
++#define EIC7700_SID_DVP		9
++
++/* High Speed */
++#define EIC7700_SID_USB0	10
++
++#define EIC7700_SID_USB1	11
++
++#define EIC7700_SID_ETH0	12
++
++#define EIC7700_SID_ETH1	13
++
++#define EIC7700_SID_SATA	14
++
++#define EIC7700_SID_EMMC0	15
++
++#define EIC7700_SID_SD0		16
++
++#define EIC7700_SID_SD1		17
++
++
++/* DSP */
++#define EIC7700_SID_DSP_0	18
++#define EIC7700_SID_DSP_1	19
++#define EIC7700_SID_DSP_2	20
++#define EIC7700_SID_DSP_3	21
++
++/* CODEC */
++//#define EIC7700_SID_VDEC	EIC7700_SID_JDEC
++
++//#define EIC7700_SID_VENC	EIC7700_SID_JENC
++
++/*** AON subsystem ***/
++/* Secure CPU */
++#define EIC7700_SID_SCPU	24
++#define SCPU_SID_REG_OFFSET	0x1004
++
++/* Low power CPU */
++#define EIC7700_SID_LCPU	25
++#define LCPU_SID_REG_OFFSET	0x2004
++
++/* Always on, DMA1 */
++#define EIC7700_SID_DMA1	26
++#define DMA1_SID_REG_OFFSET	0x3004
++
++/* crypt */
++//#define EIC7700_SID_CRYPT	EIC7700_SID_SCPU
++#define CRYPT_SID_REG_OFFSET	0x4004
++
++///*** for iova mapping test ***/
++//#define EIC7700_SID_DEV_FOO_A        28
++//#define EIC7700_SID_DEV_FOO_B        29
++//#define EIC7700_SID_DEV_FOO_FOR_DIE1	30
++
++
++/*** tbu id ***/
++/* tbu_id: bit[3:0] is for major, bit[7:4] is for minor;
++	For example, tbu of dsp3 is tbu7_3, the bu 0x73. It measn tbu7_3
++*/
++#define	EIC7700_TBUID_0x0	0x0
++
++#define	EIC7700_TBUID_0x10	0x10
++#define	EIC7700_TBUID_0x11	0x11
++#define	EIC7700_TBUID_0x12	0x12
++#define	EIC7700_TBUID_0x13	0x13
++
++#define	EIC7700_TBUID_0x2	0x2
++
++#define	EIC7700_TBUID_0x3	0x3
++
++#define	EIC7700_TBUID_0x4	0x4
++
++#define	EIC7700_TBUID_0x5	0x5
++
++#define	EIC7700_TBUID_0x70	0x70
++#define	EIC7700_TBUID_0x71	0x71
++#define	EIC7700_TBUID_0x72	0x72
++#define	EIC7700_TBUID_0x73	0x73
++
++#define	EIC7700_TBUID_0xF00	0xF00	// simulation for EIC7700_SID_DEV_FOO_A/B, No real tbu attached infact
++
++
++/* For better use by devices in dts, create tbu alias for devices*/
++#define EIC7700_TBUID_ISP	EIC7700_TBUID_0x0
++#define EIC7700_TBUID_DW	EIC7700_TBUID_ISP
++
++#define EIC7700_TBUID_VDEC	EIC7700_TBUID_0x10
++#define EIC7700_TBUID_VENC	EIC7700_TBUID_0x11
++#define EIC7700_TBUID_JENC	EIC7700_TBUID_0x12
++#define EIC7700_TBUID_JDEC	EIC7700_TBUID_0x13
++
++//high speed modules share the same tbu2
++#define EIC7700_TBUID_DMA0	EIC7700_TBUID_0x2
++#define EIC7700_TBUID_USB	EIC7700_TBUID_DMA0
++#define EIC7700_TBUID_ETH	EIC7700_TBUID_DMA0
++#define EIC7700_TBUID_SATA	EIC7700_TBUID_DMA0
++#define EIC7700_TBUID_EMMC	EIC7700_TBUID_DMA0
++#define EIC7700_TBUID_SD	EIC7700_TBUID_DMA0
++
++#define EIC7700_TBUID_PCIE	EIC7700_TBUID_0x3
++
++//scpu, crypto, lpcpu, dma1 share the same tbu4
++#define EIC7700_TBUID_SCPU	EIC7700_TBUID_0x4
++#define EIC7700_TBUID_CRYPT	EIC7700_TBUID_SCPU
++#define EIC7700_TBUID_DMA1	EIC7700_TBUID_SCPU
++#define EIC7700_TBUID_LPCPU	EIC7700_TBUID_SCPU
++
++//npu
++#define EIC7700_TBUID_NPU	EIC7700_TBUID_0x5
++
++//dsp
++#define EIC7700_TBUID_DSP0	EIC7700_TBUID_0x70
++#define EIC7700_TBUID_DSP1	EIC7700_TBUID_0x71
++#define EIC7700_TBUID_DSP2	EIC7700_TBUID_0x72
++#define EIC7700_TBUID_DSP3	EIC7700_TBUID_0x73
++
++#endif
+diff --git a/include/dt-bindings/reset/eic7700-syscrg.h b/include/dt-bindings/reset/eic7700-syscrg.h
+new file mode 100755
+index 000000000000..ea1ff1874a85
+--- /dev/null
++++ b/include/dt-bindings/reset/eic7700-syscrg.h
+@@ -0,0 +1,693 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ESWIN SysCrg Definition
++ *
++ * Copyright 2024, Beijing ESWIN Computing Technology Co., Ltd.. All rights reserved.
++ * SPDX-License-Identifier: GPL-2.0
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, version 2.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ *
++ * Authors: HuangYiFeng<huangyifeng@eswincomputing.com>
++ */
++
++#ifndef __DT_ESWIN_EIC7700_SYSCRG_H__
++#define __DT_ESWIN_EIC7700_SYSCRG_H__
++
++/*REG OFFSET OF SYS-CRG*/
++
++#define EIC7700_REG_OFFSET_SPLL0_CFG_0                          0X0000
++#define EIC7700_REG_OFFSET_SPLL0_CFG_1                          0X0004
++#define EIC7700_REG_OFFSET_SPLL0_CFG_2                          0X0008
++#define EIC7700_REG_OFFSET_SPLL0_DSKEWCAL                       0X000C
++#define EIC7700_REG_OFFSET_SPLL0_SSC                            0X0010
++#define EIC7700_REG_OFFSET_SPLL1_CFG_0                          0X0014
++#define EIC7700_REG_OFFSET_SPLL1_CFG_1                          0X0018
++#define EIC7700_REG_OFFSET_SPLL1_CFG_2                          0X001C
++#define EIC7700_REG_OFFSET_SPLL1_DSKEWCAL                       0X0020
++#define EIC7700_REG_OFFSET_SPLL1_SSC                            0X0024
++#define EIC7700_REG_OFFSET_SPLL2_CFG_0                          0X0028
++#define EIC7700_REG_OFFSET_SPLL2_CFG_1                          0X002C
++#define EIC7700_REG_OFFSET_SPLL2_CFG_2                          0X0030
++#define EIC7700_REG_OFFSET_SPLL2_DSKEWCAL                       0X0034
++#define EIC7700_REG_OFFSET_SPLL2_SSC                            0X0038
++#define EIC7700_REG_OFFSET_VPLL_CFG_0                           0X003C
++#define EIC7700_REG_OFFSET_VPLL_CFG_1                           0X0040
++#define EIC7700_REG_OFFSET_VPLL_CFG_2                           0X0044
++#define EIC7700_REG_OFFSET_VPLL_DSKEWCAL                        0X0048
++#define EIC7700_REG_OFFSET_VPLL_SSC                             0X004C
++#define EIC7700_REG_OFFSET_APLL_CFG_0                           0X0050
++#define EIC7700_REG_OFFSET_APLL_CFG_1                           0X0054
++#define EIC7700_REG_OFFSET_APLL_CFG_2                           0X0058
++#define EIC7700_REG_OFFSET_APLL_DSKEWCAL                        0X005C
++#define EIC7700_REG_OFFSET_APLL_SSC                             0X0060
++#define EIC7700_REG_OFFSET_MCPUT_PLL_CFG_0                      0X0064
++#define EIC7700_REG_OFFSET_MCPUT_PLL_CFG_1                      0X0068
++#define EIC7700_REG_OFFSET_MCPUT_PLL_CFG_2                      0X006C
++#define EIC7700_REG_OFFSET_MCPUT_PLL_DSKEWCAL                   0X0070
++#define EIC7700_REG_OFFSET_MCPUT_PLL_SSC                        0X0074
++#define EIC7700_REG_OFFSET_DDRT_PLL_CFG_0                       0X0078
++#define EIC7700_REG_OFFSET_DDRT_PLL_CFG_1                       0X007C
++#define EIC7700_REG_OFFSET_DDRT_PLL_CFG_2                       0X0080
++#define EIC7700_REG_OFFSET_DDRT_PLL_DSKEWCAL                    0X0084
++#define EIC7700_REG_OFFSET_DDRT_PLL_SSC                         0X0088
++#define EIC7700_REG_OFFSET_PLL_STATUS                           0X00A4
++#define EIC7700_REG_OFFSET_NOC_CLK_CTRL                         0X100
++#define EIC7700_REG_OFFSET_BOOTSPI_CLK_CTRL                     0X104
++#define EIC7700_REG_OFFSET_BOOTSPI_CFGCLK_CTRL                  0X108
++#define EIC7700_REG_OFFSET_SCPU_CORECLK_CTRL                    0X10C
++#define EIC7700_REG_OFFSET_SCPU_BUSCLK_CTRL                     0X110
++#define EIC7700_REG_OFFSET_LPCPU_CORECLK_CTRL                   0X114
++#define EIC7700_REG_OFFSET_LPCPU_BUSCLK_CTRL                    0X118
++#define EIC7700_REG_OFFSET_TCU_ACLK_CTRL                        0X11C
++#define EIC7700_REG_OFFSET_TCU_CFG_CTRL                         0X120
++#define EIC7700_REG_OFFSET_DDR_CLK_CTRL                         0X124
++#define EIC7700_REG_OFFSET_DDR1_CLK_CTRL                        0X128
++#define EIC7700_REG_OFFSET_GPU_ACLK_CTRL                        0X12C
++#define EIC7700_REG_OFFSET_GPU_CFG_CTRL                         0X130
++#define EIC7700_REG_OFFSET_GPU_GRAY_CTRL                        0X134
++#define EIC7700_REG_OFFSET_DSP_ACLK_CTRL                        0X138
++#define EIC7700_REG_OFFSET_DSP_CFG_CTRL                         0X13C
++#define EIC7700_REG_OFFSET_D2D_ACLK_CTRL                        0X140
++#define EIC7700_REG_OFFSET_D2D_CFG_CTRL                         0X144
++#define EIC7700_REG_OFFSET_HSP_ACLK_CTRL                        0X148
++#define EIC7700_REG_OFFSET_HSP_CFG_CTRL                         0X14C
++#define EIC7700_REG_OFFSET_SATA_RBC_CTRL                        0X150
++#define EIC7700_REG_OFFSET_SATA_OOB_CTRL                        0X154
++#define EIC7700_REG_OFFSET_ETH0_CTRL                            0X158
++#define EIC7700_REG_OFFSET_ETH1_CTRL                            0X15C
++#define EIC7700_REG_OFFSET_MSHC0_CORECLK_CTRL                   0X160
++#define EIC7700_REG_OFFSET_MSHC1_CORECLK_CTRL                   0X164
++#define EIC7700_REG_OFFSET_MSHC2_CORECLK_CTRL                   0X168
++#define EIC7700_REG_OFFSET_MSHC_USB_SLWCLK                      0X16C
++#define EIC7700_REG_OFFSET_PCIE_ACLK_CTRL                       0X170
++#define EIC7700_REG_OFFSET_PCIE_CFG_CTRL                        0X174
++#define EIC7700_REG_OFFSET_NPU_ACLK_CTRL                        0X178
++#define EIC7700_REG_OFFSET_NPU_LLC_CTRL                         0X17C
++#define EIC7700_REG_OFFSET_NPU_CORE_CTRL                        0X180
++#define EIC7700_REG_OFFSET_VI_DWCLK_CTRL                        0X184
++#define EIC7700_REG_OFFSET_VI_ACLK_CTRL                         0X188
++#define EIC7700_REG_OFFSET_VI_DIG_ISP_CLK_CTRL                  0X18C
++#define EIC7700_REG_OFFSET_VI_DVP_CLK_CTRL                      0X190
++#define EIC7700_REG_OFFSET_VI_SHUTTER0                          0X194
++#define EIC7700_REG_OFFSET_VI_SHUTTER1                          0X198
++#define EIC7700_REG_OFFSET_VI_SHUTTER2                          0X19C
++#define EIC7700_REG_OFFSET_VI_SHUTTER3                          0X1A0
++#define EIC7700_REG_OFFSET_VI_SHUTTER4                          0X1A4
++#define EIC7700_REG_OFFSET_VI_SHUTTER5                          0X1A8
++#define EIC7700_REG_OFFSET_VI_PHY_CLKCTRL                       0X1AC
++#define EIC7700_REG_OFFSET_VO_ACLK_CTRL                         0X1B0
++#define EIC7700_REG_OFFSET_VO_IESMCLK_CTRL                      0X1B4
++#define EIC7700_REG_OFFSET_VO_PIXEL_CTRL                        0X1B8
++#define EIC7700_REG_OFFSET_VO_MCLK_CTRL                         0X1BC
++#define EIC7700_REG_OFFSET_VO_PHY_CLKCTRL                       0X1C0
++#define EIC7700_REG_OFFSET_VC_ACLK_CTRL                         0X1C4
++#define EIC7700_REG_OFFSET_VCDEC_ROOTCLK_CTRL                   0X1C8
++#define EIC7700_REG_OFFSET_G2D_CTRL                             0X1CC
++#define EIC7700_REG_OFFSET_VC_CLKEN_CTRL                        0X1D0
++#define EIC7700_REG_OFFSET_JE_CLK_CTRL                          0X1D4
++#define EIC7700_REG_OFFSET_JD_CLK_CTRL                          0X1D8
++#define EIC7700_REG_OFFSET_VD_CLK_CTRL                          0X1DC
++#define EIC7700_REG_OFFSET_VE_CLK_CTRL                          0X1E0
++#define EIC7700_REG_OFFSET_AON_DMA_CLK_CTRL                     0X1E4
++#define EIC7700_REG_OFFSET_TIMER_CLK_CTRL                       0X1E8
++#define EIC7700_REG_OFFSET_RTC_CLK_CTRL                         0X1EC
++#define EIC7700_REG_OFFSET_PKA_CLK_CTRL                         0X1F0
++#define EIC7700_REG_OFFSET_SPACC_CLK_CTRL                       0X1F4
++#define EIC7700_REG_OFFSET_TRNG_CLK_CTRL                        0X1F8
++#define EIC7700_REG_OFFSET_OTP_CLK_CTRL                         0X1FC
++#define EIC7700_REG_OFFSET_LSP_CLK_EN0                          0X200
++#define EIC7700_REG_OFFSET_LSP_CLK_EN1                          0X204
++#define EIC7700_REG_OFFSET_U84_CLK_CTRL                         0X208
++#define EIC7700_REG_OFFSET_SYSCFG_CLK_CTRL                      0X20C
++#define EIC7700_REG_OFFSET_I2C0_CLK_CTRL                        0X210
++#define EIC7700_REG_OFFSET_I2C1_CLK_CTRL                        0X214
++#define EIC7700_REG_OFFSET_DFT_CLK_CTRL                         0X280
++#define EIC7700_REG_OFFSET_SYS_SWRST_VALUE                      0X300
++#define EIC7700_REG_OFFSET_CLR_RST_STATUS                       0X304
++#define EIC7700_REG_OFFSET_DIE_STATUS                           0X308
++#define EIC7700_REG_OFFSET_CLR_BOOT_INFO                        0X30C
++#define EIC7700_REG_OFFSET_SCPU_BOOT_ADDRESS                    0X310
++#define EIC7700_REG_OFFSET_LPCPU_BOOT_ADDRESS                   0X314
++#define EIC7700_REG_OFFSET_NPUE31_BOOT_ADDRESS                  0X318
++#define EIC7700_REG_OFFSET_U84_BOOT_ADDRESS0_HI                 0X31C
++#define EIC7700_REG_OFFSET_U84_BOOT_ADDRESS0_LOW                0X320
++#define EIC7700_REG_OFFSET_U84_BOOT_ADDRESS1_HI                 0X324
++#define EIC7700_REG_OFFSET_U84_BOOT_ADDRESS1_LOW                0X328
++#define EIC7700_REG_OFFSET_U84_BOOT_ADDRESS2_HI                 0X32C
++#define EIC7700_REG_OFFSET_U84_BOOT_ADDRESS2_LOW                0X330
++#define EIC7700_REG_OFFSET_U84_BOOT_ADDRESS3_HI                 0X334
++#define EIC7700_REG_OFFSET_U84_BOOT_ADDRESS3_LOW                0X338
++#define EIC7700_REG_OFFSET_BOOT_SEL_STAT                        0X33C
++#define EIC7700_REG_OFFSET_BOOT_SPI_CFG                         0X340
++#define EIC7700_REG_OFFSET_SNOC_RST_CTRL                        0X400
++#define EIC7700_REG_OFFSET_GPU_RST_CTRL                         0X404
++#define EIC7700_REG_OFFSET_DSP_RST_CTRL                         0X408
++#define EIC7700_REG_OFFSET_D2D_RST_CTRL                         0X40C
++#define EIC7700_REG_OFFSET_DDR_RST_CTRL                         0X410
++#define EIC7700_REG_OFFSET_TCU_RST_CTRL                         0X414
++#define EIC7700_REG_OFFSET_NPU_RST_CTRL                         0X418
++#define EIC7700_REG_OFFSET_HSPDMA_RST_CTRL                      0X41C
++#define EIC7700_REG_OFFSET_PCIE_RST_CTRL                        0X420
++#define EIC7700_REG_OFFSET_I2C_RST_CTRL                         0X424
++#define EIC7700_REG_OFFSET_FAN_RST_CTRL                         0X428
++#define EIC7700_REG_OFFSET_PVT_RST_CTRL                         0X42C
++#define EIC7700_REG_OFFSET_MBOX_RST_CTRL                        0X430
++#define EIC7700_REG_OFFSET_UART_RST_CTRL                        0X434
++#define EIC7700_REG_OFFSET_GPIO_RST_CTRL                        0X438
++#define EIC7700_REG_OFFSET_TIMER_RST_CTRL                       0X43C
++#define EIC7700_REG_OFFSET_SSI_RST_CTRL                         0X440
++#define EIC7700_REG_OFFSET_WDT_RST_CTRL                         0X444
++#define EIC7700_REG_OFFSET_LSP_CFGRST_CTRL                      0X448
++#define EIC7700_REG_OFFSET_U84_RST_CTRL                         0X44C
++#define EIC7700_REG_OFFSET_SCPU_RST_CTRL                        0X450
++#define EIC7700_REG_OFFSET_LPCPU_RST_CTRL                       0X454
++#define EIC7700_REG_OFFSET_VC_RST_CTRL                          0X458
++#define EIC7700_REG_OFFSET_JD_RST_CTRL                          0X45C
++#define EIC7700_REG_OFFSET_JE_RST_CTRL                          0X460
++#define EIC7700_REG_OFFSET_VD_RST_CTRL                          0X464
++#define EIC7700_REG_OFFSET_VE_RST_CTRL                          0X468
++#define EIC7700_REG_OFFSET_G2D_RST_CTRL                         0X46C
++#define EIC7700_REG_OFFSET_VI_RST_CTRL                          0X470
++#define EIC7700_REG_OFFSET_DVP_RST_CTRL                         0X474
++#define EIC7700_REG_OFFSET_ISP0_RST_CTRL                        0X478
++#define EIC7700_REG_OFFSET_ISP1_RST_CTRL                        0X47C
++#define EIC7700_REG_OFFSET_SHUTTER_RST_CTRL                     0X480
++#define EIC7700_REG_OFFSET_VO_PHYRST_CTRL                       0X484
++#define EIC7700_REG_OFFSET_VO_I2SRST_CTRL                       0X488
++#define EIC7700_REG_OFFSET_VO_RST_CTRL                          0X48C
++#define EIC7700_REG_OFFSET_BOOTSPI_RST_CTRL                     0X490
++#define EIC7700_REG_OFFSET_I2C1_RST_CTRL                        0X494
++#define EIC7700_REG_OFFSET_I2C0_RST_CTRL                        0X498
++#define EIC7700_REG_OFFSET_DMA1_RST_CTRL                        0X49C
++#define EIC7700_REG_OFFSET_FPRT_RST_CTRL                        0X4A0
++#define EIC7700_REG_OFFSET_HBLOCK_RST_CTRL                      0X4A4
++#define EIC7700_REG_OFFSET_SECSR_RST_CTRL                       0X4A8
++#define EIC7700_REG_OFFSET_OTP_RST_CTRL                         0X4AC
++#define EIC7700_REG_OFFSET_PKA_RST_CTRL                         0X4B0
++#define EIC7700_REG_OFFSET_SPACC_RST_CTRL                       0X4B4
++#define EIC7700_REG_OFFSET_TRNG_RST_CTRL                        0X4B8
++#define EIC7700_REG_OFFSET_TIMER0_RST_CTRL                      0X4C0
++#define EIC7700_REG_OFFSET_TIMER1_RST_CTRL                      0X4C4
++#define EIC7700_REG_OFFSET_TIMER2_RST_CTRL                      0X4C8
++#define EIC7700_REG_OFFSET_TIMER3_RST_CTRL                      0X4CC
++#define EIC7700_REG_OFFSET_RTC_RST_CTRL                         0X4D0
++#define EIC7700_REG_OFFSET_MNOC_RST_CTRL                        0X4D4
++#define EIC7700_REG_OFFSET_RNOC_RST_CTRL                        0X4D8
++#define EIC7700_REG_OFFSET_CNOC_RST_CTRL                        0X4DC
++#define EIC7700_REG_OFFSET_LNOC_RST_CTRL                        0X4E0
++
++/*
++ * RESET DEV ID  FOR EACH RESET CONSUMER
++ *
++ */
++#define		SNOC_RST_CTRL					0X00
++#define		GPU_RST_CTRL					0X01
++#define		DSP_RST_CTRL					0X02
++#define		D2D_RST_CTRL					0X03
++#define		DDR_RST_CTRL					0X04
++#define		TCU_RST_CTRL					0X05
++#define		NPU_RST_CTRL					0X06
++#define		HSPDMA_RST_CTRL					0X07
++#define		PCIE_RST_CTRL					0X08
++#define		I2C_RST_CTRL					0X09
++#define		FAN_RST_CTRL					0X0A
++#define		PVT_RST_CTRL					0X0B
++#define		MBOX_RST_CTRL					0X0C
++#define		UART_RST_CTRL					0X0D
++#define		GPIO_RST_CTRL					0X0E
++#define		TIMER_RST_CTRL					0X0F
++#define		SSI_RST_CTRL					0X10
++#define		WDT_RST_CTRL					0X11
++#define		LSP_CFGRST_CTRL					0X12
++#define		U84_RST_CTRL					0X13
++#define		SCPU_RST_CTRL					0X14
++#define		LPCPU_RST_CTRL					0X15
++#define		VC_RST_CTRL					0X16
++#define		JD_RST_CTRL					0X17
++#define		JE_RST_CTRL					0X18
++#define		VD_RST_CTRL					0X19
++#define		VE_RST_CTRL					0X1A
++#define		G2D_RST_CTRL					0X1B
++#define		VI_RST_CTRL					0X1C
++#define		DVP_RST_CTRL					0X1D
++#define		ISP0_RST_CTRL					0X1E
++#define		ISP1_RST_CTRL					0X1F
++#define		SHUTTER_RST_CTRL				0X20
++#define		VO_PHYRST_CTRL					0X21
++#define		VO_I2SRST_CTRL					0X22
++#define		VO_RST_CTRL					0X23
++#define		BOOTSPI_RST_CTRL				0X24
++#define		I2C1_RST_CTRL					0X25
++#define		I2C0_RST_CTRL					0X26
++#define		DMA1_RST_CTRL					0X27
++#define		FPRT_RST_CTRL					0X28
++#define		HBLOCK_RST_CTRL					0X29
++#define		SECSR_RST_CTRL					0X2A
++#define		OTP_RST_CTRL					0X2B
++#define		PKA_RST_CTRL					0X2C
++#define		SPACC_RST_CTRL					0X2D
++#define		TRNG_RST_CTRL					0X2E
++#define		RESERVED					0X2F
++#define		TIMER0_RST_CTRL					0X30
++#define		TIMER1_RST_CTRL					0X31
++#define		TIMER2_RST_CTRL					0X32
++#define		TIMER3_RST_CTRL					0X33
++#define		RTC_RST_CTRL					0X34
++#define		MNOC_RST_CTRL					0X35
++#define		RNOC_RST_CTRL					0X36
++#define		CNOC_RST_CTRL					0X37
++#define		LNOC_RST_CTRL					0X38
++
++#define BIT0                              (1 << 0)
++#define BIT1                              (1 << 1)
++#define BIT2                              (1 << 2)
++#define BIT3                              (1 << 3)
++#define BIT4                              (1 << 4)
++#define BIT5                              (1 << 5)
++#define BIT6                              (1 << 6)
++#define BIT7                              (1 << 7)
++#define BIT8                              (1 << 8)
++#define BIT9                              (1 << 9)
++#define BIT10                             (1 << 10)
++#define BIT11                             (1 << 11)
++#define BIT12                             (1 << 12)
++#define BIT13                             (1 << 13)
++#define BIT14                             (1 << 14)
++#define BIT15                             (1 << 15)
++#define BIT16                             (1 << 16)
++#define BIT17                             (1 << 17)
++#define BIT18                             (1 << 18)
++#define BIT19                             (1 << 19)
++#define BIT20                             (1 << 20)
++#define BIT21                             (1 << 21)
++#define BIT22                             (1 << 22)
++#define BIT23                             (1 << 23)
++#define BIT24                             (1 << 24)
++#define BIT25                             (1 << 25)
++#define BIT26                             (1 << 26)
++#define BIT27                             (1 << 27)
++#define BIT28                             (1 << 28)
++#define BIT29                             (1 << 29)
++#define BIT30                             (1 << 30)
++#define BIT31                             (1 << 31)
++
++/*
++	CONSUMER RESET CONTROL BIT
++*/
++/*SNOC*/
++#define		SW_NOC_NSP_RSTN						BIT0
++#define		SW_NOC_CFG_RSTN						BIT1
++#define		SW_RNOC_NSP_RSTN					BIT2
++#define		SW_SNOC_TCU_ARSTN					BIT3
++#define		SW_SNOC_U84_ARSTN					BIT4
++#define		SW_SNOC_PCIET_XSRSTN					BIT5
++#define		SW_SNOC_PCIET_XMRSTN					BIT6
++#define		SW_SNOC_PCIET_PRSTN					BIT7
++#define		SW_SNOC_NPU_ARSTN					BIT8
++#define		SW_SNOC_JTAG_ARSTN					BIT9
++#define		SW_SNOC_DSPT_ARSTN					BIT10
++#define		SW_SNOC_DDRC1_P2_ARSTN					BIT11
++#define		SW_SNOC_DDRC1_P1_ARSTN					BIT12
++#define		SW_SNOC_DDRC0_P2_ARSTN					BIT13
++#define		SW_SNOC_DDRC0_P1_ARSTN					BIT14
++#define		SW_SNOC_D2D_ARSTN					BIT15
++#define		SW_SNOC_AON_ARSTN					BIT16
++
++/*GPU*/
++#define		SW_GPU_AXI_RSTN						BIT0
++#define		SW_GPU_CFG_RSTN						BIT1
++#define		SW_GPU_GRAY_RSTN					BIT2
++#define		SW_GPU_JONES_RSTN					BIT3
++#define		SW_GPU_SPU_RSTN						BIT4
++
++/*DSP*/
++#define		SW_DSP_AXI_RSTN						BIT0
++#define		SW_DSP_CFG_RSTN						BIT1
++#define		SW_DSP_DIV4_RSTN					BIT2
++#define		SW_DSP_DIV_RSTN_0					BIT4
++#define		SW_DSP_DIV_RSTN_1					BIT5
++#define		SW_DSP_DIV_RSTN_2					BIT6
++#define		SW_DSP_DIV_RSTN_3					BIT7
++
++/*D2D*/
++#define		SW_D2D_AXI_RSTN						BIT0
++#define		SW_D2D_CFG_RSTN						BIT1
++#define		SW_D2D_PRST_N						BIT2
++#define		SW_D2D_RAW_PCS_RST_N					BIT4
++#define		SW_D2D_RX_RST_N						BIT5
++#define		SW_D2D_TX_RST_N						BIT6
++#define		SW_D2D_CORE_RST_N					BIT7
++
++/*TCU*/
++#define		SW_TCU_AXI_RSTN						BIT0
++#define		SW_TCU_CFG_RSTN						BIT1
++#define		TBU_RSTN_0						BIT4
++#define		TBU_RSTN_1						BIT5
++#define		TBU_RSTN_2						BIT6
++#define		TBU_RSTN_3						BIT7
++#define		TBU_RSTN_4						BIT8
++#define		TBU_RSTN_5						BIT9
++#define		TBU_RSTN_6						BIT10
++#define		TBU_RSTN_7						BIT11
++#define		TBU_RSTN_8						BIT12
++#define		TBU_RSTN_9						BIT13
++#define		TBU_RSTN_10						BIT14
++#define		TBU_RSTN_11						BIT15
++#define		TBU_RSTN_12						BIT16
++#define		TBU_RSTN_13						BIT17
++#define		TBU_RSTN_14						BIT18
++#define		TBU_RSTN_15						BIT19
++#define		TBU_RSTN_16						BIT20
++
++/*NPU*/
++#define		SW_NPU_AXI_RSTN						BIT0
++#define		SW_NPU_CFG_RSTN						BIT1
++#define		SW_NPU_CORE_RSTN					BIT2
++#define		SW_NPU_E31CORE_RSTN					BIT3
++#define		SW_NPU_E31BUS_RSTN					BIT4
++#define		SW_NPU_E31DBG_RSTN					BIT5
++#define		SW_NPU_LLC_RSTN						BIT6
++
++/*HSP DMA*/
++#define		SW_HSP_AXI_RSTN						BIT0
++#define		SW_HSP_CFG_RSTN						BIT1
++#define		SW_HSP_POR_RSTN						BIT2
++#define		SW_MSHC0_PHY_RSTN					BIT3
++#define		SW_MSHC1_PHY_RSTN					BIT4
++#define		SW_MSHC2_PHY_RSTN					BIT5
++#define		SW_MSHC0_TXRX_RSTN					BIT6
++#define		SW_MSHC1_TXRX_RSTN					BIT7
++#define		SW_MSHC2_TXRX_RSTN					BIT8
++#define		SW_SATA_ASIC0_RSTN					BIT9
++#define		SW_SATA_OOB_RSTN					BIT10
++#define		SW_SATA_PMALIVE_RSTN					BIT11
++#define		SW_SATA_RBC_RSTN					BIT12
++#define		SW_DMA0_RST_N						BIT13
++#define		SW_HSP_DMA0_RSTN					BIT14
++#define		SW_USB0_VAUX_RSTN					BIT15
++#define		SW_USB1_VAUX_RSTN					BIT16
++#define		SW_HSP_SD1_PRSTN					BIT17
++#define		SW_HSP_SD0_PRSTN					BIT18
++#define		SW_HSP_EMMC_PRSTN					BIT19
++#define		SW_HSP_DMA_PRSTN					BIT20
++#define		SW_HSP_SD1_ARSTN					BIT21
++#define		SW_HSP_SD0_ARSTN					BIT22
++#define		SW_HSP_EMMC_ARSTN					BIT23
++#define		SW_HSP_DMA_ARSTN					BIT24
++#define		SW_HSP_ETH1_ARSTN					BIT25
++#define		SW_HSP_ETH0_ARSTN					BIT26
++#define		SW_HSP_SATA_ARSTN					BIT27
++
++/*PCIE*/
++#define		SW_PCIE_CFG_RSTN					BIT0
++#define		SW_PCIE_POWERUP_RSTN					BIT1
++#define		SW_PCIE_PERST_N						BIT2
++
++/*I2C*/
++#define		SW_I2C_RST_N_0						BIT0
++#define		SW_I2C_RST_N_1						BIT1
++#define		SW_I2C_RST_N_2						BIT2
++#define		SW_I2C_RST_N_3						BIT3
++#define		SW_I2C_RST_N_4						BIT4
++#define		SW_I2C_RST_N_5						BIT5
++#define		SW_I2C_RST_N_6						BIT6
++#define		SW_I2C_RST_N_7						BIT7
++#define		SW_I2C_RST_N_8						BIT8
++#define		SW_I2C_RST_N_9						BIT9
++
++/*FAN*/
++#define		SW_FAN_RST_N						BIT0
++
++/*PVT*/
++#define		SW_PVT_RST_N_0						BIT0
++#define		SW_PVT_RST_N_1						BIT1
++
++/*MBOX*/
++#define		SW_MBOX_RST_N_0					BIT0
++#define		SW_MBOX_RST_N_1					BIT1
++#define		SW_MBOX_RST_N_2					BIT2
++#define		SW_MBOX_RST_N_3					BIT3
++#define		SW_MBOX_RST_N_4					BIT4
++#define		SW_MBOX_RST_N_5					BIT5
++#define		SW_MBOX_RST_N_6					BIT6
++#define		SW_MBOX_RST_N_7					BIT7
++#define		SW_MBOX_RST_N_8					BIT8
++#define		SW_MBOX_RST_N_9					BIT9
++#define		SW_MBOX_RST_N_10				BIT10
++#define		SW_MBOX_RST_N_11				BIT11
++#define		SW_MBOX_RST_N_12				BIT12
++#define		SW_MBOX_RST_N_13				BIT13
++#define		SW_MBOX_RST_N_14				BIT14
++#define		SW_MBOX_RST_N_15				BIT15
++
++/*UART*/
++#define		SW_UART_RST_N_0					BIT0
++#define		SW_UART_RST_N_1					BIT1
++#define		SW_UART_RST_N_2					BIT2
++#define		SW_UART_RST_N_3					BIT3
++#define		SW_UART_RST_N_4					BIT4
++
++/*GPIO*/
++/*
++#define		SW_GPIO_RST_N_0					BIT0
++#define		SW_GPIO_RST_N_1					BIT1
++*/
++
++/*TIMER*/
++#define		SW_TIMER_RST_N					BIT0
++
++/*SSI*/
++#define		SW_SSI_RST_N_0					BIT0
++#define		SW_SSI_RST_N_1					BIT1
++
++/*WDT*/
++#define		SW_WDT_RST_N_0					BIT0
++#define		SW_WDT_RST_N_1					BIT1
++#define		SW_WDT_RST_N_2					BIT2
++#define		SW_WDT_RST_N_3					BIT3
++
++/*LSP CFG*/
++#define		SW_LSP_CFG_RSTN					BIT0
++
++/*U84 CFG*/
++#define		SW_U84_CORE_RSTN_0				BIT0
++#define		SW_U84_CORE_RSTN_1				BIT1
++#define		SW_U84_CORE_RSTN_2				BIT2
++#define		SW_U84_CORE_RSTN_3				BIT3
++#define		SW_U84_BUS_RSTN					BIT4
++#define		SW_U84_DBG_RSTN					BIT5
++#define		SW_U84_TRACECOM_RSTN				BIT6
++#define		SW_U84_TRACE_RSTN_0				BIT8
++#define		SW_U84_TRACE_RSTN_1				BIT9
++#define		SW_U84_TRACE_RSTN_2				BIT10
++#define		SW_U84_TRACE_RSTN_3				BIT11
++
++/*SCPU*/
++#define		SW_SCPU_CORE_RSTN				BIT0
++#define		SW_SCPU_BUS_RSTN				BIT1
++#define		SW_SCPU_DBG_RSTN				BIT2
++
++/*LPCPU*/
++#define		SW_LPCPU_CORE_RSTN				BIT0
++#define		SW_LPCPU_BUS_RSTN				BIT1
++#define		SW_LPCPU_DBG_RSTN				BIT2
++
++/*VC*/
++#define		SW_VC_CFG_RSTN					BIT0
++#define		SW_VC_AXI_RSTN					BIT1
++#define		SW_VC_MONCFG_RSTN				BIT2
++
++/*JD*/
++#define		SW_JD_CFG_RSTN					BIT0
++#define		SW_JD_AXI_RSTN					BIT1
++
++/*JE*/
++#define		SW_JE_CFG_RSTN					BIT0
++#define		SW_JE_AXI_RSTN					BIT1
++
++/*VD*/
++#define		SW_VD_CFG_RSTN					BIT0
++#define		SW_VD_AXI_RSTN					BIT1
++
++/*VE*/
++#define		SW_VE_AXI_RSTN					BIT0
++#define		SW_VE_CFG_RSTN					BIT1
++
++/*G2D*/
++#define		SW_G2D_CORE_RSTN				BIT0
++#define		SW_G2D_CFG_RSTN					BIT1
++#define		SW_G2D_AXI_RSTN					BIT2
++
++/*VI*/
++#define		SW_VI_AXI_RSTN					BIT0
++#define		SW_VI_CFG_RSTN					BIT1
++#define		SW_VI_DWE_RSTN					BIT2
++
++/*DVP*/
++#define		SW_VI_DVP_RSTN					BIT0
++
++/*ISP0*/
++#define		SW_VI_ISP0_RSTN					BIT0
++
++/*ISP1*/
++#define		SW_VI_ISP1_RSTN					BIT0
++
++/*SHUTTR*/
++#define		SW_VI_SHUTTER_RSTN_0				BIT0
++#define		SW_VI_SHUTTER_RSTN_1				BIT1
++#define		SW_VI_SHUTTER_RSTN_2				BIT2
++#define		SW_VI_SHUTTER_RSTN_3				BIT3
++#define		SW_VI_SHUTTER_RSTN_4				BIT4
++#define		SW_VI_SHUTTER_RSTN_5				BIT5
++
++/*VO PHY*/
++#define		SW_VO_MIPI_PRSTN				BIT0
++#define		SW_VO_PRSTN					BIT1
++#define		SW_VO_HDMI_PRSTN				BIT3
++#define		SW_HDMI_PHYCTRL_RSTN				BIT4
++#define		SW_VO_HDMI_RSTN					BIT5
++
++/*VO I2S*/
++#define		SW_VO_I2S_RSTN					BIT0
++#define		SW_VO_I2S_PRSTN					BIT1
++
++/*VO*/
++#define		SW_VO_AXI_RSTN					BIT0
++#define		SW_VO_CFG_RSTN					BIT1
++#define		SW_VO_DC_RSTN					BIT2
++#define		SW_VO_DC_PRSTN					BIT3
++
++/*BOOTSPI*/
++#define		SW_BOOTSPI_HRSTN				BIT0
++#define		SW_BOOTSPI_RSTN					BIT1
++
++/*I2C1*/
++#define		SW_I2C1_PRSTN					BIT0
++
++/*I2C0*/
++#define		SW_I2C0_PRSTN					BIT0
++
++/*DMA1*/
++#define		SW_DMA1_ARSTN					BIT0
++#define		SW_DMA1_HRSTN					BIT1
++
++/*FPRT*/
++#define		SW_FP_PRT_HRSTN					BIT0
++
++/*HBLOCK*/
++#define		SW_HBLOCK_HRSTN					BIT0
++
++/*SECSR*/
++#define		SW_SECSR_HRSTN					BIT0
++
++/*OTP*/
++#define		SW_OTP_PRSTN					BIT0
++
++/*PKA*/
++#define		SW_PKA_HRSTN					BIT0
++
++/*SPACC*/
++#define		SW_SPACC_RSTN					BIT0
++
++/*TRNG*/
++#define		SW_TRNG_HRSTN					BIT0
++
++/*TIMER0*/
++#define		SW_TIMER0_RSTN_0				BIT0
++#define		SW_TIMER0_RSTN_1				BIT1
++#define		SW_TIMER0_RSTN_2				BIT2
++#define		SW_TIMER0_RSTN_3				BIT3
++#define		SW_TIMER0_RSTN_4				BIT4
++#define		SW_TIMER0_RSTN_5				BIT5
++#define		SW_TIMER0_RSTN_6				BIT6
++#define		SW_TIMER0_RSTN_7				BIT7
++#define		SW_TIMER0_PRSTN					BIT8
++
++/*TIMER1*/
++#define		SW_TIMER1_RSTN_0				BIT0
++#define		SW_TIMER1_RSTN_1				BIT1
++#define		SW_TIMER1_RSTN_2				BIT2
++#define		SW_TIMER1_RSTN_3				BIT3
++#define		SW_TIMER1_RSTN_4				BIT4
++#define		SW_TIMER1_RSTN_5				BIT5
++#define		SW_TIMER1_RSTN_6				BIT6
++#define		SW_TIMER1_RSTN_7				BIT7
++#define		SW_TIMER1_PRSTN					BIT8
++
++/*TIMER2*/
++#define		SW_TIMER2_RSTN_0				BIT0
++#define		SW_TIMER2_RSTN_1				BIT1
++#define		SW_TIMER2_RSTN_2				BIT2
++#define		SW_TIMER2_RSTN_3				BIT3
++#define		SW_TIMER2_RSTN_4				BIT4
++#define		SW_TIMER2_RSTN_5				BIT5
++#define		SW_TIMER2_RSTN_6				BIT6
++#define		SW_TIMER2_RSTN_7				BIT7
++#define		SW_TIMER2_PRSTN					BIT8
++
++/*TIMER3*/
++#define		SW_TIMER3_RSTN_0				BIT0
++#define		SW_TIMER3_RSTN_1				BIT1
++#define		SW_TIMER3_RSTN_2				BIT2
++#define		SW_TIMER3_RSTN_3				BIT3
++#define		SW_TIMER3_RSTN_4				BIT4
++#define		SW_TIMER3_RSTN_5				BIT5
++#define		SW_TIMER3_RSTN_6				BIT6
++#define		SW_TIMER3_RSTN_7				BIT7
++#define		SW_TIMER3_PRSTN					BIT8
++
++/*RTC*/
++#define		SW_RTC_RSTN					BIT0
++
++/*MNOC*/
++#define		SW_MNOC_SNOC_NSP_RSTN				BIT0
++#define		SW_MNOC_VC_ARSTN				BIT1
++#define		SW_MNOC_CFG_RSTN				BIT2
++#define		SW_MNOC_HSP_ARSTN				BIT3
++#define		SW_MNOC_GPU_ARSTN				BIT4
++#define		SW_MNOC_DDRC1_P3_ARSTN				BIT5
++#define		SW_MNOC_DDRC0_P3_ARSTN				BIT6
++
++/*RNOC*/
++#define		SW_RNOC_VO_ARSTN				BIT0
++#define		SW_RNOC_VI_ARSTN				BIT1
++#define		SW_RNOC_SNOC_NSP_RSTN				BIT2
++#define		SW_RNOC_CFG_RSTN				BIT3
++#define		SW_MNOC_DDRC1_P4_ARSTN				BIT4
++#define		SW_MNOC_DDRC0_P4_ARSTN				BIT5
++
++/*CNOC*/
++#define		SW_CNOC_VO_CFG_RSTN				BIT0
++#define		SW_CNOC_VI_CFG_RSTN				BIT1
++#define		SW_CNOC_VC_CFG_RSTN				BIT2
++#define		SW_CNOC_TCU_CFG_RSTN				BIT3
++#define		SW_CNOC_PCIET_CFG_RSTN				BIT4
++#define		SW_CNOC_NPU_CFG_RSTN				BIT5
++#define		SW_CNOC_LSP_CFG_RSTN				BIT6
++#define		SW_CNOC_HSP_CFG_RSTN				BIT7
++#define		SW_CNOC_GPU_CFG_RSTN				BIT8
++#define		SW_CNOC_DSPT_CFG_RSTN				BIT9
++#define		SW_CNOC_DDRT1_CFG_RSTN				BIT10
++#define		SW_CNOC_DDRT0_CFG_RSTN				BIT11
++#define		SW_CNOC_D2D_CFG_RSTN				BIT12
++#define		SW_CNOC_CFG_RSTN				BIT13
++#define		SW_CNOC_CLMM_CFG_RSTN				BIT14
++#define		SW_CNOC_AON_CFG_RSTN				BIT15
++
++/*LNOC*/
++#define		SW_LNOC_CFG_RSTN				BIT0
++#define		SW_LNOC_NPU_LLC_ARSTN				BIT1
++#define		SW_LNOC_DDRC1_P0_ARSTN				BIT2
++#define		SW_LNOC_DDRC0_P0_ARSTN				BIT3
++
++#endif /*endif __DT_ESWIN_EIC7700_SYSCRG_H__*/
+-- 
+2.51.0
+

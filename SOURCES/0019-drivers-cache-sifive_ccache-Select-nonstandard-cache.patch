@@ -1,0 +1,26 @@
+From 36667c2965b14d931fa852a66b8dfcbdd2eabdbf Mon Sep 17 00:00:00 2001
+From: Samuel Holland <samuel.holland@sifive.com>
+Date: Tue, 7 Jan 2025 06:10:16 +0000
+Subject: [PATCH 19/69] drivers: cache: sifive_ccache: Select nonstandard cache
+ ops
+
+Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+---
+ drivers/cache/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cache/Kconfig b/drivers/cache/Kconfig
+index db51386c663a..1de3911c82b4 100644
+--- a/drivers/cache/Kconfig
++++ b/drivers/cache/Kconfig
+@@ -11,6 +11,7 @@ config AX45MP_L2_CACHE
+ config SIFIVE_CCACHE
+ 	bool "Sifive Composable Cache controller"
+ 	depends on ARCH_SIFIVE || ARCH_STARFIVE
++	select RISCV_NONSTANDARD_CACHE_OPS
+ 	help
+ 	  Support for the composable cache controller on SiFive platforms.
+ 
+-- 
+2.51.0
+

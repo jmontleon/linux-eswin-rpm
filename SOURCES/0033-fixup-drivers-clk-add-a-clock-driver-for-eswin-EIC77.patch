@@ -1,0 +1,38 @@
+From 44d158abe6d1da2865ac291d7fa84ea213b3563a Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 29 Apr 2025 21:49:20 -0400
+Subject: [PATCH 33/69] fixup! drivers: clk: add a clock driver for eswin
+ EIC7700
+
+remove executable bit from source code files
+---
+ drivers/clk/eswin/Kconfig       | 0
+ drivers/clk/eswin/Makefile      | 0
+ drivers/clk/eswin/clk-eic7700.c | 0
+ drivers/clk/eswin/clk.c         | 0
+ drivers/clk/eswin/clk.h         | 0
+ 5 files changed, 0 insertions(+), 0 deletions(-)
+ mode change 100755 => 100644 drivers/clk/eswin/Kconfig
+ mode change 100755 => 100644 drivers/clk/eswin/Makefile
+ mode change 100755 => 100644 drivers/clk/eswin/clk-eic7700.c
+ mode change 100755 => 100644 drivers/clk/eswin/clk.c
+ mode change 100755 => 100644 drivers/clk/eswin/clk.h
+
+diff --git a/drivers/clk/eswin/Kconfig b/drivers/clk/eswin/Kconfig
+old mode 100755
+new mode 100644
+diff --git a/drivers/clk/eswin/Makefile b/drivers/clk/eswin/Makefile
+old mode 100755
+new mode 100644
+diff --git a/drivers/clk/eswin/clk-eic7700.c b/drivers/clk/eswin/clk-eic7700.c
+old mode 100755
+new mode 100644
+diff --git a/drivers/clk/eswin/clk.c b/drivers/clk/eswin/clk.c
+old mode 100755
+new mode 100644
+diff --git a/drivers/clk/eswin/clk.h b/drivers/clk/eswin/clk.h
+old mode 100755
+new mode 100644
+-- 
+2.51.0
+

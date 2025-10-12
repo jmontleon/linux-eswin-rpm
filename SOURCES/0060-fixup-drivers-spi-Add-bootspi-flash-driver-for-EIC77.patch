@@ -1,0 +1,26 @@
+From 43aaf92e9c5b8e15e42cedafed81cc72eabe9b69 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Wed, 16 Apr 2025 19:07:17 -0400
+Subject: [PATCH 60/69] fixup! drivers: spi: Add bootspi flash driver for
+ EIC7700
+
+added a softdep on spi-nor to make it be probed before bootspi.
+Without this hint, spi-nor is not probed at all and even if probed
+later manually this driver does not work. The flow must be
+spi-nor -> bootspi in order to successfully get /dev/mtd0.
+---
+ drivers/spi/spi-eswin-bootspi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/spi/spi-eswin-bootspi.c b/drivers/spi/spi-eswin-bootspi.c
+index c8fbc1b3fc91..2f4aaf7e998c 100644
+--- a/drivers/spi/spi-eswin-bootspi.c
++++ b/drivers/spi/spi-eswin-bootspi.c
+@@ -656,3 +656,4 @@ module_platform_driver(eswin_bootspi_driver);
+ MODULE_AUTHOR("Huangyifeng <huangyifeng@eswincomputing.com>");
+ MODULE_DESCRIPTION("Eswin Boot SPI Controller Driver for EIC770X SoCs");
+ MODULE_LICENSE("GPL v2");
++MODULE_SOFTDEP("pre: spi-nor");
+-- 
+2.51.0
+

@@ -1,0 +1,28 @@
+From f9c22972a6d5e08aeef16dff01f96d6eae0b5709 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 29 Apr 2025 21:50:52 -0400
+Subject: [PATCH 32/69] fixup! include: dt-bindings: Add dt-bindings for
+ EIC7700X
+
+remove executable bit from source code files
+---
+ include/dt-bindings/clock/eic7700-clock.h   | 0
+ include/dt-bindings/mailbox/eswin-mailbox.h | 0
+ include/dt-bindings/reset/eic7700-syscrg.h  | 0
+ 3 files changed, 0 insertions(+), 0 deletions(-)
+ mode change 100755 => 100644 include/dt-bindings/clock/eic7700-clock.h
+ mode change 100755 => 100644 include/dt-bindings/mailbox/eswin-mailbox.h
+ mode change 100755 => 100644 include/dt-bindings/reset/eic7700-syscrg.h
+
+diff --git a/include/dt-bindings/clock/eic7700-clock.h b/include/dt-bindings/clock/eic7700-clock.h
+old mode 100755
+new mode 100644
+diff --git a/include/dt-bindings/mailbox/eswin-mailbox.h b/include/dt-bindings/mailbox/eswin-mailbox.h
+old mode 100755
+new mode 100644
+diff --git a/include/dt-bindings/reset/eic7700-syscrg.h b/include/dt-bindings/reset/eic7700-syscrg.h
+old mode 100755
+new mode 100644
+-- 
+2.51.0
+

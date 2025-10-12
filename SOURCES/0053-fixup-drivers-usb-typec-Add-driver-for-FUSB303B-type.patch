@@ -1,0 +1,27 @@
+From 2a5945ab54962357072b1f7d58dc08ab28a98373 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 29 Apr 2025 11:23:42 -0400
+Subject: [PATCH 53/69] fixup! drivers: usb: typec: Add driver for FUSB303B
+ type C controller
+
+replace deprecated strlcpy
+---
+ drivers/usb/typec/tcpm/fusb303b.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/typec/tcpm/fusb303b.c b/drivers/usb/typec/tcpm/fusb303b.c
+index b17c554c2b66..f49f8f1b0032 100644
+--- a/drivers/usb/typec/tcpm/fusb303b.c
++++ b/drivers/usb/typec/tcpm/fusb303b.c
+@@ -141,7 +141,7 @@ __printf(2, 0) static void _fusb303b_log(struct fusb303b_chip *chip,
+ 
+ 	if (fusb303b_log_full(chip)) {
+ 		chip->logbuffer_head = max(chip->logbuffer_head - 1, 0);
+-		strlcpy(tmpbuffer, "overflow", sizeof(tmpbuffer));
++		strscpy(tmpbuffer, "overflow", sizeof(tmpbuffer));
+ 	}
+ 
+ 	if (chip->logbuffer_head < 0 ||
+-- 
+2.51.0
+

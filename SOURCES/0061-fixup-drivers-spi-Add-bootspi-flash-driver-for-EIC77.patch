@@ -1,0 +1,33 @@
+From 323abe410a6cd4a76f459900d5763842d35dc29d Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 22 Apr 2025 12:02:07 -0400
+Subject: [PATCH 61/69] fixup! drivers: spi: Add bootspi flash driver for
+ EIC7700
+
+correct signature on remove function
+---
+ drivers/spi/spi-eswin-bootspi.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/spi/spi-eswin-bootspi.c b/drivers/spi/spi-eswin-bootspi.c
+index 2f4aaf7e998c..4c299ddbd71b 100644
+--- a/drivers/spi/spi-eswin-bootspi.c
++++ b/drivers/spi/spi-eswin-bootspi.c
+@@ -617,13 +617,12 @@ static int eswin_bootspi_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int eswin_bootspi_remove(struct platform_device *pdev)
++static void eswin_bootspi_remove(struct platform_device *pdev)
+ {
+ 	struct es_spi_priv *priv = platform_get_drvdata(pdev);
+ 	struct spi_controller *master = priv->master;
+ 
+ 	spi_master_put(master);
+-	return 0;
+ }
+ 
+ static const struct of_device_id eswin_bootspi_of_match[] = {
+-- 
+2.51.0
+

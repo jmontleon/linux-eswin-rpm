@@ -1,0 +1,405 @@
+From 6050fa1c6316230ae7437ee83965173d1d8d5b30 Mon Sep 17 00:00:00 2001
+From: Samuel Holland <samuel.holland@sifive.com>
+Date: Thu, 31 Oct 2024 19:33:42 -0700
+Subject: [PATCH 18/69] riscv: mm: Use physical memory aliases to apply PMAs
+
+On some RISC-V platforms, RAM is mapped to multiple physical address
+ranges, with each alias having a different set of statically-determined
+Physical Memory Attributes (PMAs). Software selects the PMAs for a page
+by choosing a PFN from the corresponding physical address range.
+
+Implement this by transforming the PFN when writing page tables.  If the
+memory type field is nonzero, replace the PFN with the corresponding PFN
+from the noncached alias. Similarly, when reading from the page tables,
+if the PFN is found in a noncached alias, replace it with the
+corresponding PFN from the cached alias, and insert _PAGE_NOCACHE.
+
+The rest of the kernel sees only the cached PFNs and _PAGE_MTMASK values
+as if Svpbmt was implemented.
+
+Memory alias pairs are determined from the devicetree. A new cpufeature
+bit is required because that is the only way to trigger alternative
+patching.
+
+Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+
+Conflicts:
+	arch/riscv/include/asm/hwcap.h
+	arch/riscv/kernel/cpufeature.c
+---
+ arch/riscv/Kconfig                  |   3 +
+ arch/riscv/include/asm/hwcap.h      |   3 +
+ arch/riscv/include/asm/pgtable-64.h |  27 ++++++--
+ arch/riscv/include/asm/pgtable.h    |   8 +++
+ arch/riscv/kernel/cpufeature.c      |   6 ++
+ arch/riscv/kernel/setup.c           |   1 +
+ arch/riscv/mm/Makefile              |   1 +
+ arch/riscv/mm/memory-alias.S        | 101 ++++++++++++++++++++++++++++
+ arch/riscv/mm/pgtable.c             |  91 +++++++++++++++++++++++++
+ 9 files changed, 237 insertions(+), 4 deletions(-)
+ create mode 100644 arch/riscv/mm/memory-alias.S
+
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 51dcd8eaa243..9009d413cbea 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -620,6 +620,9 @@ config RISCV_ISA_SVPBMT
+ 
+ 	   The Svpbmt extension is only available on 64-bit cpus.
+ 
++	   This option also controls selection of memory type based on
++	   physical memory aliases.
++
+ 	   If you don't know what to do here, say Y.
+ 
+ config TOOLCHAIN_HAS_V
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index affd63e11b0a..d8dd9db1f148 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -106,12 +106,15 @@
+ #define RISCV_ISA_EXT_ZAAMO		97
+ #define RISCV_ISA_EXT_ZALRSC		98
+ #define RISCV_ISA_EXT_ZICBOP		99
++#define RISCV_ISA_EXT_XLINUXMEMALIAS	126
+ 
+ #define RISCV_ISA_EXT_XLINUXENVCFG	127
+ 
+ #define RISCV_ISA_EXT_MAX		128
+ #define RISCV_ISA_EXT_INVALID		U32_MAX
+ 
++
++
+ #ifdef CONFIG_RISCV_M_MODE
+ #define RISCV_ISA_EXT_SxAIA		RISCV_ISA_EXT_SMAIA
+ #define RISCV_ISA_EXT_SUPM		RISCV_ISA_EXT_SMNPM
+diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
+index 1b6a737e67e9..23badd2332ad 100644
+--- a/arch/riscv/include/asm/pgtable-64.h
++++ b/arch/riscv/include/asm/pgtable-64.h
+@@ -128,27 +128,46 @@ enum napot_cont_order {
+ #define _PAGE_MTMASK_THEAD	(_PAGE_PMA_THEAD | _PAGE_IO_THEAD | (1UL << 59))
+ 
+ #define ALT_FIXUP_MT(_val)								\
+-	asm(ALTERNATIVE_2("addi	t0, zero, 0x3\n\t"					\
++	asm(ALTERNATIVE_3("addi	t0, zero, 0x3\n\t"					\
+ 			  "slli	t0, t0, 61\n\t"						\
+ 			  "not	t0, t0\n\t"						\
+ 			  "and	%0, %0, t0\n\t"						\
+ 			  "nop\n\t"							\
+ 			  "nop\n\t"							\
++			  "nop\n\t"							\
+ 			  "nop",							\
+-			  __nops(7),							\
++			  __nops(8),							\
+ 			  0, RISCV_ISA_EXT_SVPBMT, CONFIG_RISCV_ISA_SVPBMT,		\
++			  "addi t0, zero, 0x3\n\t"					\
++			  "slli	t0, t0, 61\n\t"						\
++			  "and	t0, %0, t0\n\t"						\
++			  "beqz t0, 2f\n\t"						\
++			  "xor	t1, %0, t0\n\t"						\
++			  "1: auipc t0, %%pcrel_hi(riscv_fixup_memory_alias)\n\t"	\
++			  "jalr	t0, t0, %%pcrel_lo(1b)\n\t"				\
++			  "mv	%0, t1\n"						\
++			  "2:",								\
++			  0, RISCV_ISA_EXT_XLINUXMEMALIAS, CONFIG_RISCV_ISA_SVPBMT,	\
+ 			  "srli	t0, %0, 59\n\t"						\
+ 			  "seqz t1, t0\n\t"						\
+ 			  "slli	t1, t1, 1\n\t"						\
+ 			  "or	t0, t0, t1\n\t"						\
+ 			  "xori	t0, t0, 0x5\n\t"					\
+ 			  "slli	t0, t0, 60\n\t"						\
+-			  "xor	%0, %0, t0",						\
++			  "xor	%0, %0, t0\n\t"						\
++			  "nop",							\
+ 			  THEAD_VENDOR_ID, ERRATA_THEAD_MAE, CONFIG_ERRATA_THEAD_MAE)	\
+ 			  : "+r" (_val) :: "t0", "t1")
+ 
+ #define ALT_UNFIX_MT(_val)								\
+-	asm(ALTERNATIVE(__nops(6),							\
++	asm(ALTERNATIVE_2(__nops(6),							\
++			  "mv	t1, %0\n\t"						\
++			  "1: auipc t0, %%pcrel_hi(riscv_unfix_memory_alias)\n\t"	\
++			  "jalr	t0, t0, %%pcrel_lo(1b)\n\t"				\
++			  "mv	%0, t1\n\t"						\
++			  "nop\n\t"							\
++			  "nop",							\
++			  0, RISCV_ISA_EXT_XLINUXMEMALIAS, CONFIG_RISCV_ISA_SVPBMT,	\
+ 			  "srli	t0, %0, 60\n\t"						\
+ 			  "andi	t0, t0, 0xd\n\t"					\
+ 			  "srli	t1, t0, 1\n\t"						\
+diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+index c7e70886e596..3916ea4d9cf3 100644
+--- a/arch/riscv/include/asm/pgtable.h
++++ b/arch/riscv/include/asm/pgtable.h
+@@ -1105,6 +1105,14 @@ extern u64 satp_mode;
+ void paging_init(void);
+ void misc_mem_init(void);
+ 
++#ifdef CONFIG_RISCV_ISA_SVPBMT
++bool __init riscv_have_memory_alias(void);
++void __init riscv_init_memory_alias(void);
++#else
++static inline bool riscv_have_memory_alias(void) { return false; }
++static inline void riscv_init_memory_alias(void) {}
++#endif /* CONFIG_RISCV_ISA_SVPBMT */
++
+ /*
+  * ZERO_PAGE is a global shared page that is always zero,
+  * used for zero-mapped memory areas, etc.
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index 743d53415572..1449c43eab72 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -1093,6 +1093,12 @@ void __init riscv_fill_hwcap(void)
+ 		riscv_v_setup_vsize();
+ 	}
+ 
++	/* Vendor-independent alternatives require a bit in the ISA bitmap. */
++	if (riscv_have_memory_alias()) {
++		set_bit(RISCV_ISA_EXT_XLINUXMEMALIAS, riscv_isa);
++		pr_info("Using physical memory alias for noncached mappings\n");
++	}
++
+ 	memset(print_str, 0, sizeof(print_str));
+ 	for (i = 0, j = 0; i < NUM_ALPHA_EXTS; i++)
+ 		if (riscv_isa[0] & BIT_MASK(i))
+diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
+index f90cce7a3ace..00569c4fef49 100644
+--- a/arch/riscv/kernel/setup.c
++++ b/arch/riscv/kernel/setup.c
+@@ -353,6 +353,7 @@ void __init setup_arch(char **cmdline_p)
+ 	}
+ 
+ 	riscv_init_cbo_blocksizes();
++	riscv_init_memory_alias();
+ 	riscv_fill_hwcap();
+ 	apply_boot_alternatives();
+ 	init_rt_signal_env();
+diff --git a/arch/riscv/mm/Makefile b/arch/riscv/mm/Makefile
+index b916a68d324a..27eefa08df05 100644
+--- a/arch/riscv/mm/Makefile
++++ b/arch/riscv/mm/Makefile
+@@ -33,3 +33,4 @@ endif
+ obj-$(CONFIG_DEBUG_VIRTUAL) += physaddr.o
+ obj-$(CONFIG_RISCV_DMA_NONCOHERENT) += dma-noncoherent.o
+ obj-$(CONFIG_RISCV_NONSTANDARD_CACHE_OPS) += cache-ops.o
++obj-$(CONFIG_RISCV_ISA_SVPBMT) += memory-alias.o
+diff --git a/arch/riscv/mm/memory-alias.S b/arch/riscv/mm/memory-alias.S
+new file mode 100644
+index 000000000000..df2e8cc3f69c
+--- /dev/null
++++ b/arch/riscv/mm/memory-alias.S
+@@ -0,0 +1,101 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2024 SiFive
++ */
++
++#include <linux/bits.h>
++#include <linux/linkage.h>
++#include <asm/asm.h>
++#include <asm/pgtable.h>
++
++#define CACHED_BASE_OFFSET	(0 * RISCV_SZPTR)
++#define NONCACHED_BASE_OFFSET	(1 * RISCV_SZPTR)
++#define SIZE_OFFSET		(2 * RISCV_SZPTR)
++
++#define SIZEOF_PAIR		(4 * RISCV_SZPTR)
++
++SYM_CODE_START(riscv_fixup_memory_alias)
++	addi	sp, sp, -4 * SZREG
++	REG_S	t2, (0 * SZREG)(sp)
++	REG_S	t3, (1 * SZREG)(sp)
++	REG_S	t4, (2 * SZREG)(sp)
++#ifdef CONFIG_RISCV_ISA_SVNAPOT
++	REG_S	t5, (3 * SZREG)(sp)
++
++	/* Save and mask off _PAGE_NAPOT if present. */
++	li	t5, _PAGE_NAPOT
++	and	t5, t1, t5
++	xor	t1, t1, t5
++#endif
++
++	lla	t2, memory_alias_pairs
++.Lfixup_loop:
++	REG_L	t3, SIZE_OFFSET(t2)
++	beqz	t3, .Lfixup_end
++	REG_L	t4, CACHED_BASE_OFFSET(t2)
++	sub	t4, t1, t4
++	bltu	t4, t3, .Lfixup_found
++	addi	t2, t2, SIZEOF_PAIR
++	j	.Lfixup_loop
++
++.Lfixup_found:
++	REG_L	t3, NONCACHED_BASE_OFFSET(t2)
++	add	t1, t3, t4
++
++.Lfixup_end:
++#ifdef CONFIG_RISCV_ISA_SVNAPOT
++	xor	t1, t1, t5
++
++	REG_L	t5, (3 * SZREG)(sp)
++#endif
++	REG_L	t4, (2 * SZREG)(sp)
++	REG_L	t3, (1 * SZREG)(sp)
++	REG_L	t2, (0 * SZREG)(sp)
++	addi	sp, sp, 4 * SZREG
++	jr	t0
++SYM_CODE_END(riscv_fixup_memory_alias)
++
++SYM_CODE_START(riscv_unfix_memory_alias)
++	addi	sp, sp, -4 * SZREG
++	REG_S	t2, (0 * SZREG)(sp)
++	REG_S	t3, (1 * SZREG)(sp)
++	REG_S	t4, (2 * SZREG)(sp)
++#ifdef CONFIG_RISCV_ISA_SVNAPOT
++	REG_S	t5, (3 * SZREG)(sp)
++
++	/* Save and mask off _PAGE_NAPOT if present. */
++	li	t5, _PAGE_NAPOT
++	and	t5, t1, t5
++	xor	t1, t1, t5
++#endif
++
++	lla	t2, memory_alias_pairs
++.Lunfix_loop:
++	REG_L	t3, SIZE_OFFSET(t2)
++	beqz	t3, .Lunfix_end
++	REG_L	t4, NONCACHED_BASE_OFFSET(t2)
++	sub	t4, t1, t4
++	bltu	t4, t3, .Lunfix_found
++	addi	t2, t2, SIZEOF_PAIR
++	j	.Lunfix_loop
++
++.Lunfix_found:
++	REG_L	t3, CACHED_BASE_OFFSET(t2)
++	add	t1, t3, t4
++
++	/* PFN was in the noncached alias, so mark it as such. */
++	li	t2, _PAGE_NOCACHE
++	or	t1, t1, t2
++
++.Lunfix_end:
++#ifdef CONFIG_RISCV_ISA_SVNAPOT
++	xor	t1, t1, t5
++
++	REG_L	t5, (3 * SZREG)(sp)
++#endif
++	REG_L	t4, (2 * SZREG)(sp)
++	REG_L	t3, (1 * SZREG)(sp)
++	REG_L	t2, (0 * SZREG)(sp)
++	addi	sp, sp, 4 * SZREG
++	jr	t0
++SYM_CODE_END(riscv_unfix_memory_alias)
+diff --git a/arch/riscv/mm/pgtable.c b/arch/riscv/mm/pgtable.c
+index 8b6c0a112a8d..cddeaa66fec7 100644
+--- a/arch/riscv/mm/pgtable.c
++++ b/arch/riscv/mm/pgtable.c
+@@ -1,8 +1,12 @@
+ // SPDX-License-Identifier: GPL-2.0
+ 
+ #include <asm/pgalloc.h>
++#include <dt-bindings/riscv/physical-memory.h>
++#include <linux/bitfield.h>
+ #include <linux/gfp.h>
+ #include <linux/kernel.h>
++#include <linux/memblock.h>
++#include <linux/of.h>
+ #include <linux/pgtable.h>
+ 
+ int ptep_set_access_flags(struct vm_area_struct *vma,
+@@ -165,3 +169,90 @@ pud_t pudp_invalidate(struct vm_area_struct *vma, unsigned long address,
+ 	return old;
+ }
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
++
++#ifdef CONFIG_RISCV_ISA_SVPBMT
++struct memory_alias_pair {
++	unsigned long cached_base;
++	unsigned long noncached_base;
++	unsigned long size;
++	int index;
++} memory_alias_pairs[5];
++
++bool __init riscv_have_memory_alias(void)
++{
++	return memory_alias_pairs[0].size;
++}
++
++void __init riscv_init_memory_alias(void)
++{
++	int na = of_n_addr_cells(of_root);
++	int ns = of_n_size_cells(of_root);
++	int nc = na + ns + 2;
++	const __be32 *prop;
++	int pairs = 0;
++	int len;
++
++	prop = of_get_property(of_root, "riscv,physical-memory-regions", &len);
++	if (!prop)
++		return;
++
++	len /= sizeof(__be32);
++	for (int i = 0; len >= nc; i++, prop += nc, len -= nc) {
++		unsigned long base = of_read_ulong(prop, na);
++		unsigned long size = of_read_ulong(prop + na, ns);
++		unsigned long flags = be32_to_cpup(prop + na + ns);
++		struct memory_alias_pair *pair;
++		int alias;
++
++		/* We only care about non-coherent memory. */
++		if ((flags & PMA_ORDER_MASK) != PMA_ORDER_MEMORY || (flags & PMA_COHERENT))
++			continue;
++
++		/* The cacheable alias must be usable memory. */
++		if ((flags & PMA_CACHEABLE) &&
++		    !memblock_overlaps_region(&memblock.memory, base, size))
++			continue;
++
++		alias = FIELD_GET(PMR_ALIAS_MASK, flags);
++		if (alias) {
++			pair = NULL;
++			for (int j = 0; j < pairs; j++) {
++				if (alias == memory_alias_pairs[j].index) {
++					pair = &memory_alias_pairs[j];
++					break;
++				}
++			}
++			if (!pair)
++				continue;
++		} else {
++			/* Leave room for the null sentinel. */
++			if (pairs == ARRAY_SIZE(memory_alias_pairs) - 1)
++				continue;
++			pair = &memory_alias_pairs[pairs++];
++			pair->index = i;
++		}
++
++		/* Align the address and size with the page table PFN field. */
++		base >>= PAGE_SHIFT - _PAGE_PFN_SHIFT;
++		size >>= PAGE_SHIFT - _PAGE_PFN_SHIFT;
++
++		if (flags & PMA_CACHEABLE)
++			pair->cached_base = base;
++		else
++			pair->noncached_base = base;
++		pair->size = min_not_zero(pair->size, size);
++	}
++
++	/* Remove any unmatched pairs. */
++	for (int i = 0; i < pairs; i++) {
++		struct memory_alias_pair *pair = &memory_alias_pairs[i];
++
++		if (pair->cached_base && pair->noncached_base && pair->size)
++			continue;
++
++		for (int j = i + 1; j < pairs; j++)
++			memory_alias_pairs[j - 1] = memory_alias_pairs[j];
++		memory_alias_pairs[--pairs].size = 0;
++	}
++}
++#endif /* CONFIG_RISCV_ISA_SVPBMT */
+-- 
+2.51.0
+
