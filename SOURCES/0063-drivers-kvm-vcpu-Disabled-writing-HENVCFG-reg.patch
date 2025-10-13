@@ -1,0 +1,51 @@
+From 172f5a1a6cb0df3ca2253750486f98ebe9597e34 Mon Sep 17 00:00:00 2001
+From: Pritesh Patel <pritesh.patel@einfochips.com>
+Date: Tue, 30 Jul 2024 14:17:25 +0000
+Subject: [PATCH 63/74] drivers: kvm: vcpu: Disabled writing HENVCFG reg
+
+HENVCFG register is not present in EIC7700 SOC. So disabled writing
+this register
+
+Signed-off-by: Pritesh Patel <pritesh.patel@einfochips.com>
+
+(cherry picked from commit 095727c64d945c82d8152dc69484922aa34705d9)
+https://github.com/sifiveinc/riscv-linux/commit/095727c64d945c82d8152dc69484922aa34705d9
+
+Conflicts:
+	arch/riscv/kvm/vcpu.c code change due to upstream commit
+	fe0bab701e3b7 ("RISC-V: KVM: Add kvm_vcpu_config") which
+	moved where the henvcfg CSR is actually written.
+
+Conflicts:
+	arch/riscv/kvm/vcpu.c
+---
+ arch/riscv/kvm/vcpu.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index bccb919ca615..18b2db835833 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -593,7 +593,9 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 		nacl_csr_write(nsh, CSR_HEDELEG, cfg->hedeleg);
+ 		nacl_csr_write(nsh, CSR_HVIP, csr->hvip);
+ 		nacl_csr_write(nsh, CSR_VSATP, csr->vsatp);
++#ifndef CONFIG_SOC_SIFIVE_EIC7700
+ 		nacl_csr_write(nsh, CSR_HENVCFG, cfg->henvcfg);
++#endif
+ 		if (IS_ENABLED(CONFIG_32BIT))
+ 			nacl_csr_write(nsh, CSR_HENVCFGH, cfg->henvcfg >> 32);
+ 		if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
+@@ -612,7 +614,9 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 		csr_write(CSR_HEDELEG, cfg->hedeleg);
+ 		csr_write(CSR_HVIP, csr->hvip);
+ 		csr_write(CSR_VSATP, csr->vsatp);
++#ifndef CONFIG_SOC_SIFIVE_EIC7700
+ 		csr_write(CSR_HENVCFG, cfg->henvcfg);
++#endif
+ 		if (IS_ENABLED(CONFIG_32BIT))
+ 			csr_write(CSR_HENVCFGH, cfg->henvcfg >> 32);
+ 		if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
+-- 
+2.51.0
+

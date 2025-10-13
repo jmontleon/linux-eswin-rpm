@@ -1,0 +1,27 @@
+From fb1ccb35207bedac222859793e7b2b1e2acf6088 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 29 Apr 2025 11:24:15 -0400
+Subject: [PATCH 59/74] fixup! drivers: usb: typec: Add driver for FUSB303B
+ type C controller
+
+add missing static to prevent warning
+---
+ drivers/usb/typec/tcpm/fusb303b.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/typec/tcpm/fusb303b.c b/drivers/usb/typec/tcpm/fusb303b.c
+index f49f8f1b0032..c7d8215173b1 100644
+--- a/drivers/usb/typec/tcpm/fusb303b.c
++++ b/drivers/usb/typec/tcpm/fusb303b.c
+@@ -375,7 +375,7 @@ static s32 fusb303b_set_port_check(struct fusb303b_chip *chip,
+ 	return ret;
+ }
+ 
+-int fusb303b_set_usb_role(struct fusb303b_chip *chip)
++static int fusb303b_set_usb_role(struct fusb303b_chip *chip)
+ {
+ 	u8 type = 0;
+ 	int ret = 0;
+-- 
+2.51.0
+

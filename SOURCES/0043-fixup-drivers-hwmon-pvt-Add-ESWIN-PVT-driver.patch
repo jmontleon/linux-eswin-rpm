@@ -1,0 +1,22 @@
+From 5fb5509e67f41894d2b29ff6c9c651a63e4688e6 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 29 Apr 2025 21:31:32 -0400
+Subject: [PATCH 43/74] fixup! drivers: hwmon: pvt: Add ESWIN PVT driver
+
+fix whitespace error
+---
+ drivers/hwmon/eswin_pvt.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/hwmon/eswin_pvt.h b/drivers/hwmon/eswin_pvt.h
+index 1c0c9252317c..f321d44a123d 100644
+--- a/drivers/hwmon/eswin_pvt.h
++++ b/drivers/hwmon/eswin_pvt.h
+@@ -224,4 +224,3 @@ struct pvt_poly {
+ };
+ 
+ #endif /* __HWMON_ESWIN_PVT_H__ */
+-
+-- 
+2.51.0
+

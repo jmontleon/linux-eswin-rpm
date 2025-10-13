@@ -1,0 +1,29 @@
+From 92114ceb7363f547477a29f374a2cd0a111e7b56 Mon Sep 17 00:00:00 2001
+From: Jason Montleon <jmontleo@redhat.com>
+Date: Sun, 12 Oct 2025 17:11:25 -0400
+Subject: [PATCH 05/74] Revert "pinctrl: eswin: Fix unsigned comparison to less
+ than zero issue"
+
+This reverts commit 6cb0e9da949aeb022b28a9b698f767c8828e283d.
+---
+ drivers/pinctrl/pinctrl-eic7700.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pinctrl/pinctrl-eic7700.c b/drivers/pinctrl/pinctrl-eic7700.c
+index 4874b5532343..719cd11e276a 100644
+--- a/drivers/pinctrl/pinctrl-eic7700.c
++++ b/drivers/pinctrl/pinctrl-eic7700.c
+@@ -622,8 +622,8 @@ static int eic7700_pinctrl_probe(struct platform_device *pdev)
+ 	struct pinctrl_dev *pctldev;
+ 	struct eic7700_pinctrl *pc;
+ 	struct regulator *regulator;
+-	u32 rgmii0_mode, rgmii1_mode;
+-	int ret, voltage;
++	u32 voltage, rgmii0_mode, rgmii1_mode;
++	int ret;
+ 
+ 	pc = devm_kzalloc(dev, struct_size(pc, functions, EIC7700_FUNCTIONS_COUNT), GFP_KERNEL);
+ 	if (!pc)
+-- 
+2.51.0
+

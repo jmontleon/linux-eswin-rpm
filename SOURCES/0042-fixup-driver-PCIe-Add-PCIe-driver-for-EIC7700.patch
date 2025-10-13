@@ -1,0 +1,37 @@
+From 44dbc5e7bb3c3478adeba00cf29b2b5f61d851bd Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Wed, 9 Apr 2025 13:04:03 -0400
+Subject: [PATCH 42/74] fixup! driver: PCIe: Add PCIe driver for EIC7700
+
+I missed changing the signature of remove when fwd porting this driver
+because its assignment to the actual struct was guarded by __exit_p and
+I was not compiling with CONFIG_MODULES when testing.
+---
+ drivers/pci/controller/dwc/pcie-eswin.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/pci/controller/dwc/pcie-eswin.c b/drivers/pci/controller/dwc/pcie-eswin.c
+index 42fc750c4893..853763ae9223 100644
+--- a/drivers/pci/controller/dwc/pcie-eswin.c
++++ b/drivers/pci/controller/dwc/pcie-eswin.c
+@@ -269,7 +269,7 @@ static const struct dw_pcie_ops dw_pcie_ops = {
+ 	.link_up = eswin_pcie_link_up,
+ };
+ 
+-static int __exit eswin_pcie_remove(struct platform_device *pdev)
++static void __exit eswin_pcie_remove(struct platform_device *pdev)
+ {
+ 	struct eswin_pcie *pcie = platform_get_drvdata(pdev);
+ 
+@@ -277,8 +277,6 @@ static int __exit eswin_pcie_remove(struct platform_device *pdev)
+ 
+ 	eswin_pcie_power_off(pcie);
+ 	eswin_pcie_clk_disable(pcie);
+-
+-	return 0;
+ }
+ 
+ static int eswin_pcie_probe(struct platform_device *pdev)
+-- 
+2.51.0
+

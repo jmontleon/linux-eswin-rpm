@@ -1,0 +1,27 @@
+From 722819dc2647dda4b46a870a07851b0bbb284a99 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 29 Apr 2025 10:33:02 -0400
+Subject: [PATCH 67/74] fixup! drivers: spi: Add bootspi flash driver for
+ EIC7700
+
+add missing static to prevent warning
+---
+ drivers/spi/spi-eswin-bootspi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/spi/spi-eswin-bootspi.c b/drivers/spi/spi-eswin-bootspi.c
+index 4c299ddbd71b..54a3bf677451 100644
+--- a/drivers/spi/spi-eswin-bootspi.c
++++ b/drivers/spi/spi-eswin-bootspi.c
+@@ -284,7 +284,7 @@ static void eswin_bootspi_cmd_cfg(struct es_spi_priv *priv, u32 code, u32 type)
+  * @param [in]  wr_dest: Address of data to be sent
+  * @param [in]  size: size of flash to be write
+  */
+-void eswin_bootspi_writer(struct es_spi_priv *priv)
++static void eswin_bootspi_writer(struct es_spi_priv *priv)
+ {
+ 	u32 write_size = 0, offset, cmd_code;
+ 	u32 cmd_type = priv->cmd_type;
+-- 
+2.51.0
+
