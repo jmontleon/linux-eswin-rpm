@@ -1,4 +1,4 @@
-From fc783878ccbc372434c13d87e3cc8ec6df784a27 Mon Sep 17 00:00:00 2001
+From 09cc36fdbba5db3d6da96ab1a68d603945891b98 Mon Sep 17 00:00:00 2001
 From: Wei Yang <yangwei1@eswincomputing.com>
 Date: Tue, 30 Jul 2024 15:10:52 +0000
 Subject: [PATCH 47/69] drivers: hwmon: PAC1934: Add PAC1934 driver

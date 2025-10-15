@@ -1,4 +1,4 @@
-From 3938e892b38bb8c1a6248a41c8f0f7cf749fd130 Mon Sep 17 00:00:00 2001
+From 22b602c1a81ee1206f06eabe9ee0dd4d30aa46e7 Mon Sep 17 00:00:00 2001
 From: Yanko Kaneti <yaneti@declera.com>
 Date: Wed, 13 Aug 2025 17:22:03 +0300
 Subject: [PATCH 68/69] Use the appropriate phy-mode for the EIC7700 MACs (#2)

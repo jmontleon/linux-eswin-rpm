@@ -1,4 +1,4 @@
-From f317c9576fe4910a31e84ddeb00ac56f322bc071 Mon Sep 17 00:00:00 2001
+From 6231131aa1716efff3ebf5f72a4549be628424f4 Mon Sep 17 00:00:00 2001
 From: Min Lin <linmin@eswincomputing.com>
 Date: Mon, 6 Jan 2025 12:45:00 +0000
 Subject: [PATCH 03/69] include: dt-bindings: Add dt-bindings for EIC7700X

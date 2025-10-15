@@ -1,4 +1,4 @@
-From bcd7852a6573941ee24522638f62713c065bc8e8 Mon Sep 17 00:00:00 2001
+From 59f8cc40f6834dcfdc1c2410a4a697e3a095fe9a Mon Sep 17 00:00:00 2001
 From: Yulin Lu <luyulin@eswincomputing.com>
 Date: Tue, 7 Jan 2025 03:55:52 +0000
 Subject: [PATCH 08/69] drivers: pinctrl: add pinctrl driver for HiFive Premier
@@ -16,10 +16,10 @@ Signed-off-by: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
  3 files changed, 1273 insertions(+), 607 deletions(-)
 
 diff --git a/drivers/pinctrl/Kconfig b/drivers/pinctrl/Kconfig
-index be1ca8e85754..f962d205a5b9 100644
+index 0402626c4b98..e95d281fe4b9 100644
 --- a/drivers/pinctrl/Kconfig
 +++ b/drivers/pinctrl/Kconfig
-@@ -243,6 +243,16 @@ config PINCTRL_EQUILIBRIUM
+@@ -245,6 +245,16 @@ config PINCTRL_EQUILIBRIUM
  	  desired pin functions, configure GPIO attributes for LGM SoC pins.
  	  Pin muxing and pin config settings are retrieved from device tree.
  
@@ -49,7 +49,7 @@ index 909ab89a56d2..aa06cbc2e574 100644
  obj-$(CONFIG_PINCTRL_GEMINI)	+= pinctrl-gemini.o
  obj-$(CONFIG_PINCTRL_INGENIC)	+= pinctrl-ingenic.o
 diff --git a/drivers/pinctrl/pinctrl-eic7700.c b/drivers/pinctrl/pinctrl-eic7700.c
-index 4874b5532343..21a31d5cb7fa 100644
+index ffcd0ec5c2dc..21a31d5cb7fa 100644
 --- a/drivers/pinctrl/pinctrl-eic7700.c
 +++ b/drivers/pinctrl/pinctrl-eic7700.c
 @@ -3,702 +3,1357 @@
@@ -1925,7 +1925,7 @@ index 4874b5532343..21a31d5cb7fa 100644
 -		return PTR_ERR(pc->base);
 -
 -	regulator = devm_regulator_get(dev, "vrgmii");
--	if (IS_ERR_OR_NULL(regulator)) {
+-	if (IS_ERR(regulator)) {
 -		return dev_err_probe(dev, PTR_ERR(regulator),
 -					 "failed to get vrgmii regulator\n");
 -	}

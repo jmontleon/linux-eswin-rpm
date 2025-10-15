@@ -1,4 +1,4 @@
-From 2a5945ab54962357072b1f7d58dc08ab28a98373 Mon Sep 17 00:00:00 2001
+From 558aa8e1ccf7c3d426a15e93559e6f091eb57906 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 11:23:42 -0400
 Subject: [PATCH 53/69] fixup! drivers: usb: typec: Add driver for FUSB303B

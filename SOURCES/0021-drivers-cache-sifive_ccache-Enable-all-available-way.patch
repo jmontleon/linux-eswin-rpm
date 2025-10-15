@@ -1,4 +1,4 @@
-From 700c318651d20d1717544d1ab2685493b95f5a59 Mon Sep 17 00:00:00 2001
+From df4184992f4c9b69555370def70e571efb0b9f10 Mon Sep 17 00:00:00 2001
 From: Pritesh Patel <pritesh.patel@einfochips.com>
 Date: Tue, 7 Jan 2025 06:28:33 +0000
 Subject: [PATCH 21/69] drivers: cache: sifive_ccache: Enable all available
