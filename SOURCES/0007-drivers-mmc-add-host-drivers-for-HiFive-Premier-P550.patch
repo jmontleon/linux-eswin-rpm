@@ -1,4 +1,4 @@
-From 25f9bc0d5e21861ff21d5fea7b570aeb9d2a0eee Mon Sep 17 00:00:00 2001
+From 9f806473351b344c3b6b5227db072a0b1f9c4378 Mon Sep 17 00:00:00 2001
 From: Shuang Liang <liangshuang@eswincomputing.com>
 Date: Mon, 6 Jan 2025 13:36:28 +0000
 Subject: [PATCH 07/69] drivers: mmc: add host drivers for HiFive Premier P550
@@ -13,9 +13,9 @@ Signed-off-by: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
  drivers/mmc/host/Makefile              |    4 +
  drivers/mmc/host/sdhci-eswin.c         |  301 +++++++
  drivers/mmc/host/sdhci-eswin.h         |  232 ++++++
- drivers/mmc/host/sdhci-of-eswin-sdio.c | 1017 +++++++++++++++++++++++
- drivers/mmc/host/sdhci-of-eswin.c      | 1035 ++++++++++++++++++++++++
- 6 files changed, 2617 insertions(+)
+ drivers/mmc/host/sdhci-of-eswin-sdio.c | 1016 +++++++++++++++++++++++
+ drivers/mmc/host/sdhci-of-eswin.c      | 1034 ++++++++++++++++++++++++
+ 6 files changed, 2615 insertions(+)
  create mode 100644 drivers/mmc/host/sdhci-eswin.c
  create mode 100644 drivers/mmc/host/sdhci-eswin.h
  create mode 100644 drivers/mmc/host/sdhci-of-eswin-sdio.c
@@ -622,10 +622,10 @@ index 000000000000..3bdefb0f4d1f
 +#endif /* _DRIVERS_MMC_SDHCI_ESWIN_H */
 diff --git a/drivers/mmc/host/sdhci-of-eswin-sdio.c b/drivers/mmc/host/sdhci-of-eswin-sdio.c
 new file mode 100644
-index 000000000000..d7af7b4a6511
+index 000000000000..b90ace680475
 --- /dev/null
 +++ b/drivers/mmc/host/sdhci-of-eswin-sdio.c
-@@ -0,0 +1,1017 @@
+@@ -0,0 +1,1016 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * ESWIN sdio Driver
@@ -1567,7 +1567,6 @@ index 000000000000..d7af7b4a6511
 +	if (eswin_sdhci_sdio->core_clk_reg)
 +		iounmap(eswin_sdhci_sdio->core_clk_reg);
 +
-+	sdhci_pltfm_free(pdev);
 +	return ret;
 +}
 +
@@ -1645,10 +1644,10 @@ index 000000000000..d7af7b4a6511
 +MODULE_LICENSE("GPL");
 diff --git a/drivers/mmc/host/sdhci-of-eswin.c b/drivers/mmc/host/sdhci-of-eswin.c
 new file mode 100644
-index 000000000000..7b5c2efd737e
+index 000000000000..9141905f1021
 --- /dev/null
 +++ b/drivers/mmc/host/sdhci-of-eswin.c
-@@ -0,0 +1,1035 @@
+@@ -0,0 +1,1034 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * ESWIN Emmc Driver
@@ -2601,7 +2600,6 @@ index 000000000000..7b5c2efd737e
 +err_pltfm_free:
 +	if (eswin_sdhci->core_clk_reg)
 +		iounmap(eswin_sdhci->core_clk_reg);
-+	sdhci_pltfm_free(pdev);
 +	return ret;
 +}
 +

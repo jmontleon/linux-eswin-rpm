@@ -1,4 +1,4 @@
-From 9b690db8e6a6d66703c98aaef3bc12f26698766d Mon Sep 17 00:00:00 2001
+From eca617e5404b30a9b1f7b1dc1cb46387cd366411 Mon Sep 17 00:00:00 2001
 From: Yifeng Huang <huangyifeng@eswincomputing.com>
 Date: Mon, 6 Jan 2025 10:48:25 +0000
 Subject: [PATCH 05/69] drivers: clk: add a clock driver for eswin EIC7700
@@ -25,10 +25,10 @@ Signed-off-by: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
  create mode 100755 drivers/clk/eswin/clk.h
 
 diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
-index 4d56475f94fc..184b76a406d7 100644
+index b1425aed6593..46664fe9fad3 100644
 --- a/drivers/clk/Kconfig
 +++ b/drivers/clk/Kconfig
-@@ -505,6 +505,7 @@ source "drivers/clk/actions/Kconfig"
+@@ -506,6 +506,7 @@ source "drivers/clk/actions/Kconfig"
  source "drivers/clk/analogbits/Kconfig"
  source "drivers/clk/baikal-t1/Kconfig"
  source "drivers/clk/bcm/Kconfig"

@@ -1,4 +1,4 @@
-From 0d86808fefccd1b7475327846a0dc3e62891e8ab Mon Sep 17 00:00:00 2001
+From d527ed088cd43f72ff678339dbccb2ad37750968 Mon Sep 17 00:00:00 2001
 From: Min Lin <linmin@eswincomputing.com>
 Date: Mon, 6 Jan 2025 07:20:33 +0000
 Subject: [PATCH 04/69] riscv: dts: add initial board data for HiFive Premier
