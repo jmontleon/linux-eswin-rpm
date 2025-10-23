@@ -1,4 +1,4 @@
-From 9131b85eec889629c51ce0a7c40281f6073bcbb1 Mon Sep 17 00:00:00 2001
+From b96362c4c6c9f57f9f829506ce1af1ebca618e9d Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 9 Apr 2025 13:08:03 -0400
 Subject: [PATCH 35/69] fixup! drivers: reset: Add reset driver for EIC770X SoC
