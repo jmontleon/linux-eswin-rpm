@@ -1,4 +1,4 @@
-From 14dac346db9ffbb8d6e65eb976891288c7fc215d Mon Sep 17 00:00:00 2001
+From 77df16efe6a3b093a66b33850dc0da901ba30d69 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 30 Apr 2025 14:50:28 -0400
 Subject: [PATCH 39/69] fixup! drivers: ethernet: Added ethernet driver for
@@ -57,5 +57,5 @@ index 16863c9ca029..ab64f8042fc7 100644
  
  static const struct of_device_id dwc_eth_dwmac_match[] = {
 -- 
-2.51.0
+2.51.1
 

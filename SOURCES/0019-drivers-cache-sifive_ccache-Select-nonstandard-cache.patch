@@ -1,4 +1,4 @@
-From 2171cb6c884851f8d7b7bb33226a840f1827bb74 Mon Sep 17 00:00:00 2001
+From 952c031d344e789894c8ae4546e1c3f54bd5fed6 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Tue, 7 Jan 2025 06:10:16 +0000
 Subject: [PATCH 19/69] drivers: cache: sifive_ccache: Select nonstandard cache
@@ -22,5 +22,5 @@ index db51386c663a..1de3911c82b4 100644
  	  Support for the composable cache controller on SiFive platforms.
  
 -- 
-2.51.0
+2.51.1
 

@@ -1,4 +1,4 @@
-From 98a5da42939450da754489535422a92135cd0fd1 Mon Sep 17 00:00:00 2001
+From 9060a751fbeae3498db5a1ca3add4f3c875175aa Mon Sep 17 00:00:00 2001
 From: Pritesh Patel <pritesh.patel@einfochips.com>
 Date: Tue, 7 Jan 2025 06:28:33 +0000
 Subject: [PATCH 21/69] drivers: cache: sifive_ccache: Enable all available
@@ -46,5 +46,5 @@ index c32510e10458..fb57e6028075 100644
  	if (quirks & QUIRK_NONSTANDARD_CACHE_OPS) {
  		riscv_cbom_block_size = SIFIVE_CCACHE_LINE_SIZE;
 -- 
-2.51.0
+2.51.1
 

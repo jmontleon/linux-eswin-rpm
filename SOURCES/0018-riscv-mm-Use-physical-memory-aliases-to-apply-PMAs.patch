@@ -1,4 +1,4 @@
-From 81042946c6f0d987f2240116a9275e103847f61f Mon Sep 17 00:00:00 2001
+From 38cfdf9c1a54567c95184170a5d0031fa0196233 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Thu, 31 Oct 2024 19:33:42 -0700
 Subject: [PATCH 18/69] riscv: mm: Use physical memory aliases to apply PMAs
@@ -129,10 +129,10 @@ index 1b6a737e67e9..23badd2332ad 100644
  			  "andi	t0, t0, 0xd\n\t"					\
  			  "srli	t1, t0, 1\n\t"						\
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index c7e70886e596..3916ea4d9cf3 100644
+index 04fc8d689d1a..71dba791df67 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
-@@ -1105,6 +1105,14 @@ extern u64 satp_mode;
+@@ -1107,6 +1107,14 @@ extern u64 satp_mode;
  void paging_init(void);
  void misc_mem_init(void);
  
@@ -148,7 +148,7 @@ index c7e70886e596..3916ea4d9cf3 100644
   * ZERO_PAGE is a global shared page that is always zero,
   * used for zero-mapped memory areas, etc.
 diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 743d53415572..1449c43eab72 100644
+index 72ca768f4e91..ee59b160e886 100644
 --- a/arch/riscv/kernel/cpufeature.c
 +++ b/arch/riscv/kernel/cpufeature.c
 @@ -1093,6 +1093,12 @@ void __init riscv_fill_hwcap(void)
@@ -401,5 +401,5 @@ index 8b6c0a112a8d..cddeaa66fec7 100644
 +}
 +#endif /* CONFIG_RISCV_ISA_SVPBMT */
 -- 
-2.51.0
+2.51.1
 

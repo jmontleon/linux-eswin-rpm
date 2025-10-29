@@ -1,4 +1,4 @@
-From d83ee6c608ebf756c1bb91c93df06881b944d1b5 Mon Sep 17 00:00:00 2001
+From b5f06db929a08e16be0dbc8119762d0fa755104b Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 23 Oct 2024 16:53:02 -0700
 Subject: [PATCH 12/69] riscv: mm: Deduplicate _PAGE_CHG_MASK definition
@@ -55,7 +55,7 @@ index 7e91ffdd5d09..d74455d47d7f 100644
  {
  	return (pud_val(pud) & _PAGE_PRESENT);
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index d59b0797b207..717e0f3bd03c 100644
+index a220d838734f..d5f254da12a9 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
 @@ -206,6 +206,12 @@ extern struct pt_alloc_ops pt_ops __meminitdata;
@@ -72,5 +72,5 @@ index d59b0797b207..717e0f3bd03c 100644
  extern pgd_t trampoline_pg_dir[];
  extern pgd_t early_pg_dir[];
 -- 
-2.51.0
+2.51.1
 

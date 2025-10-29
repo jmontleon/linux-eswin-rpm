@@ -1,4 +1,4 @@
-From 2b1d25fa53b2fceaf885d79629d0bd453ec49c7a Mon Sep 17 00:00:00 2001
+From 14d7e1992ed4b3f10d855782c7a88f2828ddc8e7 Mon Sep 17 00:00:00 2001
 From: Wei Yang <yangwei1@eswincomputing.com>
 Date: Tue, 30 Jul 2024 09:44:55 +0000
 Subject: [PATCH 27/69] driver: usb: Add Support for eswin dwc3 USB
@@ -639,5 +639,5 @@ index 000000000000..470e08d90741
 +MODULE_LICENSE("GPL v2");
 +MODULE_DESCRIPTION("DesignWare USB3 ESWIN Glue Layer");
 -- 
-2.51.0
+2.51.1
 

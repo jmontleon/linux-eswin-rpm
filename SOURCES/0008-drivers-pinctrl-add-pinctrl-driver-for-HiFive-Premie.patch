@@ -1,4 +1,4 @@
-From 53f06f5f183fc220acc42c1f2f8418317df57fa5 Mon Sep 17 00:00:00 2001
+From 0e1b0dad664a47f4de3947622dbaa7baaf077a09 Mon Sep 17 00:00:00 2001
 From: Yulin Lu <luyulin@eswincomputing.com>
 Date: Tue, 7 Jan 2025 03:55:52 +0000
 Subject: [PATCH 08/69] drivers: pinctrl: add pinctrl driver for HiFive Premier
@@ -2018,5 +2018,5 @@ index ffcd0ec5c2dc..21a31d5cb7fa 100644
 +MODULE_AUTHOR("luyulin@eswincomputing.com");
  MODULE_LICENSE("GPL");
 -- 
-2.51.0
+2.51.1
 

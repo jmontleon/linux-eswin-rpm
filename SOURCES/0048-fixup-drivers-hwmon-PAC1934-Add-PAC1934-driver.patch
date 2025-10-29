@@ -1,4 +1,4 @@
-From d8bd293f45dd528e66e776a87bd875a77f56bde0 Mon Sep 17 00:00:00 2001
+From b526be8496e024df6d5a315bab014bbd7a54edd9 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 22 Apr 2025 11:40:42 -0400
 Subject: [PATCH 48/69] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver
@@ -22,5 +22,5 @@ index 8a9ca9ec07b5..6a7c7ad93b91 100644
  					 PAC193X_MAX_CHAN_CNT);
  	if (0 != ret) {
 -- 
-2.51.0
+2.51.1
 

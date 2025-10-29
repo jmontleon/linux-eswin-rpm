@@ -1,4 +1,4 @@
-From 4af9b2ee7e46498896c6f8ad605530d5eb991483 Mon Sep 17 00:00:00 2001
+From a7f38be74ccd52c534b5edc2dc3d17eb95ae563f Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 22 Apr 2025 12:02:07 -0400
 Subject: [PATCH 61/69] fixup! drivers: spi: Add bootspi flash driver for
@@ -29,5 +29,5 @@ index 2f4aaf7e998c..4c299ddbd71b 100644
  
  static const struct of_device_id eswin_bootspi_of_match[] = {
 -- 
-2.51.0
+2.51.1
 

@@ -1,4 +1,4 @@
-From 6b7304950adef0dd009f934c9c704cdcd50fe114 Mon Sep 17 00:00:00 2001
+From 2158619e322a5d00972cdb7f7f32c6e96a380908 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 11:23:42 -0400
 Subject: [PATCH 53/69] fixup! drivers: usb: typec: Add driver for FUSB303B
@@ -23,5 +23,5 @@ index b17c554c2b66..f49f8f1b0032 100644
  
  	if (chip->logbuffer_head < 0 ||
 -- 
-2.51.0
+2.51.1
 

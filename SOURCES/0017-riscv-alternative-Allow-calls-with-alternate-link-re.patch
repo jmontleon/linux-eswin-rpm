@@ -1,4 +1,4 @@
-From c6dbd587d98e7aa69a5cb1e6f862126c43f8b0c7 Mon Sep 17 00:00:00 2001
+From 037786771d6eee5b45fb2642c0dd98f44d5acf55 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Thu, 31 Oct 2024 18:47:20 -0700
 Subject: [PATCH 17/69] riscv: alternative: Allow calls with alternate link
@@ -29,5 +29,5 @@ index 7eb3cb1215c6..249ee55d0547 100644
  
  			riscv_alternative_fix_auipc_jalr(alt_ptr + i * sizeof(u32),
 -- 
-2.51.0
+2.51.1
 
