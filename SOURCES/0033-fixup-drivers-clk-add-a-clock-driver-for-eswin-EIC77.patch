@@ -1,4 +1,4 @@
-From 2be01188fe98fa0c9e04155785edbe73f4926ce8 Mon Sep 17 00:00:00 2001
+From 404b043040b7a143fd130ccb34080820ffb93ad5 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 21:49:20 -0400
 Subject: [PATCH 33/69] fixup! drivers: clk: add a clock driver for eswin

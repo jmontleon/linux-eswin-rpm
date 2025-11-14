@@ -1,4 +1,4 @@
-From 9dfb45c95bcc1ee5da1dd2ebe1e5e731cf5288ba Mon Sep 17 00:00:00 2001
+From feb250f816306fcec2f39359010abeb8f385cf70 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 30 Oct 2024 18:46:03 -0700
 Subject: [PATCH 14/69] riscv: mm: Fix up memory types when writing page tables
@@ -398,7 +398,7 @@ index d5f254da12a9..04fc8d689d1a 100644
  
  #define pgd_ERROR(e) \
 diff --git a/arch/riscv/mm/ptdump.c b/arch/riscv/mm/ptdump.c
-index 6608162459ae..173228401ceb 100644
+index 0dd6ee282953..fd3a6e9de363 100644
 --- a/arch/riscv/mm/ptdump.c
 +++ b/arch/riscv/mm/ptdump.c
 @@ -141,7 +141,7 @@ static const struct prot_bits pte_bits[] = {

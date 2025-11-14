@@ -1,4 +1,4 @@
-From 6e7f013eabd72c6df9389a9e1c98ab6c217d298d Mon Sep 17 00:00:00 2001
+From 1f3137b0d543317f7cc12fea881ffc775e3e871f Mon Sep 17 00:00:00 2001
 From: Wei Yang <yangwei1@eswincomputing.com>
 Date: Tue, 30 Jul 2024 09:52:16 +0000
 Subject: [PATCH 51/69] drivers: usb: typec: Add driver for FUSB303B type C
