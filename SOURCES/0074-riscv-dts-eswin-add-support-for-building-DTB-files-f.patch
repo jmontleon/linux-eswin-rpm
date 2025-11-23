@@ -1,4 +1,4 @@
-From 575a49c659b274651cfa9fba7c510ed3a6822dc2 Mon Sep 17 00:00:00 2001
+From ce994933f07cbd090cdf321616d617ed82080647 Mon Sep 17 00:00:00 2001
 From: Min Lin <linmin@eswincomputing.com>
 Date: Fri, 3 Jan 2025 13:44:11 +0000
 Subject: [PATCH 74/74] riscv: dts: eswin: add support for building DTB files
@@ -26,5 +26,5 @@ index 3b99e91efa25..3763d199c70a 100644
  subdir-y += renesas
  subdir-y += sifive
 -- 
-2.51.0
+2.51.1
 

@@ -1,4 +1,4 @@
-From dad2a617360fcc844ea7a89db94abb0a96944275 Mon Sep 17 00:00:00 2001
+From db66055f4b6f1d375a68a380b0c1697f8a89d220 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Fri, 25 Oct 2024 09:53:11 -0700
 Subject: [PATCH 16/74] riscv: mm: Deduplicate pgtable address conversion
@@ -39,10 +39,10 @@ index 00f3369570a8..23137347dc15 100644
  static const __maybe_unused int pgtable_l5_enabled;
  
 diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-index 1018d2216901..7e91ffdd5d09 100644
+index 6e789fa58514..aa4b36e858ee 100644
 --- a/arch/riscv/include/asm/pgtable-64.h
 +++ b/arch/riscv/include/asm/pgtable-64.h
-@@ -213,19 +213,20 @@ static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
+@@ -215,19 +215,20 @@ static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
  	return __pud((pfn << _PAGE_PFN_SHIFT) | pgprot_val(prot));
  }
  
@@ -66,7 +66,7 @@ index 1018d2216901..7e91ffdd5d09 100644
  }
  
  #define mm_p4d_folded  mm_p4d_folded
-@@ -262,6 +263,8 @@ static inline unsigned long _pmd_pfn(pmd_t pmd)
+@@ -264,6 +265,8 @@ static inline unsigned long _pmd_pfn(pmd_t pmd)
  	return __page_val_to_pfn(pmd_val(pmd));
  }
  
@@ -75,7 +75,7 @@ index 1018d2216901..7e91ffdd5d09 100644
  #define pmd_ERROR(e) \
  	pr_err("%s:%d: bad pmd %016lx.\n", __FILE__, __LINE__, pmd_val(e))
  
-@@ -314,7 +317,7 @@ static inline p4d_t pfn_p4d(unsigned long pfn, pgprot_t prot)
+@@ -316,7 +319,7 @@ static inline p4d_t pfn_p4d(unsigned long pfn, pgprot_t prot)
  	return __p4d((pfn << _PAGE_PFN_SHIFT) | pgprot_val(prot));
  }
  
@@ -84,7 +84,7 @@ index 1018d2216901..7e91ffdd5d09 100644
  {
  	return __page_val_to_pfn(p4d_val(p4d));
  }
-@@ -322,7 +325,7 @@ static inline unsigned long _p4d_pfn(p4d_t p4d)
+@@ -324,7 +327,7 @@ static inline unsigned long _p4d_pfn(p4d_t p4d)
  static inline pud_t *p4d_pgtable(p4d_t p4d)
  {
  	if (pgtable_l4_enabled)
@@ -93,7 +93,7 @@ index 1018d2216901..7e91ffdd5d09 100644
  
  	return (pud_t *)pud_pgtable((pud_t) { p4d_val(p4d) });
  }
-@@ -330,7 +333,7 @@ static inline pud_t *p4d_pgtable(p4d_t p4d)
+@@ -332,7 +335,7 @@ static inline pud_t *p4d_pgtable(p4d_t p4d)
  
  static inline struct page *p4d_page(p4d_t p4d)
  {
@@ -102,7 +102,7 @@ index 1018d2216901..7e91ffdd5d09 100644
  }
  
  #define pud_index(addr) (((addr) >> PUD_SHIFT) & (PTRS_PER_PUD - 1))
-@@ -376,10 +379,15 @@ static inline void pgd_clear(pgd_t *pgd)
+@@ -378,10 +381,15 @@ static inline void pgd_clear(pgd_t *pgd)
  		set_pgd(pgd, __pgd(0));
  }
  
@@ -119,7 +119,7 @@ index 1018d2216901..7e91ffdd5d09 100644
  
  	return (p4d_t *)p4d_pgtable((p4d_t) { pgd_val(pgd) });
  }
-@@ -387,9 +395,8 @@ static inline p4d_t *pgd_pgtable(pgd_t pgd)
+@@ -389,9 +397,8 @@ static inline p4d_t *pgd_pgtable(pgd_t pgd)
  
  static inline struct page *pgd_page(pgd_t pgd)
  {
@@ -131,7 +131,7 @@ index 1018d2216901..7e91ffdd5d09 100644
  #define p4d_index(addr) (((addr) >> P4D_SHIFT) & (PTRS_PER_P4D - 1))
  
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 29e994a9afb6..ac4712fbd257 100644
+index 5a08eb5fe99f..971aaf78b353 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
 @@ -264,19 +264,19 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
@@ -158,7 +158,7 @@ index 29e994a9afb6..ac4712fbd257 100644
  }
  
  static inline pte_t pmd_pte(pmd_t pmd)
-@@ -688,21 +688,6 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
+@@ -690,21 +690,6 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
  	return __pmd(pmd_val(pmd) & ~(_PAGE_PRESENT|_PAGE_PROT_NONE));
  }
  
@@ -261,5 +261,5 @@ index c4a2a9e5586e..4052a4ee0f33 100644
  	}
  
 -- 
-2.51.0
+2.51.1
 

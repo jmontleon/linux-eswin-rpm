@@ -1,4 +1,4 @@
-From 172f5a1a6cb0df3ca2253750486f98ebe9597e34 Mon Sep 17 00:00:00 2001
+From b57148957da161608ece51d530ce881541b92154 Mon Sep 17 00:00:00 2001
 From: Pritesh Patel <pritesh.patel@einfochips.com>
 Date: Tue, 30 Jul 2024 14:17:25 +0000
 Subject: [PATCH 63/74] drivers: kvm: vcpu: Disabled writing HENVCFG reg
@@ -23,7 +23,7 @@ Conflicts:
  1 file changed, 4 insertions(+)
 
 diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index bccb919ca615..18b2db835833 100644
+index 5ce35aba6069..d25d759c9cd4 100644
 --- a/arch/riscv/kvm/vcpu.c
 +++ b/arch/riscv/kvm/vcpu.c
 @@ -593,7 +593,9 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
@@ -47,5 +47,5 @@ index bccb919ca615..18b2db835833 100644
  			csr_write(CSR_HENVCFGH, cfg->henvcfg >> 32);
  		if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
 -- 
-2.51.0
+2.51.1
 

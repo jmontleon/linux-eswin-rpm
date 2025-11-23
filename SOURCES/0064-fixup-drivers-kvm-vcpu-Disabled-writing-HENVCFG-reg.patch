@@ -1,4 +1,4 @@
-From 8d65cff0452c7caf451352374e6bfbdbc8da129b Mon Sep 17 00:00:00 2001
+From 353f44fd5842998f06fd640f5b000daf407206fb Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 14 May 2025 16:20:58 -0400
 Subject: [PATCH 64/74] fixup! drivers: kvm: vcpu: Disabled writing HENVCFG reg
@@ -12,7 +12,7 @@ Conflicts:
  1 file changed, 4 insertions(+)
 
 diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 18b2db835833..5d9c0a15f375 100644
+index d25d759c9cd4..6467b1caf4ef 100644
 --- a/arch/riscv/kvm/vcpu.c
 +++ b/arch/riscv/kvm/vcpu.c
 @@ -800,7 +800,9 @@ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu,
@@ -36,5 +36,5 @@ index 18b2db835833..5d9c0a15f375 100644
  
  int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 -- 
-2.51.0
+2.51.1
 

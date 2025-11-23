@@ -1,4 +1,4 @@
-From 8f40d9da2d0141bf687e02bba3fb2683dfec2bc0 Mon Sep 17 00:00:00 2001
+From a98fed3951181ee25a336b3b034d74f7887cf08f Mon Sep 17 00:00:00 2001
 From: Wei Yang <yangwei1@eswincomputing.com>
 Date: Tue, 30 Jul 2024 09:52:16 +0000
 Subject: [PATCH 56/74] drivers: usb: typec: Add driver for FUSB303B type C
@@ -865,5 +865,5 @@ index 000000000000..3d6ddf4a5d5f
 +MODULE_DESCRIPTION("Onsemi FUSB303B Type-C Chip Driver");
 +MODULE_LICENSE("GPL");
 -- 
-2.51.0
+2.51.1
 

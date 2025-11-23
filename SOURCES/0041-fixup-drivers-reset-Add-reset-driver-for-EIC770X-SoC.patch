@@ -1,4 +1,4 @@
-From a2ecf7f195f2cb055335ecdf7ff8d3b7bb1b2160 Mon Sep 17 00:00:00 2001
+From eb6317ecfc3470b3d2396b1b8b7a0baaea4bec3b Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 21:49:53 -0400
 Subject: [PATCH 41/74] fixup! drivers: reset: Add reset driver for EIC770X SoC
@@ -13,5 +13,5 @@ diff --git a/drivers/reset/reset-eswin.c b/drivers/reset/reset-eswin.c
 old mode 100755
 new mode 100644
 -- 
-2.51.0
+2.51.1
 

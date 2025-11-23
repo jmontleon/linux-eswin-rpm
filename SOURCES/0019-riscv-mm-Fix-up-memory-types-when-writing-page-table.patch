@@ -1,4 +1,4 @@
-From 9ac582b4689d5f4dc802f3365e4d8f1171dd228c Mon Sep 17 00:00:00 2001
+From 4b6b6a2228e6dd613e2596cf0ce3753732c7626a Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 30 Oct 2024 18:46:03 -0700
 Subject: [PATCH 19/74] riscv: mm: Fix up memory types when writing page tables
@@ -171,7 +171,7 @@ index 7dc0751d67dc..b422a15fb464 100644
  #define p4d_pfn(p4d)				(pud_pfn((pud_t){ p4d }))
  #define pgd_pfn(pgd)				(p4d_pfn((p4d_t){ pgd }))
 diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-index d74455d47d7f..6a835693b268 100644
+index a62878a20e91..3aaebd91d4bc 100644
 --- a/arch/riscv/include/asm/pgtable-64.h
 +++ b/arch/riscv/include/asm/pgtable-64.h
 @@ -8,7 +8,7 @@
@@ -183,7 +183,7 @@ index d74455d47d7f..6a835693b268 100644
  
  extern bool pgtable_l4_enabled;
  extern bool pgtable_l5_enabled;
-@@ -109,6 +109,8 @@ enum napot_cont_order {
+@@ -111,6 +111,8 @@ enum napot_cont_order {
  #define HUGE_MAX_HSTATE		2
  #endif
  
@@ -192,7 +192,7 @@ index d74455d47d7f..6a835693b268 100644
  /*
   * [62:61] Svpbmt Memory Type definitions:
   *
-@@ -117,9 +119,9 @@ enum napot_cont_order {
+@@ -119,9 +121,9 @@ enum napot_cont_order {
   *  10 - IO     Non-cacheable, non-idempotent, strongly-ordered I/O memory
   *  11 - Rsvd   Reserved for future standard use
   */
@@ -205,7 +205,7 @@ index d74455d47d7f..6a835693b268 100644
  
  /*
   * [63:59] T-Head Memory Type definitions:
-@@ -131,39 +133,67 @@ enum napot_cont_order {
+@@ -133,39 +135,67 @@ enum napot_cont_order {
   * 00110 - NC   Weakly-ordered, Non-cacheable, Bufferable, Shareable, Non-trustable
   * 01110 - PMA  Weakly-ordered, Cacheable, Bufferable, Shareable, Non-trustable
   * 10010 - IO   Strongly-ordered, Non-cacheable, Non-bufferable, Shareable, Non-trustable
@@ -296,7 +296,7 @@ index d74455d47d7f..6a835693b268 100644
  
  static inline int pud_present(pud_t pud)
  {
-@@ -203,7 +233,11 @@ static inline void pud_clear(pud_t *pudp)
+@@ -205,7 +235,11 @@ static inline void pud_clear(pud_t *pudp)
  
  static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
  {
@@ -309,7 +309,7 @@ index d74455d47d7f..6a835693b268 100644
  }
  
  #define pud_pfn pud_pfn
-@@ -244,11 +278,11 @@ static inline bool mm_pud_folded(struct mm_struct *mm)
+@@ -246,11 +280,11 @@ static inline bool mm_pud_folded(struct mm_struct *mm)
  
  static inline pmd_t pfn_pmd(unsigned long pfn, pgprot_t prot)
  {
@@ -324,7 +324,7 @@ index d74455d47d7f..6a835693b268 100644
  }
  
  static inline unsigned long _pmd_pfn(pmd_t pmd)
-@@ -307,7 +341,11 @@ static inline void p4d_clear(p4d_t *p4d)
+@@ -309,7 +343,11 @@ static inline void p4d_clear(p4d_t *p4d)
  
  static inline p4d_t pfn_p4d(unsigned long pfn, pgprot_t prot)
  {
@@ -338,7 +338,7 @@ index d74455d47d7f..6a835693b268 100644
  
  static inline unsigned long p4d_pfn(p4d_t p4d)
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 5789bb8448e0..934c90731a54 100644
+index 938cf23947c4..f3c9b6ddae79 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
 @@ -263,11 +263,11 @@ static inline void pmd_clear(pmd_t *pmdp)
@@ -398,7 +398,7 @@ index 5789bb8448e0..934c90731a54 100644
  
  #define pgd_ERROR(e) \
 diff --git a/arch/riscv/mm/ptdump.c b/arch/riscv/mm/ptdump.c
-index 6608162459ae..173228401ceb 100644
+index 0dd6ee282953..fd3a6e9de363 100644
 --- a/arch/riscv/mm/ptdump.c
 +++ b/arch/riscv/mm/ptdump.c
 @@ -141,7 +141,7 @@ static const struct prot_bits pte_bits[] = {
@@ -439,5 +439,5 @@ index 6608162459ae..173228401ceb 100644
  		prot = val & pg_level[level].mask;
  
 -- 
-2.51.0
+2.51.1
 

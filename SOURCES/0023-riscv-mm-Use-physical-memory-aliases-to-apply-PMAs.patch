@@ -1,4 +1,4 @@
-From e725f2de136ffe42b33ce3f8aa2fd601941ab250 Mon Sep 17 00:00:00 2001
+From 0e35b9f229ea5c31363e68a7a61c54845c7401a7 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Thu, 31 Oct 2024 19:33:42 -0700
 Subject: [PATCH 23/74] riscv: mm: Use physical memory aliases to apply PMAs
@@ -40,7 +40,7 @@ Conflicts:
  create mode 100644 arch/riscv/mm/memory-alias.S
 
 diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 0c6038dc5dfd..4eb02d19ed15 100644
+index fadec20b87a8..d236804daee7 100644
 --- a/arch/riscv/Kconfig
 +++ b/arch/riscv/Kconfig
 @@ -608,6 +608,9 @@ config RISCV_ISA_SVPBMT
@@ -74,10 +74,10 @@ index affd63e11b0a..d8dd9db1f148 100644
  #define RISCV_ISA_EXT_SxAIA		RISCV_ISA_EXT_SMAIA
  #define RISCV_ISA_EXT_SUPM		RISCV_ISA_EXT_SMNPM
 diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-index 1b6a737e67e9..23badd2332ad 100644
+index edf49ea8596b..f6086f31b89c 100644
 --- a/arch/riscv/include/asm/pgtable-64.h
 +++ b/arch/riscv/include/asm/pgtable-64.h
-@@ -128,27 +128,46 @@ enum napot_cont_order {
+@@ -130,27 +130,46 @@ enum napot_cont_order {
  #define _PAGE_MTMASK_THEAD	(_PAGE_PMA_THEAD | _PAGE_IO_THEAD | (1UL << 59))
  
  #define ALT_FIXUP_MT(_val)								\
@@ -129,10 +129,10 @@ index 1b6a737e67e9..23badd2332ad 100644
  			  "andi	t0, t0, 0xd\n\t"					\
  			  "srli	t1, t0, 1\n\t"						\
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 934c90731a54..e4ae77507b29 100644
+index f3c9b6ddae79..78e4f84f2b7f 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
-@@ -1106,6 +1106,14 @@ extern u64 satp_mode;
+@@ -1108,6 +1108,14 @@ extern u64 satp_mode;
  void paging_init(void);
  void misc_mem_init(void);
  
@@ -148,7 +148,7 @@ index 934c90731a54..e4ae77507b29 100644
   * ZERO_PAGE is a global shared page that is always zero,
   * used for zero-mapped memory areas, etc.
 diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 67b59699357d..e745882d2a02 100644
+index 72ca768f4e91..ee59b160e886 100644
 --- a/arch/riscv/kernel/cpufeature.c
 +++ b/arch/riscv/kernel/cpufeature.c
 @@ -1093,6 +1093,12 @@ void __init riscv_fill_hwcap(void)
@@ -165,10 +165,10 @@ index 67b59699357d..e745882d2a02 100644
  	for (i = 0, j = 0; i < NUM_ALPHA_EXTS; i++)
  		if (riscv_isa[0] & BIT_MASK(i))
 diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index 14235e58c539..0dd886d54102 100644
+index b5bc5fc65cea..a6f821150101 100644
 --- a/arch/riscv/kernel/setup.c
 +++ b/arch/riscv/kernel/setup.c
-@@ -354,6 +354,7 @@ void __init setup_arch(char **cmdline_p)
+@@ -357,6 +357,7 @@ void __init setup_arch(char **cmdline_p)
  	}
  
  	riscv_init_cbo_blocksizes();
@@ -401,5 +401,5 @@ index 8b6c0a112a8d..cddeaa66fec7 100644
 +}
 +#endif /* CONFIG_RISCV_ISA_SVPBMT */
 -- 
-2.51.0
+2.51.1
 

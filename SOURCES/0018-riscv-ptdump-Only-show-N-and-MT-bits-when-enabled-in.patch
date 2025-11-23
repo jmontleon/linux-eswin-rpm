@@ -1,4 +1,4 @@
-From 28486df4572c4abee996709c9c3b58b21489fb1d Mon Sep 17 00:00:00 2001
+From 5b3953fcb61802974538d7f7f579699888060a1c Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Fri, 1 Nov 2024 11:26:46 -0700
 Subject: [PATCH 18/74] riscv: ptdump: Only show N and MT bits when enabled in
@@ -20,7 +20,7 @@ Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/arch/riscv/mm/ptdump.c b/arch/riscv/mm/ptdump.c
-index 3b51690cc876..6608162459ae 100644
+index 34299c2b231f..0dd6ee282953 100644
 --- a/arch/riscv/mm/ptdump.c
 +++ b/arch/riscv/mm/ptdump.c
 @@ -134,11 +134,13 @@ struct prot_bits {
@@ -48,5 +48,5 @@ index 3b51690cc876..6608162459ae 100644
  				if (val == _PAGE_NOCACHE_SVPBMT)
  					sprintf(s, pte_bits[i].set, "NC");
 -- 
-2.51.0
+2.51.1
 

@@ -1,4 +1,4 @@
-From 27f1a2605e2eedf960b66ad81df0dea6439c4396 Mon Sep 17 00:00:00 2001
+From 864a558aeedbf79925216c0878120f6b3b2493cf Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Sun, 12 Oct 2025 17:08:01 -0400
 Subject: [PATCH 03/74] Revert "riscv: dts: add initial support for EIC7700
@@ -12,10 +12,10 @@ This reverts commit 3329e2f3b524a6e2baef86236725e407493c46b8.
  delete mode 100644 arch/riscv/boot/dts/eswin/eic7700.dtsi
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 46126ce2f968..5944e2cb1ee7 100644
+index e64b94e6b5a9..cdc33fcf212a 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -9235,9 +9235,7 @@ M:	Min Lin <linmin@eswincomputing.com>
+@@ -9244,9 +9244,7 @@ M:	Min Lin <linmin@eswincomputing.com>
  M:	Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
  M:	Pritesh Patel <pritesh.patel@einfochips.com>
  S:	Maintained
@@ -377,5 +377,5 @@ index c3ed93008bca..000000000000
 -	};
 -};
 -- 
-2.51.0
+2.51.1
 

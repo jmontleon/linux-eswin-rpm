@@ -1,4 +1,4 @@
-From c8e514163f9027b775a2a3ca78b2f8be9e4351da Mon Sep 17 00:00:00 2001
+From f1e8104134f3d59b565617315b819618b4f368fd Mon Sep 17 00:00:00 2001
 From: Shuang Liang <liangshuang@eswincomputing.com>
 Date: Mon, 6 Jan 2025 13:36:28 +0000
 Subject: [PATCH 12/74] drivers: mmc: add host drivers for HiFive Premier P550
@@ -22,7 +22,7 @@ Signed-off-by: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
  create mode 100644 drivers/mmc/host/sdhci-of-eswin.c
 
 diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 2c963cb6724b..551eacd80388 100644
+index 10d0ef58ef49..b84669770c4e 100644
 --- a/drivers/mmc/host/Kconfig
 +++ b/drivers/mmc/host/Kconfig
 @@ -288,6 +288,34 @@ config MMC_SDHCI_OF_MA35D1
@@ -2683,5 +2683,5 @@ index 000000000000..9141905f1021
 +MODULE_AUTHOR("Shuang Liang <liangshuang@eswincomputing.com>");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.51.0
+2.51.1
 

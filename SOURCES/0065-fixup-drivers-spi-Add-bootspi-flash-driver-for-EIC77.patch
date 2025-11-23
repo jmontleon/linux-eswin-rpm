@@ -1,4 +1,4 @@
-From 5ec1756f7887c65d84f45e02d2ed06361c521844 Mon Sep 17 00:00:00 2001
+From c00538c73dad0c54c9b1488761fda0b80fdac4a0 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 16 Apr 2025 19:07:17 -0400
 Subject: [PATCH 65/74] fixup! drivers: spi: Add bootspi flash driver for
@@ -22,5 +22,5 @@ index c8fbc1b3fc91..2f4aaf7e998c 100644
  MODULE_LICENSE("GPL v2");
 +MODULE_SOFTDEP("pre: spi-nor");
 -- 
-2.51.0
+2.51.1
 
