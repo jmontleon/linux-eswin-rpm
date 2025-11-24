@@ -1,4 +1,4 @@
-From 27f04523825c100dfb2ace0dd8cc868eba86bfc0 Mon Sep 17 00:00:00 2001
+From f43852b0bbbea1d1432eca42498de25b1107536e Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Thu, 1 May 2025 01:07:30 -0400
 Subject: [PATCH 45/69] fixup! drivers: pwm: Added ESWIN pwm driver
@@ -27,5 +27,5 @@ index 57cdbe8e09d9..74d750ed0afe 100644
  		return PTR_ERR(chip);
  
 -- 
-2.51.1
+2.52.0
 

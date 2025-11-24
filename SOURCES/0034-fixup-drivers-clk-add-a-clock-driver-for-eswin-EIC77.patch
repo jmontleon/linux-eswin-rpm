@@ -1,4 +1,4 @@
-From a4bc73bf8def475026b2b445729aae54b80af303 Mon Sep 17 00:00:00 2001
+From 4ea5db6b71810198a605b8257034415ebd79dd16 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 30 Apr 2025 12:26:03 -0400
 Subject: [PATCH 34/69] fixup! drivers: clk: add a clock driver for eswin
@@ -58,5 +58,5 @@ index 1b6c0b9e0450..80a73eca54ec 100644
  	eswin_clk_register_fixed_rate(eic7700_fixed_rate_clks,
  				ARRAY_SIZE(eic7700_fixed_rate_clks),
 -- 
-2.51.1
+2.52.0
 

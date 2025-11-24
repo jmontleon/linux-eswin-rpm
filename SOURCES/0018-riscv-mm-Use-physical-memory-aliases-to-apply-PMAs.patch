@@ -1,4 +1,4 @@
-From 8ace184063bd83f8688d3d44ae678d4e1796a5d1 Mon Sep 17 00:00:00 2001
+From af94bc98bf9e1a3d9b846dd05ea87299aa1af680 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Thu, 31 Oct 2024 19:33:42 -0700
 Subject: [PATCH 18/69] riscv: mm: Use physical memory aliases to apply PMAs
@@ -165,10 +165,10 @@ index 72ca768f4e91..ee59b160e886 100644
  	for (i = 0, j = 0; i < NUM_ALPHA_EXTS; i++)
  		if (riscv_isa[0] & BIT_MASK(i))
 diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index f90cce7a3ace..00569c4fef49 100644
+index d7ee62837aa4..49649c28d862 100644
 --- a/arch/riscv/kernel/setup.c
 +++ b/arch/riscv/kernel/setup.c
-@@ -353,6 +353,7 @@ void __init setup_arch(char **cmdline_p)
+@@ -356,6 +356,7 @@ void __init setup_arch(char **cmdline_p)
  	}
  
  	riscv_init_cbo_blocksizes();
@@ -401,5 +401,5 @@ index 8b6c0a112a8d..cddeaa66fec7 100644
 +}
 +#endif /* CONFIG_RISCV_ISA_SVPBMT */
 -- 
-2.51.1
+2.52.0
 

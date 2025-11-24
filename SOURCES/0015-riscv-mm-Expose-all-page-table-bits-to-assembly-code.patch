@@ -1,4 +1,4 @@
-From df0d7546eb8810efe561ba0e6e0e84bfe143d0c9 Mon Sep 17 00:00:00 2001
+From 919e9b5064538db8a5d049ced80cbfa24f4a162d Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Fri, 1 Nov 2024 13:53:45 -0700
 Subject: [PATCH 15/69] riscv: mm: Expose all page table bits to assembly code
@@ -158,5 +158,5 @@ index 179bd4afece4..3c014c76ae36 100644
   * when all of R/W/X are zero, the PTE is a pointer to the next level
   * of the page table; otherwise, it is a leaf PTE.
 -- 
-2.51.1
+2.52.0
 

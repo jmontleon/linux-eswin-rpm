@@ -1,4 +1,4 @@
-From 0279e1daecc8cce9ddc406d4bafd2897f2795158 Mon Sep 17 00:00:00 2001
+From aeb21f6b7fa040f05953a5f4ce52ca9a83e4bd98 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 14 May 2025 16:20:58 -0400
 Subject: [PATCH 59/69] fixup! drivers: kvm: vcpu: Disabled writing HENVCFG reg
@@ -36,5 +36,5 @@ index c6c22a91785b..4b2648f962ad 100644
  
  int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 -- 
-2.51.1
+2.52.0
 

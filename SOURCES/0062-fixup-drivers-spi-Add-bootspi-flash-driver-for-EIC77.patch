@@ -1,4 +1,4 @@
-From 5092c340f14aa0bcef60a9124101dcc788b46438 Mon Sep 17 00:00:00 2001
+From 66b4c39b363ed6f9b20766a3cd73569c8671b398 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 10:33:02 -0400
 Subject: [PATCH 62/69] fixup! drivers: spi: Add bootspi flash driver for
@@ -23,5 +23,5 @@ index 4c299ddbd71b..54a3bf677451 100644
  	u32 write_size = 0, offset, cmd_code;
  	u32 cmd_type = priv->cmd_type;
 -- 
-2.51.1
+2.52.0
 

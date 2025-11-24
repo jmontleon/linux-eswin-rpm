@@ -1,4 +1,4 @@
-From 5c54c35cb39812616ef636ae00f785ce70da2b94 Mon Sep 17 00:00:00 2001
+From 570e31c45bcaaa5b61bd48a34701040fb39b46c2 Mon Sep 17 00:00:00 2001
 From: Pritesh Patel <pritesh.patel@einfochips.com>
 Date: Tue, 30 Jul 2024 14:17:25 +0000
 Subject: [PATCH 58/69] drivers: kvm: vcpu: Disabled writing HENVCFG reg
@@ -47,5 +47,5 @@ index 3ebcfffaa978..c6c22a91785b 100644
  			csr_write(CSR_HENVCFGH, cfg->henvcfg >> 32);
  		if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
 -- 
-2.51.1
+2.52.0
 

@@ -1,4 +1,4 @@
-From feb250f816306fcec2f39359010abeb8f385cf70 Mon Sep 17 00:00:00 2001
+From e3ebaeb43a75e20b2dbf6c42c6431568fe0eea15 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 30 Oct 2024 18:46:03 -0700
 Subject: [PATCH 14/69] riscv: mm: Fix up memory types when writing page tables
@@ -439,5 +439,5 @@ index 0dd6ee282953..fd3a6e9de363 100644
  		prot = val & pg_level[level].mask;
  
 -- 
-2.51.1
+2.52.0
 

@@ -1,4 +1,4 @@
-From 0956e96bc91bed325e2c7c65a9825f71facef38f Mon Sep 17 00:00:00 2001
+From 250e2dd12716e4815d933883104e47c9cbfec361 Mon Sep 17 00:00:00 2001
 From: Yifeng Huang <huangyifeng@eswincomputing.com>
 Date: Tue, 30 Jul 2024 15:18:03 +0000
 Subject: [PATCH 57/69] drivers: spi: Add bootspi flash driver for EIC7700
@@ -709,5 +709,5 @@ index 000000000000..c8fbc1b3fc91
 +MODULE_DESCRIPTION("Eswin Boot SPI Controller Driver for EIC770X SoCs");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.51.1
+2.52.0
 
