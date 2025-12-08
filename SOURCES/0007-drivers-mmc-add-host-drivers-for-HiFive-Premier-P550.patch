@@ -1,4 +1,4 @@
-From a05d8139d200c398eccf6b2656046da96ab2c7be Mon Sep 17 00:00:00 2001
+From 6c117629cf188e9c06a0a6373737d1eeb2c6a3a1 Mon Sep 17 00:00:00 2001
 From: Shuang Liang <liangshuang@eswincomputing.com>
 Date: Mon, 6 Jan 2025 13:36:28 +0000
 Subject: [PATCH 07/69] drivers: mmc: add host drivers for HiFive Premier P550

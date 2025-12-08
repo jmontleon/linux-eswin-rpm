@@ -1,4 +1,4 @@
-From 7c28c8f50e40940282b8051fa950f8d0a6876e1e Mon Sep 17 00:00:00 2001
+From e0550535f2494b7366d2961fb543335ba3d6bc01 Mon Sep 17 00:00:00 2001
 From: Yifeng Huang <huangyifeng@eswincomputing.com>
 Date: Tue, 30 Jul 2024 15:18:03 +0000
 Subject: [PATCH 57/69] drivers: spi: Add bootspi flash driver for EIC7700
@@ -16,7 +16,7 @@ https://github.com/sifiveinc/riscv-linux/commit/dca044841e3f6febe06c96d58994132f
  create mode 100644 drivers/spi/spi-eswin-bootspi.c
 
 diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 891729c9c564..490981f25fee 100644
+index 9f20cb75bb85..aa8a9e86060f 100644
 --- a/drivers/spi/Kconfig
 +++ b/drivers/spi/Kconfig
 @@ -401,6 +401,12 @@ config SPI_EP93XX

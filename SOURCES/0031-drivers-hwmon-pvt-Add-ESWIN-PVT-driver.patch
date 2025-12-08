@@ -1,4 +1,4 @@
-From bee418b39e16aa65d7108e6137b59325a15d25cb Mon Sep 17 00:00:00 2001
+From ae4f151811c8caa47b7590bb3c2b54c971df9f2b Mon Sep 17 00:00:00 2001
 From: Yulin Lu <luyulin@eswincomputing.com>
 Date: Tue, 30 Jul 2024 14:13:13 +0000
 Subject: [PATCH 31/69] drivers: hwmon: pvt: Add ESWIN PVT driver
