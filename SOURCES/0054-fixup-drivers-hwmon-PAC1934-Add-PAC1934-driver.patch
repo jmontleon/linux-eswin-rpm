@@ -1,4 +1,4 @@
-From 982e979e5c414d971d4c85da02aec92189578ec2 Mon Sep 17 00:00:00 2001
+From d285685de3b6ecfa2033b462560a832db1e88358 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 22 Apr 2025 11:41:01 -0400
 Subject: [PATCH 54/74] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver
@@ -22,5 +22,5 @@ index 6a7c7ad93b91..78150a4487f9 100644
  	struct pac193x_data *data = dev_get_drvdata(dev);
  	unsigned long val;
 -- 
-2.51.1
+2.52.0
 

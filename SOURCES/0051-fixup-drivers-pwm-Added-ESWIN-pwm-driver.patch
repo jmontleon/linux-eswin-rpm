@@ -1,4 +1,4 @@
-From 8e04f480c2a43063ff1a2ca2f342d6333de6e7d0 Mon Sep 17 00:00:00 2001
+From 8e2b566e1f2ed78161591159be7b32ced699c65e Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Thu, 1 May 2025 01:08:13 -0400
 Subject: [PATCH 51/74] fixup! drivers: pwm: Added ESWIN pwm driver
@@ -22,5 +22,5 @@ index 74d750ed0afe..ff949906939a 100644
  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
  	if (!res)
 -- 
-2.51.1
+2.52.0
 

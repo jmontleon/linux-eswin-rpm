@@ -1,4 +1,4 @@
-From 55fef9bd9107d55fae5731b09676aeb0556a2890 Mon Sep 17 00:00:00 2001
+From 4f0160392d68aaa9de1486196043ab3e6725a03c Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Sun, 12 Oct 2025 17:11:25 -0400
 Subject: [PATCH 05/74] Revert "pinctrl: eswin: Fix unsigned comparison to less
@@ -25,5 +25,5 @@ index 4874b5532343..719cd11e276a 100644
  	pc = devm_kzalloc(dev, struct_size(pc, functions, EIC7700_FUNCTIONS_COUNT), GFP_KERNEL);
  	if (!pc)
 -- 
-2.51.1
+2.52.0
 

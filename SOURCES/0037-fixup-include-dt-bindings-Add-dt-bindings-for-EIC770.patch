@@ -1,4 +1,4 @@
-From 411127de3aee7f382647fd6bf4372c4ebfe79bd0 Mon Sep 17 00:00:00 2001
+From dec209d1ce3cab1a72668200de1bb4f61d491b2c Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 21:50:52 -0400
 Subject: [PATCH 37/74] fixup! include: dt-bindings: Add dt-bindings for
@@ -24,5 +24,5 @@ diff --git a/include/dt-bindings/reset/eic7700-syscrg.h b/include/dt-bindings/re
 old mode 100755
 new mode 100644
 -- 
-2.51.1
+2.52.0
 

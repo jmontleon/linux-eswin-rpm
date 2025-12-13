@@ -1,4 +1,4 @@
-From f1e8104134f3d59b565617315b819618b4f368fd Mon Sep 17 00:00:00 2001
+From 31f46e86c0122c5e626ae5838974a59621694f3d Mon Sep 17 00:00:00 2001
 From: Shuang Liang <liangshuang@eswincomputing.com>
 Date: Mon, 6 Jan 2025 13:36:28 +0000
 Subject: [PATCH 12/74] drivers: mmc: add host drivers for HiFive Premier P550
@@ -2683,5 +2683,5 @@ index 000000000000..9141905f1021
 +MODULE_AUTHOR("Shuang Liang <liangshuang@eswincomputing.com>");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.51.1
+2.52.0
 

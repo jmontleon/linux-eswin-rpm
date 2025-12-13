@@ -1,4 +1,4 @@
-From 08ac5e71604ee15d3bc2df6a4e85cb4e180623e9 Mon Sep 17 00:00:00 2001
+From 5ea0e2258dcbc6ab106d77523840ee09e8981beb Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Tue, 29 Oct 2024 18:11:53 -0700
 Subject: [PATCH 14/74] dt-bindings: riscv: Describe physical memory regions
@@ -181,5 +181,5 @@ index 000000000000..7cb2e58fa8c1
 +
 +#endif /* _DT_BINDINGS_RISCV_PHYSICAL_MEMORY_H */
 -- 
-2.51.1
+2.52.0
 

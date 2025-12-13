@@ -1,4 +1,4 @@
-From 092e0a9eb214f90c2565ed2f7007bfb4f4516781 Mon Sep 17 00:00:00 2001
+From cbd2c2951df0a102bdbb273b5c582bbdfd61d63e Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 10:44:57 -0400
 Subject: [PATCH 61/74] fixup! drivers: rtc: Added EIC7700 Internal RTC driver
@@ -29,5 +29,5 @@ index e83f43baa60d..388a0968e53a 100644
  
  #ifdef CONFIG_PM_SLEEP
 -- 
-2.51.1
+2.52.0
 

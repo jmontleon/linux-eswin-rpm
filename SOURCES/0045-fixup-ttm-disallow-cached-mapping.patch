@@ -1,4 +1,4 @@
-From cb5939de5d68a22b4a8404ef4f10a3f7c5e8a856 Mon Sep 17 00:00:00 2001
+From ba6dd18f0a01846c2c2da5bfffced63ec0d1727c Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 6 May 2025 22:54:12 -0400
 Subject: [PATCH 45/74] fixup! ttm: disallow cached mapping
@@ -34,5 +34,5 @@ index d58a54046847..0863d27e80cd 100644
  		 * We need to use vmap to get the desired page protection
  		 * or to make the buffer object look contiguous.
 -- 
-2.51.1
+2.52.0
 

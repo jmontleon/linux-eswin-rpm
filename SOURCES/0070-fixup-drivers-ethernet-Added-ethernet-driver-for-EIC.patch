@@ -1,4 +1,4 @@
-From 449b85d3fec5f8da7041f5d2c784c191fa06a9ee Mon Sep 17 00:00:00 2001
+From 8a319cde5984fea4ec3e24d19816735f82bf26a5 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Thu, 10 Jul 2025 15:21:40 -0400
 Subject: [PATCH 70/74] fixup! drivers: ethernet: Added ethernet driver for
@@ -32,5 +32,5 @@ index ab64f8042fc7..62a95c28e7fa 100644
  	}
  
 -- 
-2.51.1
+2.52.0
 

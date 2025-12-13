@@ -1,4 +1,4 @@
-From 67fa5ed53ac8c1aa40b540e0b149209b180c8fc6 Mon Sep 17 00:00:00 2001
+From a63222f8553921dbd330c123477adb3c1220b04d Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 14 May 2025 20:06:09 -0400
 Subject: [PATCH 55/74] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver
@@ -26,5 +26,5 @@ index 78150a4487f9..5ca189d72474 100644
  #define PAC193X_CMD_DIS_ACT 0x22
  #define PAC193X_CMD_NEG_PWR_ACT 0x23
 -- 
-2.51.1
+2.52.0
 

@@ -1,4 +1,4 @@
-From 0e35b9f229ea5c31363e68a7a61c54845c7401a7 Mon Sep 17 00:00:00 2001
+From 542be4998d4d62d16e4a9a49f6498f04007c8894 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Thu, 31 Oct 2024 19:33:42 -0700
 Subject: [PATCH 23/74] riscv: mm: Use physical memory aliases to apply PMAs
@@ -401,5 +401,5 @@ index 8b6c0a112a8d..cddeaa66fec7 100644
 +}
 +#endif /* CONFIG_RISCV_ISA_SVPBMT */
 -- 
-2.51.1
+2.52.0
 

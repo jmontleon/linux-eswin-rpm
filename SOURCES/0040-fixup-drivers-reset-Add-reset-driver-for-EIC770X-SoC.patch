@@ -1,4 +1,4 @@
-From 3403cfd6a153a2c887144f3543adcaeda14ce077 Mon Sep 17 00:00:00 2001
+From cc7a4cf7d11d49a53a0ba31bf557f8f46d09d604 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 9 Apr 2025 13:08:03 -0400
 Subject: [PATCH 40/74] fixup! drivers: reset: Add reset driver for EIC770X SoC
@@ -23,5 +23,5 @@ index 0dd44c228b53..3fda8842fc3b 100755
 +MODULE_DESCRIPTION("Eswin Reset Controller Driver for EIC770X SoCs");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.51.1
+2.52.0
 

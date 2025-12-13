@@ -1,4 +1,4 @@
-From 9212d63b1f231ab80fd6cc9362750ddbba0d685b Mon Sep 17 00:00:00 2001
+From 3b5d08a5dce5fcf27bfd40ca54ac97878f270cb5 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 9 Apr 2025 13:04:03 -0400
 Subject: [PATCH 42/74] fixup! driver: PCIe: Add PCIe driver for EIC7700
@@ -33,5 +33,5 @@ index 42fc750c4893..853763ae9223 100644
  
  static int eswin_pcie_probe(struct platform_device *pdev)
 -- 
-2.51.1
+2.52.0
 

@@ -1,4 +1,4 @@
-From 9be08269fce360464fbadff797c4801211cd7515 Mon Sep 17 00:00:00 2001
+From 7ff98a79f6ed2dc7a5a68527375327c5c47f6419 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 23 Oct 2024 16:53:02 -0700
 Subject: [PATCH 17/74] riscv: mm: Deduplicate _PAGE_CHG_MASK definition
@@ -72,5 +72,5 @@ index 971aaf78b353..938cf23947c4 100644
  extern pgd_t trampoline_pg_dir[];
  extern pgd_t early_pg_dir[];
 -- 
-2.51.1
+2.52.0
 
