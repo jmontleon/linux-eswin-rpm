@@ -1,4 +1,4 @@
-From 054a6f40ebf80d9f68ba6de03236b684c986a055 Mon Sep 17 00:00:00 2001
+From 3914bc7080d7e99783c79903db945ad6724ca86b Mon Sep 17 00:00:00 2001
 From: Pritesh Patel <pritesh.patel@einfochips.com>
 Date: Tue, 7 Jan 2025 06:16:58 +0000
 Subject: [PATCH 20/69] drivers: cache: add compatible string for EIC7700
