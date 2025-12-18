@@ -1,4 +1,4 @@
-From 3e35c4e6618d3bfdf5a590bfd861237f86ccc38b Mon Sep 17 00:00:00 2001
+From 9fd8650122b926156a9b859827b3ad073e11c22e Mon Sep 17 00:00:00 2001
 From: Yanko Kaneti <yaneti@declera.com>
 Date: Fri, 6 Jun 2025 21:05:42 +0300
 Subject: [PATCH 66/69] Add adapted Milk-V Megrez device-tree from RockOS

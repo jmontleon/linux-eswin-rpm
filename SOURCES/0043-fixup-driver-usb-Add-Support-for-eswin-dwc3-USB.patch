@@ -1,4 +1,4 @@
-From dd8658da3725610b2d3f2fbde499bc08717b9a9b Mon Sep 17 00:00:00 2001
+From e16ca7e990ae639f6c11cb425e5afa3e10ef6647 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Thu, 1 May 2025 01:05:15 -0400
 Subject: [PATCH 43/69] fixup! driver: usb: Add Support for eswin dwc3 USB
