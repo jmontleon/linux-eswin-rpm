@@ -1,4 +1,4 @@
-From b0faa901929dde0dfa8541c8844ba4be4bf1a3d2 Mon Sep 17 00:00:00 2001
+From 2fbd5d17242b25fca038c028529687d5655bfe83 Mon Sep 17 00:00:00 2001
 From: Yifeng Huang <huangyifeng@eswincomputing.com>
 Date: Mon, 6 Jan 2025 10:48:25 +0000
 Subject: [PATCH 10/74] drivers: clk: add a clock driver for eswin EIC7700
@@ -37,7 +37,7 @@ index 3a1611008e48..2a9056d41093 100644
  source "drivers/clk/imgtec/Kconfig"
  source "drivers/clk/imx/Kconfig"
 diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
-index b74a1767ca27..36ba57a64bbe 100644
+index 61ec08404442..27097f7da338 100644
 --- a/drivers/clk/Makefile
 +++ b/drivers/clk/Makefile
 @@ -121,6 +121,7 @@ obj-$(CONFIG_CLK_BAIKAL_T1)		+= baikal-t1/

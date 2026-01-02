@@ -1,4 +1,4 @@
-From 4415678479b2162fac48c9bda5491a793d6292bb Mon Sep 17 00:00:00 2001
+From 3001d84eb6953ecfd14eddda63ae545725b6f1a0 Mon Sep 17 00:00:00 2001
 From: Yulin Lu <luyulin@eswincomputing.com>
 Date: Tue, 7 Jan 2025 03:55:52 +0000
 Subject: [PATCH 13/74] drivers: pinctrl: add pinctrl driver for HiFive Premier

@@ -1,4 +1,4 @@
-From c6616678f963f112817ce87e7982ce5e181d3cd1 Mon Sep 17 00:00:00 2001
+From e68d9df06105fd31767fe74a1d0758e6f73351e7 Mon Sep 17 00:00:00 2001
 From: Yanko Kaneti <yaneti@declera.com>
 Date: Tue, 29 Jul 2025 16:21:11 +0300
 Subject: [PATCH 72/74] Reuse common eic7700 pinctrl and add an adapted

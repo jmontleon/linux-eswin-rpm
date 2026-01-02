@@ -1,4 +1,4 @@
-From f5f71f14620126069c97c2f62b89a7b4ba1233a8 Mon Sep 17 00:00:00 2001
+From 7fc1b494bc2ac5cc8c98bbfe0f348ece9d64ad69 Mon Sep 17 00:00:00 2001
 From: Min Lin <linmin@eswincomputing.com>
 Date: Fri, 3 Jan 2025 13:44:11 +0000
 Subject: [PATCH 74/74] riscv: dts: eswin: add support for building DTB files

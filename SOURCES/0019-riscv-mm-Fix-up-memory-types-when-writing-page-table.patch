@@ -1,4 +1,4 @@
-From d5430cf2b005e016482098bbf0a5920b0a722671 Mon Sep 17 00:00:00 2001
+From 6fd4d6996cabb9f1fe15b0ded944e2cb00279953 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 30 Oct 2024 18:46:03 -0700
 Subject: [PATCH 19/74] riscv: mm: Fix up memory types when writing page tables

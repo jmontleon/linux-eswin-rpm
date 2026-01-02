@@ -173,18 +173,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .eswin
-%define specrpmversion 6.18.1
-%define specversion 6.18.1
+%define specrpmversion 6.18.3
+%define specversion 6.18.3
 %define patchversion 6.18
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.18.1
+%define tarfile_release 6.18.3
 # This is needed to do merge window version magic
 %define patchlevel 18
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.18.1
+%define kabiversion 6.18.3
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4614,6 +4614,15 @@ fi\
 #
 #
 %changelog
+* Fri Jan 02 2026 Justin M. Forbes <jforbes@fedoraproject.org> [6.18.3-0]
+- Config update due to stable patches (Justin M. Forbes)
+- wifi: iwlwifi: Fix firmware version handling (Ville Syrjälä)
+- Linux v6.18.3
+
+* Thu Dec 18 2025 Justin M. Forbes <jforbes@fedoraproject.org> [6.18.2-0]
+- Add new configs for 6.18.2 (Justin M. Forbes)
+- Linux v6.18.2
+
 * Sat Dec 13 2025 Justin M. Forbes <jforbes@fedoraproject.org> [6.18.1-0]
 - Initial setup for stable Fedora releases (Justin M. Forbes)
 - Reset RHEL_RELEASE for the 6.19 cycle (Justin M. Forbes)

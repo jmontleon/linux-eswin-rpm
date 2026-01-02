@@ -1,4 +1,4 @@
-From 527137384d95d10f58d4b71525e64a58b5b238d1 Mon Sep 17 00:00:00 2001
+From 83c25739d4dc2de339d73fd8faa01c8e944f7c74 Mon Sep 17 00:00:00 2001
 From: Yifeng Huang <huangyifeng@eswincomputing.com>
 Date: Tue, 30 Jul 2024 15:18:03 +0000
 Subject: [PATCH 62/74] drivers: spi: Add bootspi flash driver for EIC7700
@@ -16,7 +16,7 @@ https://github.com/sifiveinc/riscv-linux/commit/dca044841e3f6febe06c96d58994132f
  create mode 100644 drivers/spi/spi-eswin-bootspi.c
 
 diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 55675750182e..cd10d5e5b151 100644
+index 1872f9d54a5c..7044ed3b18be 100644
 --- a/drivers/spi/Kconfig
 +++ b/drivers/spi/Kconfig
 @@ -411,6 +411,12 @@ config SPI_EP93XX
@@ -33,7 +33,7 @@ index 55675750182e..cd10d5e5b151 100644
  	bool "Falcon SPI controller support"
  	depends on SOC_FALCON
 diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
-index 8ff74a13faaa..a6339af0aa20 100644
+index 1f7c06a3091d..7f40a4afa622 100644
 --- a/drivers/spi/Makefile
 +++ b/drivers/spi/Makefile
 @@ -56,6 +56,7 @@ obj-$(CONFIG_SPI_DW_BT1)		+= spi-dw-bt1.o
