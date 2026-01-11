@@ -1,4 +1,4 @@
-From 801944c9c2d33df7bc74c54b1c255614c063f6e6 Mon Sep 17 00:00:00 2001
+From c3c6789fd1cfb3e465ad1f6b15055c15ac12ceb3 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Sun, 12 Oct 2025 17:11:25 -0400
 Subject: [PATCH 05/74] Revert "pinctrl: eswin: Fix unsigned comparison to less

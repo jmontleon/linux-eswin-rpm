@@ -1,4 +1,4 @@
-From 6d3e35f599786c8c315f34b221598d6601ae4780 Mon Sep 17 00:00:00 2001
+From 12a785a764e14993db49dd12a2ee300cde8cdfb1 Mon Sep 17 00:00:00 2001
 From: Shuang Liang <liangshuang@eswincomputing.com>
 Date: Tue, 9 Jul 2024 09:38:51 +0800
 Subject: [PATCH 46/74] drivers: usb: fix getting hub descriptor fail.
