@@ -1,4 +1,4 @@
-From 24f5791d7b0c27a02ad340b53ace78588262e172 Mon Sep 17 00:00:00 2001
+From b941a2c35b4e383d0404d9f078e30d7efcc39410 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Fri, 25 Oct 2024 09:53:11 -0700
 Subject: [PATCH 16/74] riscv: mm: Deduplicate pgtable address conversion
@@ -131,10 +131,10 @@ index 6e789fa58514..aa4b36e858ee 100644
  #define p4d_index(addr) (((addr) >> P4D_SHIFT) & (PTRS_PER_P4D - 1))
  
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 5a08eb5fe99f..971aaf78b353 100644
+index 30d1ea93dde3..9a6e796e07d2 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
-@@ -264,19 +264,19 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
+@@ -260,19 +260,19 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
  	return __pgd((pfn << _PAGE_PFN_SHIFT) | prot_val);
  }
  
@@ -158,7 +158,7 @@ index 5a08eb5fe99f..971aaf78b353 100644
  }
  
  static inline pte_t pmd_pte(pmd_t pmd)
-@@ -690,21 +690,6 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
+@@ -686,21 +686,6 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
  	return __pmd(pmd_val(pmd) & ~(_PAGE_PRESENT|_PAGE_PROT_NONE));
  }
  

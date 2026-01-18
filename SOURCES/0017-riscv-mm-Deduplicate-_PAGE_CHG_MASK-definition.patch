@@ -1,4 +1,4 @@
-From 024a164f2f872236c14ffaa4176c76ebe4d2dfde Mon Sep 17 00:00:00 2001
+From a24b8bdaa2bf6cda919f3c63f8171a5b5d3f9518 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 23 Oct 2024 16:53:02 -0700
 Subject: [PATCH 17/74] riscv: mm: Deduplicate _PAGE_CHG_MASK definition
@@ -55,10 +55,10 @@ index aa4b36e858ee..a62878a20e91 100644
  {
  	return (pud_val(pud) & _PAGE_PRESENT);
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 971aaf78b353..938cf23947c4 100644
+index 9a6e796e07d2..9fca741df4b3 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
-@@ -207,6 +207,12 @@ extern struct pt_alloc_ops pt_ops __meminitdata;
+@@ -203,6 +203,12 @@ extern struct pt_alloc_ops pt_ops __meminitdata;
  #define _PAGE_IOREMAP	((_PAGE_KERNEL & ~_PAGE_MTMASK) | _PAGE_IO)
  #define PAGE_KERNEL_IO		__pgprot(_PAGE_IOREMAP)
  

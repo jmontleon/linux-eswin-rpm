@@ -1,4 +1,4 @@
-From 7dc8a1c982f6ebf551c2c2b97a5a566bafbfbda3 Mon Sep 17 00:00:00 2001
+From 4e023c8931e4764e2a00e6f4559ba36bf00f8e0e Mon Sep 17 00:00:00 2001
 From: Yifeng Huang <huangyifeng@eswincomputing.com>
 Date: Mon, 6 Jan 2025 10:48:25 +0000
 Subject: [PATCH 10/74] drivers: clk: add a clock driver for eswin EIC7700

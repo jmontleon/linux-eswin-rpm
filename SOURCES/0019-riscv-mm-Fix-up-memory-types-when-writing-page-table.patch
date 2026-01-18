@@ -1,4 +1,4 @@
-From c4f165f9d170f323e474c71828abb354f706e19c Mon Sep 17 00:00:00 2001
+From 7f50e713f911f0c3f82c1d36642c5c046136d923 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 30 Oct 2024 18:46:03 -0700
 Subject: [PATCH 19/74] riscv: mm: Fix up memory types when writing page tables
@@ -338,10 +338,10 @@ index a62878a20e91..3aaebd91d4bc 100644
  
  static inline unsigned long p4d_pfn(p4d_t p4d)
 diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 938cf23947c4..f3c9b6ddae79 100644
+index 9fca741df4b3..424f7279a555 100644
 --- a/arch/riscv/include/asm/pgtable.h
 +++ b/arch/riscv/include/asm/pgtable.h
-@@ -263,11 +263,11 @@ static inline void pmd_clear(pmd_t *pmdp)
+@@ -259,11 +259,11 @@ static inline void pmd_clear(pmd_t *pmdp)
  
  static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
  {
@@ -356,7 +356,7 @@ index 938cf23947c4..f3c9b6ddae79 100644
  }
  
  static inline unsigned long pmd_pfn(pmd_t pmd)
-@@ -330,7 +330,10 @@ static inline unsigned long pte_napot(pte_t pte)
+@@ -326,7 +326,10 @@ static inline unsigned long pte_napot(pte_t pte)
  /* Yields the page frame number (PFN) of a page table entry */
  static inline unsigned long pte_pfn(pte_t pte)
  {
@@ -368,7 +368,7 @@ index 938cf23947c4..f3c9b6ddae79 100644
  
  	if (has_svnapot() && pte_napot(pte))
  		res = res & (res - 1UL);
-@@ -343,11 +346,11 @@ static inline unsigned long pte_pfn(pte_t pte)
+@@ -339,11 +342,11 @@ static inline unsigned long pte_pfn(pte_t pte)
  /* Constructs a page table entry */
  static inline pte_t pfn_pte(unsigned long pfn, pgprot_t prot)
  {
@@ -383,7 +383,7 @@ index 938cf23947c4..f3c9b6ddae79 100644
  }
  
  #define pte_pgprot pte_pgprot
-@@ -488,9 +491,11 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+@@ -484,9 +487,11 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
  {
  	unsigned long newprot_val = pgprot_val(newprot);
  
