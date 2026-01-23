@@ -1,4 +1,4 @@
-From 28861dee31bf0302addda6657411fdc7c1634d04 Mon Sep 17 00:00:00 2001
+From ca321a1546dc5606f1fe83b8fdab12466791b3e4 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Sun, 12 Oct 2025 17:07:45 -0400
 Subject: [PATCH 02/74] Revert "riscv: dts: eswin: add HiFive Premier P550

@@ -1,4 +1,4 @@
-From 8e373188946c5260d4707e70d0333b75f7ba7fd3 Mon Sep 17 00:00:00 2001
+From e2afd6f26a269174e8c97cb829783d061982634b Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Sun, 12 Oct 2025 17:11:40 -0400
 Subject: [PATCH 06/74] Revert "pinctrl: eswin: Add EIC7700 pinctrl driver"
