@@ -1,4 +1,4 @@
-From 636383f4596080c9d26934a23453d2f654b6db23 Mon Sep 17 00:00:00 2001
+From 8be5fbe2a9e0f6dd67d5df7674e241eb619e4171 Mon Sep 17 00:00:00 2001
 From: Pritesh Patel <pritesh.patel@einfochips.com>
 Date: Tue, 22 Apr 2025 14:38:03 +0000
 Subject: [PATCH 31/74] riscv: defconfig: hifive-premier-p550: enabled drm
