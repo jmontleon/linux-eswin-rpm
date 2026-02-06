@@ -1,4 +1,4 @@
-From 7d4d062dc80b67d55cc781d1d5e646d1e4d055b2 Mon Sep 17 00:00:00 2001
+From 0ad621585a5fcd23688f0ccf663fb03d942dc29f Mon Sep 17 00:00:00 2001
 From: Yu Ning <ningyu@eswincomputing.com>
 Date: Tue, 30 Jul 2024 08:09:50 +0000
 Subject: [PATCH 28/74] driver: PCIe: Add PCIe driver for EIC7700
@@ -449,5 +449,5 @@ index 000000000000..42fc750c4893
 +MODULE_AUTHOR("Ning Yu <ningyu@eswincomputing.com>");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.52.0
+2.53.0
 

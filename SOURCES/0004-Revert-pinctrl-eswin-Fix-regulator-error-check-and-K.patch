@@ -1,4 +1,4 @@
-From 8340789dfae7d2d6dc13ad3794f5dcc1b04a0c06 Mon Sep 17 00:00:00 2001
+From 9f72d6b5d27bfe88fd2ac59c50bf8afa3c0f71c2 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Sun, 12 Oct 2025 17:11:12 -0400
 Subject: [PATCH 04/74] Revert "pinctrl: eswin: Fix regulator error check and
@@ -37,5 +37,5 @@ index ffcd0ec5c2dc..4874b5532343 100644
  					 "failed to get vrgmii regulator\n");
  	}
 -- 
-2.52.0
+2.53.0
 

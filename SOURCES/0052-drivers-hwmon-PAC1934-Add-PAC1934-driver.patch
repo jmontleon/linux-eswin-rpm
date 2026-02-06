@@ -1,4 +1,4 @@
-From b6d11bda3f1abd754cf3b4b879d2538cc6044645 Mon Sep 17 00:00:00 2001
+From b0f570b94053b7176a26d0f6e191e0ab3f16f115 Mon Sep 17 00:00:00 2001
 From: Wei Yang <yangwei1@eswincomputing.com>
 Date: Tue, 30 Jul 2024 15:10:52 +0000
 Subject: [PATCH 52/74] drivers: hwmon: PAC1934: Add PAC1934 driver
@@ -871,5 +871,5 @@ index 000000000000..8a9ca9ec07b5
 +MODULE_DESCRIPTION("pac193x driver");
 +MODULE_LICENSE("GPL");
 -- 
-2.52.0
+2.53.0
 

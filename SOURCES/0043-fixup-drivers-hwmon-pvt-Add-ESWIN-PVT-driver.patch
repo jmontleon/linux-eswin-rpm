@@ -1,4 +1,4 @@
-From 7ef37964ff50399adb2b8d9e36192a95ddcf55bb Mon Sep 17 00:00:00 2001
+From 1a9847313106bc69f082e67de1df863642e7f4ac Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 29 Apr 2025 21:31:32 -0400
 Subject: [PATCH 43/74] fixup! drivers: hwmon: pvt: Add ESWIN PVT driver
@@ -18,5 +18,5 @@ index 1c0c9252317c..f321d44a123d 100644
  #endif /* __HWMON_ESWIN_PVT_H__ */
 -
 -- 
-2.52.0
+2.53.0
 

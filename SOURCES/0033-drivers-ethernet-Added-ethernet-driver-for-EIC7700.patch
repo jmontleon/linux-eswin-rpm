@@ -1,4 +1,4 @@
-From aae12ab09ce5e34658e2d19374322ca14721aa00 Mon Sep 17 00:00:00 2001
+From 09856c1323bd3f23d834627505d7b1aa40dae481 Mon Sep 17 00:00:00 2001
 From: Lifei Fang <fanglifei@eswincomputing.com>
 Date: Tue, 30 Jul 2024 10:03:12 +0000
 Subject: [PATCH 33/74] drivers: ethernet: Added ethernet driver for EIC7700
@@ -554,5 +554,5 @@ index 000000000000..16863c9ca029
 +MODULE_DESCRIPTION("Eswin eic7700 qos ethernet driver");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.52.0
+2.53.0
 

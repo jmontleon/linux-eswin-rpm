@@ -1,4 +1,4 @@
-From 06a073189860d1813a187be44a848111be54a14f Mon Sep 17 00:00:00 2001
+From e157aab9ddd60df6d28af7e841dda628e5b900ff Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Thu, 1 May 2025 01:05:57 -0400
 Subject: [PATCH 49/74] fixup! drivers: pwm: Added ESWIN pwm driver
@@ -31,5 +31,5 @@ index 75e774752040..57cdbe8e09d9 100644
  	clk_disable_unprepare(pc->clk);
  }
 -- 
-2.52.0
+2.53.0
 

@@ -1,4 +1,4 @@
-From 0b174fed307514eb5d182ab88b62050a7940b84d Mon Sep 17 00:00:00 2001
+From f01c98b8bd7554e614455bb2b675dca670a043b4 Mon Sep 17 00:00:00 2001
 From: Yulin Lu <luyulin@eswincomputing.com>
 Date: Tue, 30 Jul 2024 11:27:26 +0000
 Subject: [PATCH 27/74] drivers: ata: Add ESWIN sata driver
@@ -342,5 +342,5 @@ index 000000000000..0c534d21b87d
 +MODULE_AUTHOR("Lu Yulin <luyulin@eswincomputing.com>");
 +MODULE_LICENSE("GPL");
 -- 
-2.52.0
+2.53.0
 

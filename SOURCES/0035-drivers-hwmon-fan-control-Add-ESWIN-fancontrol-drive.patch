@@ -1,4 +1,4 @@
-From 900c6cc861b09ba4598da4795c69510082e849a9 Mon Sep 17 00:00:00 2001
+From f1235168a94b727b7f9bc2e77bccb421e4cde116 Mon Sep 17 00:00:00 2001
 From: Yulin Lu <luyulin@eswincomputing.com>
 Date: Tue, 30 Jul 2024 14:07:16 +0000
 Subject: [PATCH 35/74] drivers: hwmon: fan-control: Add ESWIN fancontrol
@@ -569,5 +569,5 @@ index 000000000000..aa230a88166e
 +MODULE_DESCRIPTION("ESWIN Fan Control CORE driver");
 +MODULE_LICENSE("GPL");
 -- 
-2.52.0
+2.53.0
 

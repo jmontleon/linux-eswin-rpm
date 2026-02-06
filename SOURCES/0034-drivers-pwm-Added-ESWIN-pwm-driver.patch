@@ -1,4 +1,4 @@
-From 35ea13f4f11173bee8c02c2b127199d02f5842ad Mon Sep 17 00:00:00 2001
+From aa1bd991f155693a5b99fb0058ce2435dca07d1b Mon Sep 17 00:00:00 2001
 From: Xiang Xu <xuxiang@eswincomputing.com>
 Date: Tue, 30 Jul 2024 13:42:40 +0000
 Subject: [PATCH 34/74] drivers: pwm: Added ESWIN pwm driver
@@ -374,5 +374,5 @@ index 000000000000..75e774752040
 +MODULE_LICENSE("GPL");
 +
 -- 
-2.52.0
+2.53.0
 
