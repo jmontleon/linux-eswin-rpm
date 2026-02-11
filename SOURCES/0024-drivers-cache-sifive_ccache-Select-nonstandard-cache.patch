@@ -1,4 +1,4 @@
-From 5ad5d516a5c3e1f6fcefc2375d2cfaa6935dce54 Mon Sep 17 00:00:00 2001
+From 247aa16cba7f902b89088dc09eaeb3ca983e1501 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Tue, 7 Jan 2025 06:10:16 +0000
 Subject: [PATCH 24/74] drivers: cache: sifive_ccache: Select nonstandard cache

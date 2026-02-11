@@ -1,4 +1,4 @@
-From 2e9af7bf654eb0d0d24032961c01300d255a2793 Mon Sep 17 00:00:00 2001
+From a689aae07ede423714ec7ae7be67da51b18c9a45 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Mon, 28 Oct 2024 16:06:52 -0700
 Subject: [PATCH 21/74] riscv: alternative: Add an ALTERNATIVE_3 macro

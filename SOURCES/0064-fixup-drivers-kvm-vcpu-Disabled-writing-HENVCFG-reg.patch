@@ -1,4 +1,4 @@
-From 69393f480c95491f9a6a6e62b8bc84646efec4b6 Mon Sep 17 00:00:00 2001
+From aceeeb04626f74dedb092e3a7fc24120812c1747 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 14 May 2025 16:20:58 -0400
 Subject: [PATCH 64/74] fixup! drivers: kvm: vcpu: Disabled writing HENVCFG reg
