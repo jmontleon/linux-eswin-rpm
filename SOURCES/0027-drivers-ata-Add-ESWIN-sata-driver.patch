@@ -1,4 +1,4 @@
-From bbe8252a7abe78933796f5fccc2a39085209ceea Mon Sep 17 00:00:00 2001
+From 79928f43597c14128d56151c184d32ecdd0d9308 Mon Sep 17 00:00:00 2001
 From: Yulin Lu <luyulin@eswincomputing.com>
 Date: Tue, 30 Jul 2024 11:27:26 +0000
 Subject: [PATCH 27/74] drivers: ata: Add ESWIN sata driver

@@ -1,4 +1,4 @@
-From bc59b540c466ea3bdb8f3c79ee14127a93e22ad0 Mon Sep 17 00:00:00 2001
+From 1e553114b9519f40c5d6bdef7633372c206b35c9 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Thu, 10 Jul 2025 15:21:40 -0400
 Subject: [PATCH 70/74] fixup! drivers: ethernet: Added ethernet driver for

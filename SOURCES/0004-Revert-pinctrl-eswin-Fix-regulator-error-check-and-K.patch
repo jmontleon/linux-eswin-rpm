@@ -1,4 +1,4 @@
-From a0e9ed4ba5551efe7e59c3db46729ca312c0ce49 Mon Sep 17 00:00:00 2001
+From edc50780ace7d8bc05e01982d6e8738f65c22777 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Sun, 12 Oct 2025 17:11:12 -0400
 Subject: [PATCH 04/74] Revert "pinctrl: eswin: Fix regulator error check and

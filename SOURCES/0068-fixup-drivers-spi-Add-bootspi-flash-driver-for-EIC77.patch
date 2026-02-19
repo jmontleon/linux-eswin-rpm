@@ -1,4 +1,4 @@
-From 8dd2758f591211a097de2d53bbea900c8bd9e2e4 Mon Sep 17 00:00:00 2001
+From 981b20a4c0ca033c4aa1c995df51b76213867547 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Tue, 22 Apr 2025 12:05:29 -0400
 Subject: [PATCH 68/74] fixup! drivers: spi: Add bootspi flash driver for
