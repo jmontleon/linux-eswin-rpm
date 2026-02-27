@@ -1,0 +1,26 @@
+From a9d14cca3061924a9a9fd8b5d9808c20bfba9f1b Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Thu, 1 May 2025 01:03:34 -0400
+Subject: [PATCH 49/76] fixup! driver: usb: Add Support for eswin dwc3 USB
+
+add missing __init
+---
+ drivers/usb/dwc3/dwc3-eswin.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/dwc3/dwc3-eswin.c b/drivers/usb/dwc3/dwc3-eswin.c
+index 470e08d90741..b6f27b8bf092 100755
+--- a/drivers/usb/dwc3/dwc3-eswin.c
++++ b/drivers/usb/dwc3/dwc3-eswin.c
+@@ -213,7 +213,7 @@ static int dwc3_eswin_get_extcon_dev(struct dwc3_eswin *eswin)
+ 	return 0;
+ }
+ 
+-static int dwc3_eswin_deassert(struct dwc3_eswin *eswin)
++static int __init dwc3_eswin_deassert(struct dwc3_eswin *eswin)
+ {
+ 	int rc;
+ 
+-- 
+2.53.0
+

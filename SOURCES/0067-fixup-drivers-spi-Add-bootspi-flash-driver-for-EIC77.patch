@@ -1,27 +1,26 @@
-From 97a3f13ea422c6df770391b83df6959b9828b4ef Mon Sep 17 00:00:00 2001
+From ea3c0517c9d2239e1db97c6ace595d4e6c7a1453 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Tue, 29 Apr 2025 10:33:02 -0400
-Subject: [PATCH 67/74] fixup! drivers: spi: Add bootspi flash driver for
+Date: Wed, 16 Apr 2025 19:07:17 -0400
+Subject: [PATCH 67/76] fixup! drivers: spi: Add bootspi flash driver for
  EIC7700
 
-add missing static to prevent warning
+added a softdep on spi-nor to make it be probed before bootspi.
+Without this hint, spi-nor is not probed at all and even if probed
+later manually this driver does not work. The flow must be
+spi-nor -> bootspi in order to successfully get /dev/mtd0.
 ---
- drivers/spi/spi-eswin-bootspi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/spi/spi-eswin-bootspi.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/drivers/spi/spi-eswin-bootspi.c b/drivers/spi/spi-eswin-bootspi.c
-index 4c299ddbd71b..54a3bf677451 100644
+index c8fbc1b3fc91..2f4aaf7e998c 100644
 --- a/drivers/spi/spi-eswin-bootspi.c
 +++ b/drivers/spi/spi-eswin-bootspi.c
-@@ -284,7 +284,7 @@ static void eswin_bootspi_cmd_cfg(struct es_spi_priv *priv, u32 code, u32 type)
-  * @param [in]  wr_dest: Address of data to be sent
-  * @param [in]  size: size of flash to be write
-  */
--void eswin_bootspi_writer(struct es_spi_priv *priv)
-+static void eswin_bootspi_writer(struct es_spi_priv *priv)
- {
- 	u32 write_size = 0, offset, cmd_code;
- 	u32 cmd_type = priv->cmd_type;
+@@ -656,3 +656,4 @@ module_platform_driver(eswin_bootspi_driver);
+ MODULE_AUTHOR("Huangyifeng <huangyifeng@eswincomputing.com>");
+ MODULE_DESCRIPTION("Eswin Boot SPI Controller Driver for EIC770X SoCs");
+ MODULE_LICENSE("GPL v2");
++MODULE_SOFTDEP("pre: spi-nor");
 -- 
 2.53.0
 

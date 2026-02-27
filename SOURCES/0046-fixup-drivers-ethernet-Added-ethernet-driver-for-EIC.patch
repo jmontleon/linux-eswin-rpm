@@ -1,0 +1,61 @@
+From 109301f6218fcbe0961e8dbefb548ee3e0e9813a Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Wed, 30 Apr 2025 14:50:28 -0400
+Subject: [PATCH 46/76] fixup! drivers: ethernet: Added ethernet driver for
+ EIC7700
+
+fix return value of dwc_qos_remove
+---
+ drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c
+index 16863c9ca029..ab64f8042fc7 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c
+@@ -384,7 +384,7 @@ static int dwc_qos_probe(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
+-static int dwc_qos_remove(struct platform_device *pdev)
++static void dwc_qos_remove(struct platform_device *pdev)
+ {
+ 	struct dwc_qos_priv *dwc_priv = get_stmmac_bsp_priv(&pdev->dev);
+ 
+@@ -393,15 +393,13 @@ static int dwc_qos_remove(struct platform_device *pdev)
+ 	clk_disable_unprepare(dwc_priv->clk_app);
+ 
+ 	devm_gpiod_put(&pdev->dev, dwc_priv->phy_reset);
+-
+-	return 0;
+ }
+ 
+ struct dwc_eth_dwmac_data {
+ 	int (*probe)(struct platform_device *pdev,
+ 		     struct plat_stmmacenet_data *data,
+ 		     struct stmmac_resources *res);
+-	int (*remove)(struct platform_device *pdev);
++	void (*remove)(struct platform_device *pdev);
+ };
+ 
+ static const struct dwc_eth_dwmac_data dwc_qos_data = {
+@@ -470,15 +468,12 @@ static int dwc_eth_dwmac_probe(struct platform_device *pdev)
+ static void dwc_eth_dwmac_remove(struct platform_device *pdev)
+ {
+ 	const struct dwc_eth_dwmac_data *data;
+-	int err;
+ 
+ 	data = device_get_match_data(&pdev->dev);
+ 
+ 	stmmac_dvr_remove(&pdev->dev);
+ 
+-	err = data->remove(pdev);
+-	if (err < 0)
+-		dev_err(&pdev->dev, "failed to remove subdriver: %d\n", err);
++	data->remove(pdev);
+ }
+ 
+ static const struct of_device_id dwc_eth_dwmac_match[] = {
+-- 
+2.53.0
+

@@ -1,30 +1,26 @@
-From 972456139caba04dd32c375b072a8ef384bbf14f Mon Sep 17 00:00:00 2001
+From 9ac1980b72f08d00bc6133ccbef987b05c3d37df Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Wed, 14 May 2025 20:06:09 -0400
-Subject: [PATCH 55/74] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver
+Date: Tue, 22 Apr 2025 11:40:42 -0400
+Subject: [PATCH 55/76] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver
 
-Seems that this #define is just not correct - according to the datasheet
-the CMD SLOW register is 20h. Was causing a flood of messages like:
-pac193x 4-0010: get command:31 value error
-in the serial console when tuned.service was active and attempting
-to monitor the CPU using the PAC1934.
+replace non-existant sense_resistances property reference with shunt_resistors that is actually in dts
 ---
  drivers/hwmon/pac193x.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/hwmon/pac193x.c b/drivers/hwmon/pac193x.c
-index 78150a4487f9..5ca189d72474 100644
+index 8a9ca9ec07b5..6a7c7ad93b91 100644
 --- a/drivers/hwmon/pac193x.c
 +++ b/drivers/hwmon/pac193x.c
-@@ -73,7 +73,7 @@
- #define PAC193X_CMD_NEG_PWR 0x1D
- #define PAC193X_CMD_REFRESH_G 0x1E
- #define PAC193X_CMD_REFRESH_V 0x1F
--#define PAC193X_CMD_SLOW 0x1F
-+#define PAC193X_CMD_SLOW 0x20
- #define PAC193X_CMD_CTRL_ACT 0x21
- #define PAC193X_CMD_DIS_ACT 0x22
- #define PAC193X_CMD_NEG_PWR_ACT 0x23
+@@ -761,7 +761,7 @@ static int pac193x_probe(struct i2c_client *client)
+ 		dev_err(dev, "can not get energy_acc_count:%d\n", ret);
+ 		data->energy_acc_count = 0;
+ 	}
+-	ret = of_property_read_u32_array(dev->of_node, "sense_resistances",
++	ret = of_property_read_u32_array(dev->of_node, "shunt_resistors",
+ 					 data->sense_resistances,
+ 					 PAC193X_MAX_CHAN_CNT);
+ 	if (0 != ret) {
 -- 
 2.53.0
 

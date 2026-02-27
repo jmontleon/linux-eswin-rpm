@@ -1,0 +1,33 @@
+From 4ae70ed3a60feef96c2b054a5d35fc784a91ea5d Mon Sep 17 00:00:00 2001
+From: Samuel Holland <samuel.holland@sifive.com>
+Date: Thu, 31 Oct 2024 18:47:20 -0700
+Subject: [PATCH 24/76] riscv: alternative: Allow calls with alternate link
+ registers
+
+Alternative assembly code may wish to use an alternate link register to
+minimize the number of clobbered registers. Apply the offset fix to all
+jalr (not jr) instructions, i.e. where rd is not x0.
+
+Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+---
+ arch/riscv/kernel/alternative.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/riscv/kernel/alternative.c b/arch/riscv/kernel/alternative.c
+index 7642704c7f18..e3eb2585faea 100644
+--- a/arch/riscv/kernel/alternative.c
++++ b/arch/riscv/kernel/alternative.c
+@@ -126,8 +126,8 @@ void riscv_alternative_fix_offsets(void *alt_ptr, unsigned int len,
+ 			if (!riscv_insn_is_jalr(insn2))
+ 				continue;
+ 
+-			/* if instruction pair is a call, it will use the ra register */
+-			if (RV_EXTRACT_RD_REG(insn) != 1)
++			/* if instruction pair is a call, it will save a link register */
++			if (RV_EXTRACT_RD_REG(insn) == 0)
+ 				continue;
+ 
+ 			riscv_alternative_fix_auipc_jalr(alt_ptr + i * sizeof(u32),
+-- 
+2.53.0
+

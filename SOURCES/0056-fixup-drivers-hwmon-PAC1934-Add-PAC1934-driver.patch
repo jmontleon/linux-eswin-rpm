@@ -1,0 +1,26 @@
+From 756497e108f2216da79b70d4820f0bc99afe27cd Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 22 Apr 2025 11:41:01 -0400
+Subject: [PATCH 56/76] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver
+
+add missing static to prevent warning
+---
+ drivers/hwmon/pac193x.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/hwmon/pac193x.c b/drivers/hwmon/pac193x.c
+index 6a7c7ad93b91..78150a4487f9 100644
+--- a/drivers/hwmon/pac193x.c
++++ b/drivers/hwmon/pac193x.c
+@@ -306,7 +306,7 @@ static ssize_t pac193x_ctrl_show(struct device *dev,
+ 			   "OVF", (set_val >> 0) & 0x1, (act_val >> 0) & 0x1, (lat_val >> 0) & 0x1);
+ }
+ 
+-int pac193x_common_reg_set(struct device *dev, const char *buf, u8 commad)
++static int pac193x_common_reg_set(struct device *dev, const char *buf, u8 commad)
+ {
+ 	struct pac193x_data *data = dev_get_drvdata(dev);
+ 	unsigned long val;
+-- 
+2.53.0
+

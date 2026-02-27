@@ -1,0 +1,36 @@
+From c00d8195a682ce58c89fc23386bdee36a3d046c9 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Thu, 10 Jul 2025 15:21:40 -0400
+Subject: [PATCH 72/76] fixup! drivers: ethernet: Added ethernet driver for
+ EIC7700
+
+fix argument type of dwc_qos_fix_speed
+---
+ drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c
+index ab64f8042fc7..62a95c28e7fa 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-eic7700.c
+@@ -143,7 +143,7 @@ static int dwc_eth_dwmac_config_dt(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
+-static void dwc_qos_fix_speed(void *priv, unsigned int speed, unsigned int mode)
++static void dwc_qos_fix_speed(void *priv, int speed, unsigned int mode)
+ {
+ 	unsigned long rate = 125000000;
+ 	int err, data = 0;
+@@ -214,7 +214,7 @@ static void dwc_qos_fix_speed(void *priv, unsigned int speed, unsigned int mode)
+ 
+ 		break;
+ 	default:
+-		dev_err(dwc_priv->dev, "invalid speed %u\n", speed);
++		dev_err(dwc_priv->dev, "invalid speed %d\n", speed);
+ 		break;
+ 	}
+ 
+-- 
+2.53.0
+

@@ -1,0 +1,38 @@
+From 2994b578473ddb9bb3591503c7ab11dd0a1cc0f7 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 6 May 2025 22:54:12 -0400
+Subject: [PATCH 47/76] fixup! ttm: disallow cached mapping
+
+different approach to drm hack to avoid warning about unused variable
+---
+ drivers/gpu/drm/ttm/ttm_bo_util.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/ttm/ttm_bo_util.c b/drivers/gpu/drm/ttm/ttm_bo_util.c
+index d58a54046847..0863d27e80cd 100644
+--- a/drivers/gpu/drm/ttm/ttm_bo_util.c
++++ b/drivers/gpu/drm/ttm/ttm_bo_util.c
+@@ -359,8 +359,7 @@ static int ttm_bo_kmap_ttm(struct ttm_buffer_object *bo,
+ 	if (ret)
+ 		return ret;
+ 
+-#ifndef CONFIG_SOC_SIFIVE_EIC7700
+-	if (num_pages == 1 && ttm->caching == ttm_cached &&
++	if (num_pages == 1 && ttm->caching == ttm_cached && !IS_ENABLED(CONFIG_SOC_SIFIVE_EIC7700) &&
+ 	    !(man->use_tt && (ttm->page_flags & TTM_TT_FLAG_DECRYPTED))) {
+ 		/*
+ 		 * We're mapping a single page, and the desired
+@@ -370,9 +369,7 @@ static int ttm_bo_kmap_ttm(struct ttm_buffer_object *bo,
+ 		map->bo_kmap_type = ttm_bo_map_kmap;
+ 		map->page = ttm->pages[start_page];
+ 		map->virtual = kmap(map->page);
+-	} else
+-#endif
+-	{
++	} else {
+ 		/*
+ 		 * We need to use vmap to get the desired page protection
+ 		 * or to make the buffer object look contiguous.
+-- 
+2.53.0
+

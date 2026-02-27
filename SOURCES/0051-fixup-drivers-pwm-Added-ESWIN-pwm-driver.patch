@@ -1,26 +1,35 @@
-From 8bd186b32c32d956876fc135eb65bf1151d73d00 Mon Sep 17 00:00:00 2001
+From ba1478da4921d259a2468690acd448410c32fb4c Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Thu, 1 May 2025 01:08:13 -0400
-Subject: [PATCH 51/74] fixup! drivers: pwm: Added ESWIN pwm driver
+Date: Thu, 1 May 2025 01:05:57 -0400
+Subject: [PATCH 51/76] fixup! drivers: pwm: Added ESWIN pwm driver
 
-use to_eswin_pwm helper
+switch to devm_pwmchip_add
 ---
- drivers/pwm/pwm-eswin.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pwm/pwm-eswin.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/drivers/pwm/pwm-eswin.c b/drivers/pwm/pwm-eswin.c
-index 74d750ed0afe..ff949906939a 100644
+index 75e774752040..57cdbe8e09d9 100644
 --- a/drivers/pwm/pwm-eswin.c
 +++ b/drivers/pwm/pwm-eswin.c
-@@ -217,7 +217,7 @@ static int eswin_pwm_probe(struct platform_device *pdev)
- 	if(IS_ERR(chip))
- 		return PTR_ERR(chip);
+@@ -282,7 +282,7 @@ static int eswin_pwm_probe(struct platform_device *pdev)
  
--	pc = pwmchip_get_drvdata(chip);
-+	pc = to_eswin_pwm(chip);
+ 	chip->ops = &eswin_pwm_ops;
  
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res)
+-	ret = pwmchip_add(chip);
++	ret = devm_pwmchip_add(&pdev->dev, chip);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "pwmchip_add() failed: %d\n", ret);
+ 		goto err_pclk;
+@@ -303,8 +303,6 @@ static void eswin_pwm_remove(struct platform_device *pdev)
+ 	struct pwm_chip *chip = platform_get_drvdata(pdev);
+ 	struct eswin_pwm *pc = to_eswin_pwm(chip);
+ 
+-	pwmchip_remove(chip);
+-
+ 	clk_disable_unprepare(pc->pclk);
+ 	clk_disable_unprepare(pc->clk);
+ }
 -- 
 2.53.0
 

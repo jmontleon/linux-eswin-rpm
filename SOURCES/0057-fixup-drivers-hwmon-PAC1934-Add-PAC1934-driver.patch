@@ -1,0 +1,30 @@
+From cc66d8145ecb368b1e025ce7d7a2f5288b1f50cd Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Wed, 14 May 2025 20:06:09 -0400
+Subject: [PATCH 57/76] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver
+
+Seems that this #define is just not correct - according to the datasheet
+the CMD SLOW register is 20h. Was causing a flood of messages like:
+pac193x 4-0010: get command:31 value error
+in the serial console when tuned.service was active and attempting
+to monitor the CPU using the PAC1934.
+---
+ drivers/hwmon/pac193x.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/hwmon/pac193x.c b/drivers/hwmon/pac193x.c
+index 78150a4487f9..5ca189d72474 100644
+--- a/drivers/hwmon/pac193x.c
++++ b/drivers/hwmon/pac193x.c
+@@ -73,7 +73,7 @@
+ #define PAC193X_CMD_NEG_PWR 0x1D
+ #define PAC193X_CMD_REFRESH_G 0x1E
+ #define PAC193X_CMD_REFRESH_V 0x1F
+-#define PAC193X_CMD_SLOW 0x1F
++#define PAC193X_CMD_SLOW 0x20
+ #define PAC193X_CMD_CTRL_ACT 0x21
+ #define PAC193X_CMD_DIS_ACT 0x22
+ #define PAC193X_CMD_NEG_PWR_ACT 0x23
+-- 
+2.53.0
+

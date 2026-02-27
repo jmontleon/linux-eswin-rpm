@@ -1,0 +1,37 @@
+From 18ce7d5f287725edfb58ac23712ed14b409b2437 Mon Sep 17 00:00:00 2001
+From: Yanko Kaneti <yaneti@declera.com>
+Date: Wed, 13 Aug 2025 17:22:03 +0300
+Subject: [PATCH 75/76] Use the appropriate phy-mode for the EIC7700 MACs (#2)
+
+This could be board specific but set globally it currently works
+for all the avialable boards used for Fedora development and fixes
+1G on the StarPro64
+---
+ arch/riscv/boot/dts/eswin/eic7700.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/riscv/boot/dts/eswin/eic7700.dtsi b/arch/riscv/boot/dts/eswin/eic7700.dtsi
+index 3922ee8e860e..5832adc1aaa2 100644
+--- a/arch/riscv/boot/dts/eswin/eic7700.dtsi
++++ b/arch/riscv/boot/dts/eswin/eic7700.dtsi
+@@ -347,7 +347,7 @@ d0_gmac0: ethernet@50400000 {
+ 			interrupt-parent = <&plic0>;
+ 			interrupt-names = "macirq";
+ 			interrupts = <61>;
+-			phy-mode = "rgmii";
++			phy-mode = "rgmii-txid";
+ 			numa-node-id = <0>;
+ 			id = <0>;
+ 			status = "disabled";
+@@ -375,7 +375,7 @@ d0_gmac1: ethernet@50410000 {
+ 			interrupt-parent = <&plic0>;
+ 			interrupt-names = "macirq";
+ 			interrupts = <70>;
+-			phy-mode = "rgmii";
++			phy-mode = "rgmii-txid";
+ 			numa-node-id = <0>;
+ 			id = <1>;
+ 			status = "disabled";
+-- 
+2.53.0
+
