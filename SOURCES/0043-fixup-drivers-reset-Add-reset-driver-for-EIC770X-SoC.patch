@@ -1,17 +1,27 @@
-From d49cf35a5292c9a9c3100a74f921323ee584eeb3 Mon Sep 17 00:00:00 2001
+From cda9183de10e760bc91026a8b07efe789aefda6b Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Tue, 29 Apr 2025 21:49:53 -0400
-Subject: [PATCH 43/76] fixup! drivers: reset: Add reset driver for EIC770X SoC
+Date: Wed, 9 Apr 2025 13:08:03 -0400
+Subject: [PATCH 43/77] fixup! drivers: reset: Add reset driver for EIC770X SoC
 
-remove executable bit from source code files
+Added missing module author / license / description so that
+this driver can be built as a module. I added them based on
+the comments from the top of the file.
 ---
- drivers/reset/reset-eswin.c | 0
- 1 file changed, 0 insertions(+), 0 deletions(-)
- mode change 100755 => 100644 drivers/reset/reset-eswin.c
+ drivers/reset/reset-eswin.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/drivers/reset/reset-eswin.c b/drivers/reset/reset-eswin.c
-old mode 100755
-new mode 100644
+index 0dd44c228b53..3fda8842fc3b 100755
+--- a/drivers/reset/reset-eswin.c
++++ b/drivers/reset/reset-eswin.c
+@@ -253,3 +253,7 @@ static int __init eic7700_reset_init(void)
+ 	return platform_driver_register(&eswin_reset_driver);
+ }
+ arch_initcall(eic7700_reset_init);
++
++MODULE_AUTHOR("Huangyifeng <huangyifeng@eswincomputing.com>");
++MODULE_DESCRIPTION("Eswin Reset Controller Driver for EIC770X SoCs");
++MODULE_LICENSE("GPL v2");
 -- 
 2.53.0
 

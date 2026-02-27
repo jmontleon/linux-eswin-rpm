@@ -1,0 +1,33 @@
+From 2b3fe520655e77420de2b26f3ada3c5508039c73 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Tue, 29 Apr 2025 10:44:57 -0400
+Subject: [PATCH 64/77] fixup! drivers: rtc: Added EIC7700 Internal RTC driver
+
+correct signature on remove function
+---
+ drivers/rtc/rtc-eswin.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/rtc/rtc-eswin.c b/drivers/rtc/rtc-eswin.c
+index e83f43baa60d..388a0968e53a 100644
+--- a/drivers/rtc/rtc-eswin.c
++++ b/drivers/rtc/rtc-eswin.c
+@@ -245,14 +245,13 @@ static int eswin_rtc_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int eswin_rtc_remove(struct platform_device *pdev)
++static void eswin_rtc_remove(struct platform_device *pdev)
+ {
+ 	struct eswin_rtc_dev *pdata = platform_get_drvdata(pdev);
+ 
+ 	eswin_rtc_alarm_irq_enable(&pdev->dev, 0);
+ 	device_init_wakeup(&pdev->dev, 0);
+ 	clk_disable_unprepare(pdata->clk);
+-	return 0;
+ }
+ 
+ #ifdef CONFIG_PM_SLEEP
+-- 
+2.53.0
+

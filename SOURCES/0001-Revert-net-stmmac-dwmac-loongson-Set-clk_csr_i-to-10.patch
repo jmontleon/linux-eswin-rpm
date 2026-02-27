@@ -1,7 +1,7 @@
-From b2af7c8b7e42024ee26b75cb5a064bac2fd62e2f Mon Sep 17 00:00:00 2001
+From d5c9cc7bcb7f2c792be5a22048c9816c13f7ae0f Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Fri, 27 Feb 2026 14:42:09 -0500
-Subject: [PATCH 01/76] Revert "net: stmmac: dwmac-loongson: Set clk_csr_i to
+Subject: [PATCH 01/77] Revert "net: stmmac: dwmac-loongson: Set clk_csr_i to
  100-150MHz"
 
 This reverts commit a86c53332a81f37c6964f071be7b18e5bbff9a6b.

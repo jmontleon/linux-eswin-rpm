@@ -1,26 +1,31 @@
-From 2e5a6893dffb4d881b1bb50034175fe8a5c16148 Mon Sep 17 00:00:00 2001
+From a24e7b60fb6fc5d6cc584066df95c1d8dc728a0a Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Thu, 1 May 2025 01:08:13 -0400
-Subject: [PATCH 53/76] fixup! drivers: pwm: Added ESWIN pwm driver
+Date: Thu, 1 May 2025 01:07:30 -0400
+Subject: [PATCH 53/77] fixup! drivers: pwm: Added ESWIN pwm driver
 
-use to_eswin_pwm helper
+combine declaration and initialization
 ---
- drivers/pwm/pwm-eswin.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pwm/pwm-eswin.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/pwm/pwm-eswin.c b/drivers/pwm/pwm-eswin.c
-index 74d750ed0afe..ff949906939a 100644
+index 57cdbe8e09d9..74d750ed0afe 100644
 --- a/drivers/pwm/pwm-eswin.c
 +++ b/drivers/pwm/pwm-eswin.c
-@@ -217,7 +217,7 @@ static int eswin_pwm_probe(struct platform_device *pdev)
+@@ -209,12 +209,11 @@ MODULE_DEVICE_TABLE(of, eswin_pwm_dt_ids);
+ static int eswin_pwm_probe(struct platform_device *pdev)
+ {
+ 	struct eswin_pwm *pc;
+-	struct pwm_chip *chip;
+ 	int ret, count;
+ 	struct resource *res;
+ 	int clk_rate;
+ 
+-	chip = devm_pwmchip_alloc(&pdev->dev, NUM_PWM_CHANNEL, sizeof(*pc));
++	struct pwm_chip *chip = devm_pwmchip_alloc(&pdev->dev, NUM_PWM_CHANNEL, sizeof(*pc));
  	if(IS_ERR(chip))
  		return PTR_ERR(chip);
  
--	pc = pwmchip_get_drvdata(chip);
-+	pc = to_eswin_pwm(chip);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res)
 -- 
 2.53.0
 

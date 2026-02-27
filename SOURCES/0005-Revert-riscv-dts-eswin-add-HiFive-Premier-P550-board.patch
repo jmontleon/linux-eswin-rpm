@@ -1,0 +1,73 @@
+From 3b6147fa3d9c96ca64c1f48ca4c766dc384c7468 Mon Sep 17 00:00:00 2001
+From: Jason Montleon <jmontleo@redhat.com>
+Date: Sun, 12 Oct 2025 17:07:45 -0400
+Subject: [PATCH 05/77] Revert "riscv: dts: eswin: add HiFive Premier P550
+ board device tree"
+
+This reverts commit fee2f45def0379ed140de4db8f998edb1d78e619.
+---
+ arch/riscv/boot/dts/Makefile                  |  1 -
+ arch/riscv/boot/dts/eswin/Makefile            |  2 --
+ .../dts/eswin/eic7700-hifive-premier-p550.dts | 29 -------------------
+ 3 files changed, 32 deletions(-)
+ delete mode 100644 arch/riscv/boot/dts/eswin/Makefile
+ delete mode 100644 arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+
+diff --git a/arch/riscv/boot/dts/Makefile b/arch/riscv/boot/dts/Makefile
+index 3763d199c70a..3b99e91efa25 100644
+--- a/arch/riscv/boot/dts/Makefile
++++ b/arch/riscv/boot/dts/Makefile
+@@ -2,7 +2,6 @@
+ subdir-y += allwinner
+ subdir-y += andes
+ subdir-y += canaan
+-subdir-y += eswin
+ subdir-y += microchip
+ subdir-y += renesas
+ subdir-y += sifive
+diff --git a/arch/riscv/boot/dts/eswin/Makefile b/arch/riscv/boot/dts/eswin/Makefile
+deleted file mode 100644
+index 224101ae471e..000000000000
+--- a/arch/riscv/boot/dts/eswin/Makefile
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0
+-dtb-$(CONFIG_ARCH_ESWIN) += eic7700-hifive-premier-p550.dtb
+diff --git a/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts b/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
+deleted file mode 100644
+index 131ed1fc6b2e..000000000000
+--- a/arch/riscv/boot/dts/eswin/eic7700-hifive-premier-p550.dts
++++ /dev/null
+@@ -1,29 +0,0 @@
+-// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+-/*
+- * Copyright (c) 2024, Beijing ESWIN Computing Technology Co., Ltd.
+- */
+-
+-/dts-v1/;
+-
+-#include "eic7700.dtsi"
+-
+-/ {
+-	compatible = "sifive,hifive-premier-p550", "eswin,eic7700";
+-	model = "SiFive HiFive Premier P550";
+-
+-	aliases {
+-		serial0 = &uart0;
+-	};
+-
+-	chosen {
+-		stdout-path = "serial0:115200n8";
+-	};
+-};
+-
+-&uart0 {
+-	status = "okay";
+-};
+-
+-&uart2 {
+-	status = "okay";
+-};
+-- 
+2.53.0
+

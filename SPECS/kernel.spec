@@ -173,18 +173,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .eswin
-%define specrpmversion 6.18.14
-%define specversion 6.18.14
+%define specrpmversion 6.18.15
+%define specversion 6.18.15
 %define patchversion 6.18
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.18.14
+%define tarfile_release 6.18.15
 # This is needed to do merge window version magic
 %define patchlevel 18
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.18.14
+%define kabiversion 6.18.15
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1113,80 +1113,81 @@ Patch1: patch-%{patchversion}-redhat.patch
 
 Patch10001: 0001-Revert-net-stmmac-dwmac-loongson-Set-clk_csr_i-to-10.patch
 Patch10002: 0002-Revert-net-stmmac-replace-has_xxxx-with-core_type.patch
-Patch10003: 0003-arch-riscv-add-option-for-building-EIC7700X-resource.patch
-Patch10004: 0004-Revert-riscv-dts-eswin-add-HiFive-Premier-P550-board.patch
-Patch10005: 0005-Revert-riscv-dts-add-initial-support-for-EIC7700-SoC.patch
-Patch10006: 0006-Revert-pinctrl-eswin-Fix-regulator-error-check-and-K.patch
-Patch10007: 0007-Revert-pinctrl-eswin-Fix-unsigned-comparison-to-less.patch
-Patch10008: 0008-Revert-pinctrl-eswin-Add-EIC7700-pinctrl-driver.patch
-Patch10009: 0009-riscv-dts-add-initial-support-for-EIC7700X-SoC.patch
-Patch10010: 0010-include-dt-bindings-Add-dt-bindings-for-EIC7700X.patch
-Patch10011: 0011-riscv-dts-add-initial-board-data-for-HiFive-Premier-.patch
-Patch10012: 0012-drivers-clk-add-a-clock-driver-for-eswin-EIC7700.patch
-Patch10013: 0013-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
-Patch10014: 0014-drivers-mmc-add-host-drivers-for-HiFive-Premier-P550.patch
-Patch10015: 0015-drivers-pinctrl-add-pinctrl-driver-for-HiFive-Premie.patch
-Patch10016: 0016-dt-bindings-riscv-Describe-physical-memory-regions.patch
-Patch10017: 0017-riscv-mm-Increment-PFN-in-place-when-splitting-mappi.patch
-Patch10018: 0018-riscv-mm-Deduplicate-pgtable-address-conversion-func.patch
-Patch10019: 0019-riscv-mm-Deduplicate-_PAGE_CHG_MASK-definition.patch
-Patch10020: 0020-riscv-ptdump-Only-show-N-and-MT-bits-when-enabled-in.patch
-Patch10021: 0021-riscv-mm-Fix-up-memory-types-when-writing-page-table.patch
-Patch10022: 0022-riscv-mm-Expose-all-page-table-bits-to-assembly-code.patch
-Patch10023: 0023-riscv-alternative-Add-an-ALTERNATIVE_3-macro.patch
-Patch10024: 0024-riscv-alternative-Allow-calls-with-alternate-link-re.patch
-Patch10025: 0025-riscv-mm-Use-physical-memory-aliases-to-apply-PMAs.patch
-Patch10026: 0026-drivers-cache-sifive_ccache-Select-nonstandard-cache.patch
-Patch10027: 0027-drivers-cache-add-compatible-string-for-EIC7700.patch
-Patch10028: 0028-drivers-cache-sifive_ccache-Enable-all-available-way.patch
-Patch10029: 0029-drivers-ata-Add-ESWIN-sata-driver.patch
-Patch10030: 0030-driver-PCIe-Add-PCIe-driver-for-EIC7700.patch
-Patch10031: 0031-riscv-defconfig-hifive-premier-p550-Add-defconfig.patch
-Patch10032: 0032-ttm-disallow-cached-mapping.patch
-Patch10033: 0033-riscv-defconfig-hifive-premier-p550-enabled-drm.patch
-Patch10034: 0034-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
-Patch10035: 0035-drivers-ethernet-Added-ethernet-driver-for-EIC7700.patch
-Patch10036: 0036-drivers-pwm-Added-ESWIN-pwm-driver.patch
-Patch10037: 0037-drivers-hwmon-fan-control-Add-ESWIN-fancontrol-drive.patch
-Patch10038: 0038-drivers-hwmon-pvt-Add-ESWIN-PVT-driver.patch
-Patch10039: 0039-fixup-include-dt-bindings-Add-dt-bindings-for-EIC770.patch
-Patch10040: 0040-fixup-drivers-clk-add-a-clock-driver-for-eswin-EIC77.patch
+Patch10003: 0003-Revert-net-stmmac-fix-oops-when-split-header-is-enab.patch
+Patch10004: 0004-arch-riscv-add-option-for-building-EIC7700X-resource.patch
+Patch10005: 0005-Revert-riscv-dts-eswin-add-HiFive-Premier-P550-board.patch
+Patch10006: 0006-Revert-riscv-dts-add-initial-support-for-EIC7700-SoC.patch
+Patch10007: 0007-Revert-pinctrl-eswin-Fix-regulator-error-check-and-K.patch
+Patch10008: 0008-Revert-pinctrl-eswin-Fix-unsigned-comparison-to-less.patch
+Patch10009: 0009-Revert-pinctrl-eswin-Add-EIC7700-pinctrl-driver.patch
+Patch10010: 0010-riscv-dts-add-initial-support-for-EIC7700X-SoC.patch
+Patch10011: 0011-include-dt-bindings-Add-dt-bindings-for-EIC7700X.patch
+Patch10012: 0012-riscv-dts-add-initial-board-data-for-HiFive-Premier-.patch
+Patch10013: 0013-drivers-clk-add-a-clock-driver-for-eswin-EIC7700.patch
+Patch10014: 0014-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
+Patch10015: 0015-drivers-mmc-add-host-drivers-for-HiFive-Premier-P550.patch
+Patch10016: 0016-drivers-pinctrl-add-pinctrl-driver-for-HiFive-Premie.patch
+Patch10017: 0017-dt-bindings-riscv-Describe-physical-memory-regions.patch
+Patch10018: 0018-riscv-mm-Increment-PFN-in-place-when-splitting-mappi.patch
+Patch10019: 0019-riscv-mm-Deduplicate-pgtable-address-conversion-func.patch
+Patch10020: 0020-riscv-mm-Deduplicate-_PAGE_CHG_MASK-definition.patch
+Patch10021: 0021-riscv-ptdump-Only-show-N-and-MT-bits-when-enabled-in.patch
+Patch10022: 0022-riscv-mm-Fix-up-memory-types-when-writing-page-table.patch
+Patch10023: 0023-riscv-mm-Expose-all-page-table-bits-to-assembly-code.patch
+Patch10024: 0024-riscv-alternative-Add-an-ALTERNATIVE_3-macro.patch
+Patch10025: 0025-riscv-alternative-Allow-calls-with-alternate-link-re.patch
+Patch10026: 0026-riscv-mm-Use-physical-memory-aliases-to-apply-PMAs.patch
+Patch10027: 0027-drivers-cache-sifive_ccache-Select-nonstandard-cache.patch
+Patch10028: 0028-drivers-cache-add-compatible-string-for-EIC7700.patch
+Patch10029: 0029-drivers-cache-sifive_ccache-Enable-all-available-way.patch
+Patch10030: 0030-drivers-ata-Add-ESWIN-sata-driver.patch
+Patch10031: 0031-driver-PCIe-Add-PCIe-driver-for-EIC7700.patch
+Patch10032: 0032-riscv-defconfig-hifive-premier-p550-Add-defconfig.patch
+Patch10033: 0033-ttm-disallow-cached-mapping.patch
+Patch10034: 0034-riscv-defconfig-hifive-premier-p550-enabled-drm.patch
+Patch10035: 0035-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
+Patch10036: 0036-drivers-ethernet-Added-ethernet-driver-for-EIC7700.patch
+Patch10037: 0037-drivers-pwm-Added-ESWIN-pwm-driver.patch
+Patch10038: 0038-drivers-hwmon-fan-control-Add-ESWIN-fancontrol-drive.patch
+Patch10039: 0039-drivers-hwmon-pvt-Add-ESWIN-PVT-driver.patch
+Patch10040: 0040-fixup-include-dt-bindings-Add-dt-bindings-for-EIC770.patch
 Patch10041: 0041-fixup-drivers-clk-add-a-clock-driver-for-eswin-EIC77.patch
-Patch10042: 0042-fixup-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
+Patch10042: 0042-fixup-drivers-clk-add-a-clock-driver-for-eswin-EIC77.patch
 Patch10043: 0043-fixup-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
-Patch10044: 0044-fixup-driver-PCIe-Add-PCIe-driver-for-EIC7700.patch
-Patch10045: 0045-fixup-drivers-hwmon-pvt-Add-ESWIN-PVT-driver.patch
-Patch10046: 0046-fixup-drivers-ethernet-Added-ethernet-driver-for-EIC.patch
-Patch10047: 0047-fixup-ttm-disallow-cached-mapping.patch
-Patch10048: 0048-drivers-usb-fix-getting-hub-descriptor-fail.patch
-Patch10049: 0049-fixup-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
+Patch10044: 0044-fixup-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
+Patch10045: 0045-fixup-driver-PCIe-Add-PCIe-driver-for-EIC7700.patch
+Patch10046: 0046-fixup-drivers-hwmon-pvt-Add-ESWIN-PVT-driver.patch
+Patch10047: 0047-fixup-drivers-ethernet-Added-ethernet-driver-for-EIC.patch
+Patch10048: 0048-fixup-ttm-disallow-cached-mapping.patch
+Patch10049: 0049-drivers-usb-fix-getting-hub-descriptor-fail.patch
 Patch10050: 0050-fixup-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
-Patch10051: 0051-fixup-drivers-pwm-Added-ESWIN-pwm-driver.patch
+Patch10051: 0051-fixup-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
 Patch10052: 0052-fixup-drivers-pwm-Added-ESWIN-pwm-driver.patch
 Patch10053: 0053-fixup-drivers-pwm-Added-ESWIN-pwm-driver.patch
-Patch10054: 0054-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
-Patch10055: 0055-fixup-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
+Patch10054: 0054-fixup-drivers-pwm-Added-ESWIN-pwm-driver.patch
+Patch10055: 0055-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
 Patch10056: 0056-fixup-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
 Patch10057: 0057-fixup-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
-Patch10058: 0058-drivers-usb-typec-Add-driver-for-FUSB303B-type-C-con.patch
-Patch10059: 0059-driver-usb-typec-fusb303b-Update-FUSB303B-driver.patch
-Patch10060: 0060-fixup-drivers-usb-typec-Add-driver-for-FUSB303B-type.patch
+Patch10058: 0058-fixup-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
+Patch10059: 0059-drivers-usb-typec-Add-driver-for-FUSB303B-type-C-con.patch
+Patch10060: 0060-driver-usb-typec-fusb303b-Update-FUSB303B-driver.patch
 Patch10061: 0061-fixup-drivers-usb-typec-Add-driver-for-FUSB303B-type.patch
-Patch10062: 0062-drivers-rtc-Added-EIC7700-Internal-RTC-driver.patch
-Patch10063: 0063-fixup-drivers-rtc-Added-EIC7700-Internal-RTC-driver.patch
-Patch10064: 0064-drivers-spi-Add-bootspi-flash-driver-for-EIC7700.patch
-Patch10065: 0065-drivers-kvm-vcpu-Disabled-writing-HENVCFG-reg.patch
-Patch10066: 0066-fixup-drivers-kvm-vcpu-Disabled-writing-HENVCFG-reg.patch
-Patch10067: 0067-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
+Patch10062: 0062-fixup-drivers-usb-typec-Add-driver-for-FUSB303B-type.patch
+Patch10063: 0063-drivers-rtc-Added-EIC7700-Internal-RTC-driver.patch
+Patch10064: 0064-fixup-drivers-rtc-Added-EIC7700-Internal-RTC-driver.patch
+Patch10065: 0065-drivers-spi-Add-bootspi-flash-driver-for-EIC7700.patch
+Patch10066: 0066-drivers-kvm-vcpu-Disabled-writing-HENVCFG-reg.patch
+Patch10067: 0067-fixup-drivers-kvm-vcpu-Disabled-writing-HENVCFG-reg.patch
 Patch10068: 0068-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
 Patch10069: 0069-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
 Patch10070: 0070-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
 Patch10071: 0071-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
-Patch10072: 0072-fixup-drivers-ethernet-Added-ethernet-driver-for-EIC.patch
-Patch10073: 0073-Add-adapted-Milk-V-Megrez-device-tree-from-RockOS.patch
-Patch10074: 0074-Reuse-common-eic7700-pinctrl-and-add-an-adapted-Star.patch
-Patch10075: 0075-Use-the-appropriate-phy-mode-for-the-EIC7700-MACs-2.patch
-Patch10076: 0076-riscv-dts-eswin-add-support-for-building-DTB-files-f.patch
+Patch10072: 0072-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
+Patch10073: 0073-fixup-drivers-ethernet-Added-ethernet-driver-for-EIC.patch
+Patch10074: 0074-Add-adapted-Milk-V-Megrez-device-tree-from-RockOS.patch
+Patch10075: 0075-Reuse-common-eic7700-pinctrl-and-add-an-adapted-Star.patch
+Patch10076: 0076-Use-the-appropriate-phy-mode-for-the-EIC7700-MACs-2.patch
+Patch10077: 0077-riscv-dts-eswin-add-support-for-building-DTB-files-f.patch
 
 
 
@@ -2048,80 +2049,81 @@ ApplyOptionalPatch patch-%{patchversion}-redhat.patch
 
 ApplyOptionalPatch 0001-Revert-net-stmmac-dwmac-loongson-Set-clk_csr_i-to-10.patch
 ApplyOptionalPatch 0002-Revert-net-stmmac-replace-has_xxxx-with-core_type.patch
-ApplyOptionalPatch 0003-arch-riscv-add-option-for-building-EIC7700X-resource.patch
-ApplyOptionalPatch 0004-Revert-riscv-dts-eswin-add-HiFive-Premier-P550-board.patch
-ApplyOptionalPatch 0005-Revert-riscv-dts-add-initial-support-for-EIC7700-SoC.patch
-ApplyOptionalPatch 0006-Revert-pinctrl-eswin-Fix-regulator-error-check-and-K.patch
-ApplyOptionalPatch 0007-Revert-pinctrl-eswin-Fix-unsigned-comparison-to-less.patch
-ApplyOptionalPatch 0008-Revert-pinctrl-eswin-Add-EIC7700-pinctrl-driver.patch
-ApplyOptionalPatch 0009-riscv-dts-add-initial-support-for-EIC7700X-SoC.patch
-ApplyOptionalPatch 0010-include-dt-bindings-Add-dt-bindings-for-EIC7700X.patch
-ApplyOptionalPatch 0011-riscv-dts-add-initial-board-data-for-HiFive-Premier-.patch
-ApplyOptionalPatch 0012-drivers-clk-add-a-clock-driver-for-eswin-EIC7700.patch
-ApplyOptionalPatch 0013-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
-ApplyOptionalPatch 0014-drivers-mmc-add-host-drivers-for-HiFive-Premier-P550.patch
-ApplyOptionalPatch 0015-drivers-pinctrl-add-pinctrl-driver-for-HiFive-Premie.patch
-ApplyOptionalPatch 0016-dt-bindings-riscv-Describe-physical-memory-regions.patch
-ApplyOptionalPatch 0017-riscv-mm-Increment-PFN-in-place-when-splitting-mappi.patch
-ApplyOptionalPatch 0018-riscv-mm-Deduplicate-pgtable-address-conversion-func.patch
-ApplyOptionalPatch 0019-riscv-mm-Deduplicate-_PAGE_CHG_MASK-definition.patch
-ApplyOptionalPatch 0020-riscv-ptdump-Only-show-N-and-MT-bits-when-enabled-in.patch
-ApplyOptionalPatch 0021-riscv-mm-Fix-up-memory-types-when-writing-page-table.patch
-ApplyOptionalPatch 0022-riscv-mm-Expose-all-page-table-bits-to-assembly-code.patch
-ApplyOptionalPatch 0023-riscv-alternative-Add-an-ALTERNATIVE_3-macro.patch
-ApplyOptionalPatch 0024-riscv-alternative-Allow-calls-with-alternate-link-re.patch
-ApplyOptionalPatch 0025-riscv-mm-Use-physical-memory-aliases-to-apply-PMAs.patch
-ApplyOptionalPatch 0026-drivers-cache-sifive_ccache-Select-nonstandard-cache.patch
-ApplyOptionalPatch 0027-drivers-cache-add-compatible-string-for-EIC7700.patch
-ApplyOptionalPatch 0028-drivers-cache-sifive_ccache-Enable-all-available-way.patch
-ApplyOptionalPatch 0029-drivers-ata-Add-ESWIN-sata-driver.patch
-ApplyOptionalPatch 0030-driver-PCIe-Add-PCIe-driver-for-EIC7700.patch
-ApplyOptionalPatch 0031-riscv-defconfig-hifive-premier-p550-Add-defconfig.patch
-ApplyOptionalPatch 0032-ttm-disallow-cached-mapping.patch
-ApplyOptionalPatch 0033-riscv-defconfig-hifive-premier-p550-enabled-drm.patch
-ApplyOptionalPatch 0034-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
-ApplyOptionalPatch 0035-drivers-ethernet-Added-ethernet-driver-for-EIC7700.patch
-ApplyOptionalPatch 0036-drivers-pwm-Added-ESWIN-pwm-driver.patch
-ApplyOptionalPatch 0037-drivers-hwmon-fan-control-Add-ESWIN-fancontrol-drive.patch
-ApplyOptionalPatch 0038-drivers-hwmon-pvt-Add-ESWIN-PVT-driver.patch
-ApplyOptionalPatch 0039-fixup-include-dt-bindings-Add-dt-bindings-for-EIC770.patch
-ApplyOptionalPatch 0040-fixup-drivers-clk-add-a-clock-driver-for-eswin-EIC77.patch
+ApplyOptionalPatch 0003-Revert-net-stmmac-fix-oops-when-split-header-is-enab.patch
+ApplyOptionalPatch 0004-arch-riscv-add-option-for-building-EIC7700X-resource.patch
+ApplyOptionalPatch 0005-Revert-riscv-dts-eswin-add-HiFive-Premier-P550-board.patch
+ApplyOptionalPatch 0006-Revert-riscv-dts-add-initial-support-for-EIC7700-SoC.patch
+ApplyOptionalPatch 0007-Revert-pinctrl-eswin-Fix-regulator-error-check-and-K.patch
+ApplyOptionalPatch 0008-Revert-pinctrl-eswin-Fix-unsigned-comparison-to-less.patch
+ApplyOptionalPatch 0009-Revert-pinctrl-eswin-Add-EIC7700-pinctrl-driver.patch
+ApplyOptionalPatch 0010-riscv-dts-add-initial-support-for-EIC7700X-SoC.patch
+ApplyOptionalPatch 0011-include-dt-bindings-Add-dt-bindings-for-EIC7700X.patch
+ApplyOptionalPatch 0012-riscv-dts-add-initial-board-data-for-HiFive-Premier-.patch
+ApplyOptionalPatch 0013-drivers-clk-add-a-clock-driver-for-eswin-EIC7700.patch
+ApplyOptionalPatch 0014-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
+ApplyOptionalPatch 0015-drivers-mmc-add-host-drivers-for-HiFive-Premier-P550.patch
+ApplyOptionalPatch 0016-drivers-pinctrl-add-pinctrl-driver-for-HiFive-Premie.patch
+ApplyOptionalPatch 0017-dt-bindings-riscv-Describe-physical-memory-regions.patch
+ApplyOptionalPatch 0018-riscv-mm-Increment-PFN-in-place-when-splitting-mappi.patch
+ApplyOptionalPatch 0019-riscv-mm-Deduplicate-pgtable-address-conversion-func.patch
+ApplyOptionalPatch 0020-riscv-mm-Deduplicate-_PAGE_CHG_MASK-definition.patch
+ApplyOptionalPatch 0021-riscv-ptdump-Only-show-N-and-MT-bits-when-enabled-in.patch
+ApplyOptionalPatch 0022-riscv-mm-Fix-up-memory-types-when-writing-page-table.patch
+ApplyOptionalPatch 0023-riscv-mm-Expose-all-page-table-bits-to-assembly-code.patch
+ApplyOptionalPatch 0024-riscv-alternative-Add-an-ALTERNATIVE_3-macro.patch
+ApplyOptionalPatch 0025-riscv-alternative-Allow-calls-with-alternate-link-re.patch
+ApplyOptionalPatch 0026-riscv-mm-Use-physical-memory-aliases-to-apply-PMAs.patch
+ApplyOptionalPatch 0027-drivers-cache-sifive_ccache-Select-nonstandard-cache.patch
+ApplyOptionalPatch 0028-drivers-cache-add-compatible-string-for-EIC7700.patch
+ApplyOptionalPatch 0029-drivers-cache-sifive_ccache-Enable-all-available-way.patch
+ApplyOptionalPatch 0030-drivers-ata-Add-ESWIN-sata-driver.patch
+ApplyOptionalPatch 0031-driver-PCIe-Add-PCIe-driver-for-EIC7700.patch
+ApplyOptionalPatch 0032-riscv-defconfig-hifive-premier-p550-Add-defconfig.patch
+ApplyOptionalPatch 0033-ttm-disallow-cached-mapping.patch
+ApplyOptionalPatch 0034-riscv-defconfig-hifive-premier-p550-enabled-drm.patch
+ApplyOptionalPatch 0035-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
+ApplyOptionalPatch 0036-drivers-ethernet-Added-ethernet-driver-for-EIC7700.patch
+ApplyOptionalPatch 0037-drivers-pwm-Added-ESWIN-pwm-driver.patch
+ApplyOptionalPatch 0038-drivers-hwmon-fan-control-Add-ESWIN-fancontrol-drive.patch
+ApplyOptionalPatch 0039-drivers-hwmon-pvt-Add-ESWIN-PVT-driver.patch
+ApplyOptionalPatch 0040-fixup-include-dt-bindings-Add-dt-bindings-for-EIC770.patch
 ApplyOptionalPatch 0041-fixup-drivers-clk-add-a-clock-driver-for-eswin-EIC77.patch
-ApplyOptionalPatch 0042-fixup-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
+ApplyOptionalPatch 0042-fixup-drivers-clk-add-a-clock-driver-for-eswin-EIC77.patch
 ApplyOptionalPatch 0043-fixup-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
-ApplyOptionalPatch 0044-fixup-driver-PCIe-Add-PCIe-driver-for-EIC7700.patch
-ApplyOptionalPatch 0045-fixup-drivers-hwmon-pvt-Add-ESWIN-PVT-driver.patch
-ApplyOptionalPatch 0046-fixup-drivers-ethernet-Added-ethernet-driver-for-EIC.patch
-ApplyOptionalPatch 0047-fixup-ttm-disallow-cached-mapping.patch
-ApplyOptionalPatch 0048-drivers-usb-fix-getting-hub-descriptor-fail.patch
-ApplyOptionalPatch 0049-fixup-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
+ApplyOptionalPatch 0044-fixup-drivers-reset-Add-reset-driver-for-EIC770X-SoC.patch
+ApplyOptionalPatch 0045-fixup-driver-PCIe-Add-PCIe-driver-for-EIC7700.patch
+ApplyOptionalPatch 0046-fixup-drivers-hwmon-pvt-Add-ESWIN-PVT-driver.patch
+ApplyOptionalPatch 0047-fixup-drivers-ethernet-Added-ethernet-driver-for-EIC.patch
+ApplyOptionalPatch 0048-fixup-ttm-disallow-cached-mapping.patch
+ApplyOptionalPatch 0049-drivers-usb-fix-getting-hub-descriptor-fail.patch
 ApplyOptionalPatch 0050-fixup-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
-ApplyOptionalPatch 0051-fixup-drivers-pwm-Added-ESWIN-pwm-driver.patch
+ApplyOptionalPatch 0051-fixup-driver-usb-Add-Support-for-eswin-dwc3-USB.patch
 ApplyOptionalPatch 0052-fixup-drivers-pwm-Added-ESWIN-pwm-driver.patch
 ApplyOptionalPatch 0053-fixup-drivers-pwm-Added-ESWIN-pwm-driver.patch
-ApplyOptionalPatch 0054-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
-ApplyOptionalPatch 0055-fixup-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
+ApplyOptionalPatch 0054-fixup-drivers-pwm-Added-ESWIN-pwm-driver.patch
+ApplyOptionalPatch 0055-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
 ApplyOptionalPatch 0056-fixup-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
 ApplyOptionalPatch 0057-fixup-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
-ApplyOptionalPatch 0058-drivers-usb-typec-Add-driver-for-FUSB303B-type-C-con.patch
-ApplyOptionalPatch 0059-driver-usb-typec-fusb303b-Update-FUSB303B-driver.patch
-ApplyOptionalPatch 0060-fixup-drivers-usb-typec-Add-driver-for-FUSB303B-type.patch
+ApplyOptionalPatch 0058-fixup-drivers-hwmon-PAC1934-Add-PAC1934-driver.patch
+ApplyOptionalPatch 0059-drivers-usb-typec-Add-driver-for-FUSB303B-type-C-con.patch
+ApplyOptionalPatch 0060-driver-usb-typec-fusb303b-Update-FUSB303B-driver.patch
 ApplyOptionalPatch 0061-fixup-drivers-usb-typec-Add-driver-for-FUSB303B-type.patch
-ApplyOptionalPatch 0062-drivers-rtc-Added-EIC7700-Internal-RTC-driver.patch
-ApplyOptionalPatch 0063-fixup-drivers-rtc-Added-EIC7700-Internal-RTC-driver.patch
-ApplyOptionalPatch 0064-drivers-spi-Add-bootspi-flash-driver-for-EIC7700.patch
-ApplyOptionalPatch 0065-drivers-kvm-vcpu-Disabled-writing-HENVCFG-reg.patch
-ApplyOptionalPatch 0066-fixup-drivers-kvm-vcpu-Disabled-writing-HENVCFG-reg.patch
-ApplyOptionalPatch 0067-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
+ApplyOptionalPatch 0062-fixup-drivers-usb-typec-Add-driver-for-FUSB303B-type.patch
+ApplyOptionalPatch 0063-drivers-rtc-Added-EIC7700-Internal-RTC-driver.patch
+ApplyOptionalPatch 0064-fixup-drivers-rtc-Added-EIC7700-Internal-RTC-driver.patch
+ApplyOptionalPatch 0065-drivers-spi-Add-bootspi-flash-driver-for-EIC7700.patch
+ApplyOptionalPatch 0066-drivers-kvm-vcpu-Disabled-writing-HENVCFG-reg.patch
+ApplyOptionalPatch 0067-fixup-drivers-kvm-vcpu-Disabled-writing-HENVCFG-reg.patch
 ApplyOptionalPatch 0068-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
 ApplyOptionalPatch 0069-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
 ApplyOptionalPatch 0070-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
 ApplyOptionalPatch 0071-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
-ApplyOptionalPatch 0072-fixup-drivers-ethernet-Added-ethernet-driver-for-EIC.patch
-ApplyOptionalPatch 0073-Add-adapted-Milk-V-Megrez-device-tree-from-RockOS.patch
-ApplyOptionalPatch 0074-Reuse-common-eic7700-pinctrl-and-add-an-adapted-Star.patch
-ApplyOptionalPatch 0075-Use-the-appropriate-phy-mode-for-the-EIC7700-MACs-2.patch
-ApplyOptionalPatch 0076-riscv-dts-eswin-add-support-for-building-DTB-files-f.patch
+ApplyOptionalPatch 0072-fixup-drivers-spi-Add-bootspi-flash-driver-for-EIC77.patch
+ApplyOptionalPatch 0073-fixup-drivers-ethernet-Added-ethernet-driver-for-EIC.patch
+ApplyOptionalPatch 0074-Add-adapted-Milk-V-Megrez-device-tree-from-RockOS.patch
+ApplyOptionalPatch 0075-Reuse-common-eic7700-pinctrl-and-add-an-adapted-Star.patch
+ApplyOptionalPatch 0076-Use-the-appropriate-phy-mode-for-the-EIC7700-MACs-2.patch
+ApplyOptionalPatch 0077-riscv-dts-eswin-add-support-for-building-DTB-files-f.patch
 
 
 
@@ -4618,6 +4620,9 @@ fi\
 #
 #
 %changelog
+* Fri Feb 27 2026 Justin M. Forbes <jforbes@fedoraproject.org> [6.18.15-0]
+- Linux v6.18.15
+
 * Thu Feb 26 2026 Augusto Caringi <acaringi@redhat.com> [6.18.14-0]
 - Fix up the config for CONFIG_MFD_TN48M_CPLD (Augusto Caringi)
 - Linux v6.18.14

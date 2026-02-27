@@ -1,62 +1,38 @@
-From c4f11d530cf87146221743f6659c112fe54b71c9 Mon Sep 17 00:00:00 2001
+From a280a2c588335b1550a334651dbe7844dbb6ccc8 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Wed, 30 Apr 2025 12:26:03 -0400
-Subject: [PATCH 41/76] fixup! drivers: clk: add a clock driver for eswin
+Date: Tue, 29 Apr 2025 21:49:20 -0400
+Subject: [PATCH 41/77] fixup! drivers: clk: add a clock driver for eswin
  EIC7700
 
-add missing sentinel values to clk divider tables to avoid oobr deteced by KASAN
+remove executable bit from source code files
 ---
- drivers/clk/eswin/clk-eic7700.c | 30 ++++++++++++++++--------------
- 1 file changed, 16 insertions(+), 14 deletions(-)
+ drivers/clk/eswin/Kconfig       | 0
+ drivers/clk/eswin/Makefile      | 0
+ drivers/clk/eswin/clk-eic7700.c | 0
+ drivers/clk/eswin/clk.c         | 0
+ drivers/clk/eswin/clk.h         | 0
+ 5 files changed, 0 insertions(+), 0 deletions(-)
+ mode change 100755 => 100644 drivers/clk/eswin/Kconfig
+ mode change 100755 => 100644 drivers/clk/eswin/Makefile
+ mode change 100755 => 100644 drivers/clk/eswin/clk-eic7700.c
+ mode change 100755 => 100644 drivers/clk/eswin/clk.c
+ mode change 100755 => 100644 drivers/clk/eswin/clk.h
 
+diff --git a/drivers/clk/eswin/Kconfig b/drivers/clk/eswin/Kconfig
+old mode 100755
+new mode 100644
+diff --git a/drivers/clk/eswin/Makefile b/drivers/clk/eswin/Makefile
+old mode 100755
+new mode 100644
 diff --git a/drivers/clk/eswin/clk-eic7700.c b/drivers/clk/eswin/clk-eic7700.c
-index 1b6c0b9e0450..80a73eca54ec 100644
---- a/drivers/clk/eswin/clk-eic7700.c
-+++ b/drivers/clk/eswin/clk-eic7700.c
-@@ -272,13 +272,14 @@ static struct eswin_mux_clock eic7700_mux_clks[] = {
- };
- 
- /*The hardware decides vaule 0, 1 and 2 both means 2 divsor, so we have to add these ugly tables*/
--static struct clk_div_table u_3_bit_special_div_table[8];
--static struct clk_div_table u_4_bit_special_div_table[16];
--static struct clk_div_table u_6_bit_special_div_table[64];
--static struct clk_div_table u_7_bit_special_div_table[128];
--static struct clk_div_table u_8_bit_special_div_table[256];
--static struct clk_div_table u_11_bit_special_div_table[2048];
--static struct clk_div_table u_16_bit_special_div_table[65536];
-+/* +1 makes space for sentinel value to indicate end of table */
-+static struct clk_div_table u_3_bit_special_div_table[8+1];
-+static struct clk_div_table u_4_bit_special_div_table[16+1];
-+static struct clk_div_table u_6_bit_special_div_table[64+1];
-+static struct clk_div_table u_7_bit_special_div_table[128+1];
-+static struct clk_div_table u_8_bit_special_div_table[256+1];
-+static struct clk_div_table u_11_bit_special_div_table[2048+1];
-+static struct clk_div_table u_16_bit_special_div_table[65536+1];
- 
- static struct eswin_divider_clock eic7700_div_clks[] = {
- 	{ EIC7700_DIVDER_U_SYS_CFG_DIV_DYNM, "divder_u_sys_cfg_div_dynm",   "fixed_rate_clk_spll0_fout3", 0,
-@@ -1137,13 +1138,14 @@ static int eswin_clk_probe(struct platform_device *pdev)
- 	if (!clk_data)
- 		return -EAGAIN;
- 
--	special_div_table_init(u_3_bit_special_div_table, ARRAY_SIZE(u_3_bit_special_div_table));
--	special_div_table_init(u_4_bit_special_div_table, ARRAY_SIZE(u_4_bit_special_div_table));
--	special_div_table_init(u_6_bit_special_div_table, ARRAY_SIZE(u_6_bit_special_div_table));
--	special_div_table_init(u_7_bit_special_div_table, ARRAY_SIZE(u_7_bit_special_div_table));
--	special_div_table_init(u_8_bit_special_div_table, ARRAY_SIZE(u_8_bit_special_div_table));
--	special_div_table_init(u_11_bit_special_div_table, ARRAY_SIZE(u_11_bit_special_div_table));
--	special_div_table_init(u_16_bit_special_div_table, ARRAY_SIZE(u_16_bit_special_div_table));
-+	/* -1 to exclude sentinel index from initialization */
-+	special_div_table_init(u_3_bit_special_div_table, ARRAY_SIZE(u_3_bit_special_div_table)-1);
-+	special_div_table_init(u_4_bit_special_div_table, ARRAY_SIZE(u_4_bit_special_div_table)-1);
-+	special_div_table_init(u_6_bit_special_div_table, ARRAY_SIZE(u_6_bit_special_div_table)-1);
-+	special_div_table_init(u_7_bit_special_div_table, ARRAY_SIZE(u_7_bit_special_div_table)-1);
-+	special_div_table_init(u_8_bit_special_div_table, ARRAY_SIZE(u_8_bit_special_div_table)-1);
-+	special_div_table_init(u_11_bit_special_div_table, ARRAY_SIZE(u_11_bit_special_div_table)-1);
-+	special_div_table_init(u_16_bit_special_div_table, ARRAY_SIZE(u_16_bit_special_div_table)-1);
- 
- 	eswin_clk_register_fixed_rate(eic7700_fixed_rate_clks,
- 				ARRAY_SIZE(eic7700_fixed_rate_clks),
+old mode 100755
+new mode 100644
+diff --git a/drivers/clk/eswin/clk.c b/drivers/clk/eswin/clk.c
+old mode 100755
+new mode 100644
+diff --git a/drivers/clk/eswin/clk.h b/drivers/clk/eswin/clk.h
+old mode 100755
+new mode 100644
 -- 
 2.53.0
 

@@ -1,33 +1,26 @@
-From 8ac563829806d7fd4ae2ae3a10414b8bcebceab3 Mon Sep 17 00:00:00 2001
+From cf7c2d9b8be1abff98fd270c47817f59596fc98d Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Tue, 22 Apr 2025 12:02:07 -0400
-Subject: [PATCH 68/76] fixup! drivers: spi: Add bootspi flash driver for
+Date: Wed, 16 Apr 2025 19:07:17 -0400
+Subject: [PATCH 68/77] fixup! drivers: spi: Add bootspi flash driver for
  EIC7700
 
-correct signature on remove function
+added a softdep on spi-nor to make it be probed before bootspi.
+Without this hint, spi-nor is not probed at all and even if probed
+later manually this driver does not work. The flow must be
+spi-nor -> bootspi in order to successfully get /dev/mtd0.
 ---
- drivers/spi/spi-eswin-bootspi.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/spi/spi-eswin-bootspi.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/drivers/spi/spi-eswin-bootspi.c b/drivers/spi/spi-eswin-bootspi.c
-index 2f4aaf7e998c..4c299ddbd71b 100644
+index c8fbc1b3fc91..2f4aaf7e998c 100644
 --- a/drivers/spi/spi-eswin-bootspi.c
 +++ b/drivers/spi/spi-eswin-bootspi.c
-@@ -617,13 +617,12 @@ static int eswin_bootspi_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static int eswin_bootspi_remove(struct platform_device *pdev)
-+static void eswin_bootspi_remove(struct platform_device *pdev)
- {
- 	struct es_spi_priv *priv = platform_get_drvdata(pdev);
- 	struct spi_controller *master = priv->master;
- 
- 	spi_master_put(master);
--	return 0;
- }
- 
- static const struct of_device_id eswin_bootspi_of_match[] = {
+@@ -656,3 +656,4 @@ module_platform_driver(eswin_bootspi_driver);
+ MODULE_AUTHOR("Huangyifeng <huangyifeng@eswincomputing.com>");
+ MODULE_DESCRIPTION("Eswin Boot SPI Controller Driver for EIC770X SoCs");
+ MODULE_LICENSE("GPL v2");
++MODULE_SOFTDEP("pre: spi-nor");
 -- 
 2.53.0
 

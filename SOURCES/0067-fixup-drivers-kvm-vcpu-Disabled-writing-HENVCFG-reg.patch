@@ -1,0 +1,40 @@
+From 4e0118686afece92121d9ffe3dcd58b6432315d7 Mon Sep 17 00:00:00 2001
+From: Charles Mirabile <cmirabil@redhat.com>
+Date: Wed, 14 May 2025 16:20:58 -0400
+Subject: [PATCH 67/77] fixup! drivers: kvm: vcpu: Disabled writing HENVCFG reg
+
+also disable writing to SENVCFG
+
+Conflicts:
+	arch/riscv/kvm/vcpu.c
+---
+ arch/riscv/kvm/vcpu.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index d25d759c9cd4..6467b1caf4ef 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -800,7 +800,9 @@ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu,
+ 	 * potentially change trap CSRs.
+ 	 */
+ 
++#ifndef CONFIG_SOC_SIFIVE_EIC7700
+ 	kvm_riscv_vcpu_swap_in_guest_state(vcpu);
++#endif
+ 	guest_state_enter_irqoff();
+ 
+ 	if (kvm_riscv_nacl_sync_sret_available()) {
+@@ -862,7 +864,9 @@ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu,
+ 
+ 	vcpu->arch.last_exit_cpu = vcpu->cpu;
+ 	guest_state_exit_irqoff();
++#ifndef CONFIG_SOC_SIFIVE_EIC7700
+ 	kvm_riscv_vcpu_swap_in_host_state(vcpu);
++#endif
+ }
+ 
+ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+-- 
+2.53.0
+

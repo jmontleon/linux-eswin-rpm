@@ -1,0 +1,41 @@
+From d242cdec6d4c2eaed2d9b5f11e8871f361cb0fc5 Mon Sep 17 00:00:00 2001
+From: Jason Montleon <jmontleo@redhat.com>
+Date: Sun, 12 Oct 2025 17:11:12 -0400
+Subject: [PATCH 07/77] Revert "pinctrl: eswin: Fix regulator error check and
+ Kconfig dependency"
+
+This reverts commit a6a2f50ab1721343ee2d5d2be888709aa886e3aa.
+---
+ drivers/pinctrl/Kconfig           | 2 --
+ drivers/pinctrl/pinctrl-eic7700.c | 2 +-
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/pinctrl/Kconfig b/drivers/pinctrl/Kconfig
+index 4f8507ebbdac..b31b84b83490 100644
+--- a/drivers/pinctrl/Kconfig
++++ b/drivers/pinctrl/Kconfig
+@@ -211,8 +211,6 @@ config PINCTRL_EIC7700
+ 	depends on ARCH_ESWIN || COMPILE_TEST
+ 	select PINMUX
+ 	select GENERIC_PINCONF
+-	select REGULATOR
+-	select REGULATOR_FIXED_VOLTAGE
+ 	help
+ 	  This driver support for the pin controller in ESWIN's EIC7700 SoC,
+ 	  which supports pin multiplexing, pin configuration,and rgmii voltage
+diff --git a/drivers/pinctrl/pinctrl-eic7700.c b/drivers/pinctrl/pinctrl-eic7700.c
+index ffcd0ec5c2dc..4874b5532343 100644
+--- a/drivers/pinctrl/pinctrl-eic7700.c
++++ b/drivers/pinctrl/pinctrl-eic7700.c
+@@ -634,7 +634,7 @@ static int eic7700_pinctrl_probe(struct platform_device *pdev)
+ 		return PTR_ERR(pc->base);
+ 
+ 	regulator = devm_regulator_get(dev, "vrgmii");
+-	if (IS_ERR(regulator)) {
++	if (IS_ERR_OR_NULL(regulator)) {
+ 		return dev_err_probe(dev, PTR_ERR(regulator),
+ 					 "failed to get vrgmii regulator\n");
+ 	}
+-- 
+2.53.0
+

@@ -1,0 +1,49 @@
+From 56f0855611f0f4e5f412bde4e69c6ec7c2917fbd Mon Sep 17 00:00:00 2001
+From: Jason Montleon <jmontleo@redhat.com>
+Date: Fri, 27 Feb 2026 18:24:50 -0500
+Subject: [PATCH 03/77] Revert "net: stmmac: fix oops when split header is
+ enabled"
+
+This reverts commit b1f23df09e7dbf4c86b6908dff7efb8cb2b7d609.
+---
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c | 20 +++----------------
+ 1 file changed, 3 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+index bd0a101e7cd8..e707abc35e2d 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
++++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+@@ -4879,27 +4879,13 @@ static unsigned int stmmac_rx_buf2_len(struct stmmac_priv *priv,
+ 	if (!priv->sph)
+ 		return 0;
+ 
+-	/* For GMAC4, when split header is enabled, in some rare cases, the
+-	 * hardware does not fill buf2 of the first descriptor with payload.
+-	 * Thus we cannot assume buf2 is always fully filled if it is not
+-	 * the last descriptor. Otherwise, the length of buf2 of the second
+-	 * descriptor will be calculated wrong and cause an oops.
+-	 *
+-	 * If this is the last descriptor, 'plen' is the length of the
+-	 * received packet that was transferred to system memory.
+-	 * Otherwise, it is the accumulated number of bytes that have been
+-	 * transferred for the current packet.
+-	 *
+-	 * Thus 'plen - len' always gives the correct length of buf2.
+-	 */
+-
+-	/* Not GMAC4 and not last descriptor */
+-	if (priv->plat->core_type != DWMAC_CORE_GMAC4 && (status & rx_not_ls))
++	/* Not last descriptor */
++	if (status & rx_not_ls)
+ 		return priv->dma_conf.dma_buf_sz;
+ 
+-	/* GMAC4 or last descriptor */
+ 	plen = stmmac_get_rx_frame_len(priv, p, coe);
+ 
++	/* Last descriptor */
+ 	return plen - len;
+ }
+ 
+-- 
+2.53.0
+

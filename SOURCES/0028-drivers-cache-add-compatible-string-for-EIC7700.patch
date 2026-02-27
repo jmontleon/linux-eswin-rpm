@@ -1,0 +1,28 @@
+From 2e514398b8a9a3cb6151437eb6dacccc8fc67905 Mon Sep 17 00:00:00 2001
+From: Pritesh Patel <pritesh.patel@einfochips.com>
+Date: Tue, 7 Jan 2025 06:16:58 +0000
+Subject: [PATCH 28/77] drivers: cache: add compatible string for EIC7700
+
+add "sifive,eic7700" compatible string in sifive ccache ids
+
+Signed-off-by: Pritesh Patel <pritesh.patel@einfochips.com>
+---
+ drivers/cache/sifive_ccache.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cache/sifive_ccache.c b/drivers/cache/sifive_ccache.c
+index a86800b123b9..134eac409103 100644
+--- a/drivers/cache/sifive_ccache.c
++++ b/drivers/cache/sifive_ccache.c
+@@ -125,6 +125,8 @@ static const struct of_device_id sifive_ccache_ids[] = {
+ 	{ .compatible = "starfive,jh7100-ccache",
+ 	  .data = (void *)(QUIRK_NONSTANDARD_CACHE_OPS | QUIRK_BROKEN_DATA_UNCORR) },
+ 	{ .compatible = "sifive,ccache0" },
++	{ .compatible = "sifive,eic7700",
++	  .data = (void *)(QUIRK_NONSTANDARD_CACHE_OPS) },
+ 	{ /* end of table */ }
+ };
+ 
+-- 
+2.53.0
+

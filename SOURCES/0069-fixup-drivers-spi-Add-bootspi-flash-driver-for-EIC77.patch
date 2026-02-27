@@ -1,27 +1,33 @@
-From bf08b5747325180e23dfaa4fd35cae35602ac12c Mon Sep 17 00:00:00 2001
+From e4c879f4a54c05eb14cec72c7e5615f492f8d37f Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Tue, 29 Apr 2025 10:33:02 -0400
-Subject: [PATCH 69/76] fixup! drivers: spi: Add bootspi flash driver for
+Date: Tue, 22 Apr 2025 12:02:07 -0400
+Subject: [PATCH 69/77] fixup! drivers: spi: Add bootspi flash driver for
  EIC7700
 
-add missing static to prevent warning
+correct signature on remove function
 ---
- drivers/spi/spi-eswin-bootspi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/spi/spi-eswin-bootspi.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/spi/spi-eswin-bootspi.c b/drivers/spi/spi-eswin-bootspi.c
-index 4c299ddbd71b..54a3bf677451 100644
+index 2f4aaf7e998c..4c299ddbd71b 100644
 --- a/drivers/spi/spi-eswin-bootspi.c
 +++ b/drivers/spi/spi-eswin-bootspi.c
-@@ -284,7 +284,7 @@ static void eswin_bootspi_cmd_cfg(struct es_spi_priv *priv, u32 code, u32 type)
-  * @param [in]  wr_dest: Address of data to be sent
-  * @param [in]  size: size of flash to be write
-  */
--void eswin_bootspi_writer(struct es_spi_priv *priv)
-+static void eswin_bootspi_writer(struct es_spi_priv *priv)
+@@ -617,13 +617,12 @@ static int eswin_bootspi_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int eswin_bootspi_remove(struct platform_device *pdev)
++static void eswin_bootspi_remove(struct platform_device *pdev)
  {
- 	u32 write_size = 0, offset, cmd_code;
- 	u32 cmd_type = priv->cmd_type;
+ 	struct es_spi_priv *priv = platform_get_drvdata(pdev);
+ 	struct spi_controller *master = priv->master;
+ 
+ 	spi_master_put(master);
+-	return 0;
+ }
+ 
+ static const struct of_device_id eswin_bootspi_of_match[] = {
 -- 
 2.53.0
 

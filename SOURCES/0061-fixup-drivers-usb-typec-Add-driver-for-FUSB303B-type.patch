@@ -1,27 +1,27 @@
-From 5da47345e077172512c78869911cd19eb18c08f0 Mon Sep 17 00:00:00 2001
+From 809b8f749a4f911013fb5eb9ea763b7b18a92e44 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Tue, 29 Apr 2025 11:24:15 -0400
-Subject: [PATCH 61/76] fixup! drivers: usb: typec: Add driver for FUSB303B
+Date: Tue, 29 Apr 2025 11:23:42 -0400
+Subject: [PATCH 61/77] fixup! drivers: usb: typec: Add driver for FUSB303B
  type C controller
 
-add missing static to prevent warning
+replace deprecated strlcpy
 ---
  drivers/usb/typec/tcpm/fusb303b.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/usb/typec/tcpm/fusb303b.c b/drivers/usb/typec/tcpm/fusb303b.c
-index f49f8f1b0032..c7d8215173b1 100644
+index b17c554c2b66..f49f8f1b0032 100644
 --- a/drivers/usb/typec/tcpm/fusb303b.c
 +++ b/drivers/usb/typec/tcpm/fusb303b.c
-@@ -375,7 +375,7 @@ static s32 fusb303b_set_port_check(struct fusb303b_chip *chip,
- 	return ret;
- }
+@@ -141,7 +141,7 @@ __printf(2, 0) static void _fusb303b_log(struct fusb303b_chip *chip,
  
--int fusb303b_set_usb_role(struct fusb303b_chip *chip)
-+static int fusb303b_set_usb_role(struct fusb303b_chip *chip)
- {
- 	u8 type = 0;
- 	int ret = 0;
+ 	if (fusb303b_log_full(chip)) {
+ 		chip->logbuffer_head = max(chip->logbuffer_head - 1, 0);
+-		strlcpy(tmpbuffer, "overflow", sizeof(tmpbuffer));
++		strscpy(tmpbuffer, "overflow", sizeof(tmpbuffer));
+ 	}
+ 
+ 	if (chip->logbuffer_head < 0 ||
 -- 
 2.53.0
 

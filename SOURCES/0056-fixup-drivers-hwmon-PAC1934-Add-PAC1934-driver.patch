@@ -1,26 +1,26 @@
-From 756497e108f2216da79b70d4820f0bc99afe27cd Mon Sep 17 00:00:00 2001
+From de329f364cb24fcbf68878fc24a8203f737413d7 Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
-Date: Tue, 22 Apr 2025 11:41:01 -0400
-Subject: [PATCH 56/76] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver
+Date: Tue, 22 Apr 2025 11:40:42 -0400
+Subject: [PATCH 56/77] fixup! drivers: hwmon: PAC1934: Add PAC1934 driver
 
-add missing static to prevent warning
+replace non-existant sense_resistances property reference with shunt_resistors that is actually in dts
 ---
  drivers/hwmon/pac193x.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/hwmon/pac193x.c b/drivers/hwmon/pac193x.c
-index 6a7c7ad93b91..78150a4487f9 100644
+index 8a9ca9ec07b5..6a7c7ad93b91 100644
 --- a/drivers/hwmon/pac193x.c
 +++ b/drivers/hwmon/pac193x.c
-@@ -306,7 +306,7 @@ static ssize_t pac193x_ctrl_show(struct device *dev,
- 			   "OVF", (set_val >> 0) & 0x1, (act_val >> 0) & 0x1, (lat_val >> 0) & 0x1);
- }
- 
--int pac193x_common_reg_set(struct device *dev, const char *buf, u8 commad)
-+static int pac193x_common_reg_set(struct device *dev, const char *buf, u8 commad)
- {
- 	struct pac193x_data *data = dev_get_drvdata(dev);
- 	unsigned long val;
+@@ -761,7 +761,7 @@ static int pac193x_probe(struct i2c_client *client)
+ 		dev_err(dev, "can not get energy_acc_count:%d\n", ret);
+ 		data->energy_acc_count = 0;
+ 	}
+-	ret = of_property_read_u32_array(dev->of_node, "sense_resistances",
++	ret = of_property_read_u32_array(dev->of_node, "shunt_resistors",
+ 					 data->sense_resistances,
+ 					 PAC193X_MAX_CHAN_CNT);
+ 	if (0 != ret) {
 -- 
 2.53.0
 
