@@ -1,4 +1,4 @@
-From 6e71a201c3b6a1f31a2d22bb427c71c33ecf0401 Mon Sep 17 00:00:00 2001
+From defb97070e13ee6d1d384b9f04644f9b40c52163 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Sun, 12 Oct 2025 17:08:01 -0400
 Subject: [PATCH 03/74] Revert "riscv: dts: add initial support for EIC7700

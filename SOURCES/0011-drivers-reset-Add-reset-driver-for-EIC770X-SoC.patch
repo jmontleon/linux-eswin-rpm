@@ -1,4 +1,4 @@
-From 315d5502a3e44e826a06030876269731368e8e84 Mon Sep 17 00:00:00 2001
+From ccca9d0400df103f7ab3a98a554710c2ab70a9dc Mon Sep 17 00:00:00 2001
 From: Yifeng Huang <huangyifeng@eswincomputing.com>
 Date: Mon, 6 Jan 2025 12:51:30 +0000
 Subject: [PATCH 11/74] drivers: reset: Add reset driver for EIC770X SoC
@@ -14,7 +14,7 @@ Signed-off-by: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
  create mode 100755 drivers/reset/reset-eswin.c
 
 diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
-index 78b7078478d4..670926a90c11 100644
+index b3b9e0f9d8c4..db65058d23f8 100644
 --- a/drivers/reset/Kconfig
 +++ b/drivers/reset/Kconfig
 @@ -73,6 +73,12 @@ config RESET_BRCMSTB_RESCAL

@@ -1,4 +1,4 @@
-From ff1e7b8e06cd25ded1550620a96a2167df3af339 Mon Sep 17 00:00:00 2001
+From ce8f8626758b84d4ca32e34b659d702ca0d61ed1 Mon Sep 17 00:00:00 2001
 From: Min Lin <linmin@eswincomputing.com>
 Date: Mon, 6 Jan 2025 11:17:34 +0000
 Subject: [PATCH 01/74] arch: riscv: add option for building EIC7700X resources

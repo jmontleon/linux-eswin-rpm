@@ -173,18 +173,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .eswin
-%define specrpmversion 6.18.13
-%define specversion 6.18.13
+%define specrpmversion 6.18.14
+%define specversion 6.18.14
 %define patchversion 6.18
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.18.13
+%define tarfile_release 6.18.14
 # This is needed to do merge window version magic
 %define patchlevel 18
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.18.13
+%define kabiversion 6.18.14
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4614,6 +4614,10 @@ fi\
 #
 #
 %changelog
+* Thu Feb 26 2026 Augusto Caringi <acaringi@redhat.com> [6.18.14-0]
+- Fix up the config for CONFIG_MFD_TN48M_CPLD (Augusto Caringi)
+- Linux v6.18.14
+
 * Thu Feb 19 2026 Augusto Caringi <acaringi@redhat.com> [6.18.13-0]
 - Linux v6.18.13
 
