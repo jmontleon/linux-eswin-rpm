@@ -1,4 +1,4 @@
-From 50bad3475978ab61fbdee7a63392166f0bc54ba5 Mon Sep 17 00:00:00 2001
+From 3b74d3ac1e3f45e83e6470352d5a800d3b4ddf4a Mon Sep 17 00:00:00 2001
 From: Charles Mirabile <cmirabil@redhat.com>
 Date: Wed, 9 Apr 2025 13:04:03 -0400
 Subject: [PATCH 45/77] fixup! driver: PCIe: Add PCIe driver for EIC7700

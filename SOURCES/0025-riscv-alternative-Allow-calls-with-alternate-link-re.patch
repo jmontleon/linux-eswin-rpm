@@ -1,4 +1,4 @@
-From efda1bfb9c12797b4c3453341f57a688c7c44be2 Mon Sep 17 00:00:00 2001
+From d151c42034f0ef5214b5cc00d74317c362f3bb04 Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Thu, 31 Oct 2024 18:47:20 -0700
 Subject: [PATCH 25/77] riscv: alternative: Allow calls with alternate link

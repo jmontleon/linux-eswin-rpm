@@ -1,4 +1,4 @@
-From d5c9cc7bcb7f2c792be5a22048c9816c13f7ae0f Mon Sep 17 00:00:00 2001
+From 8b61564fdf5dbd9689b4da56dccbd84d065387ed Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Fri, 27 Feb 2026 14:42:09 -0500
 Subject: [PATCH 01/77] Revert "net: stmmac: dwmac-loongson: Set clk_csr_i to

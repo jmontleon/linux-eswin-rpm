@@ -1,4 +1,4 @@
-From b623ea2a6c2e9cd31c8c71c3ccec92ad0eb41318 Mon Sep 17 00:00:00 2001
+From 704ee97459bf6e330e97e5f5bebed8194e0738e1 Mon Sep 17 00:00:00 2001
 From: Jason Montleon <jmontleo@redhat.com>
 Date: Fri, 27 Feb 2026 14:42:15 -0500
 Subject: [PATCH 02/77] Revert "net: stmmac: replace has_xxxx with core_type"

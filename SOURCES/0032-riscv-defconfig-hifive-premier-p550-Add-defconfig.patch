@@ -1,4 +1,4 @@
-From d84c8ab015913dee1cbcbd6f7e7479029bd0368b Mon Sep 17 00:00:00 2001
+From 127d0ff0d1d950ef5593862f171277ca41cbff6c Mon Sep 17 00:00:00 2001
 From: Pinkesh Vaghela <pinkesh.vaghela@einfochips.com>
 Date: Tue, 1 Apr 2025 13:12:59 +0000
 Subject: [PATCH 32/77] riscv: defconfig: hifive-premier-p550: Add defconfig

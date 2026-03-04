@@ -1,4 +1,4 @@
-From 08ca41e2263675a69eeb3ee447677171c27e4919 Mon Sep 17 00:00:00 2001
+From 7201e7b4070f61e0eb4d5f872dde06b148c289ea Mon Sep 17 00:00:00 2001
 From: Samuel Holland <samuel.holland@sifive.com>
 Date: Wed, 23 Oct 2024 16:53:02 -0700
 Subject: [PATCH 20/77] riscv: mm: Deduplicate _PAGE_CHG_MASK definition
